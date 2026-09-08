@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
+import { Roboto, Roboto_Slab } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
 import { resolveRobots } from "@/lib/seo";
 import { getSiteChrome } from "@/lib/homepage";
@@ -9,39 +9,36 @@ import "./globals.css";
 
 export const dynamic = "force-dynamic";
 
-const displayFont = Playfair_Display({
+const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  variable: "--font-display",
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-roboto",
 });
 
-const bodyFont = Plus_Jakarta_Sans({
+const robotoSlab = Roboto_Slab({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-body",
+  variable: "--font-roboto-slab",
 });
 
-const DEFAULT_OG_IMAGE = "/images/hero-museums.jpg";
+const DEFAULT_OG_IMAGE = "/images/hero-louvre.jpg";
 
-// Google Analytics (GA4) — optional. Set NEXT_PUBLIC_GA_MEASUREMENT_ID in
-// the environment to enable; the scripts are skipped entirely otherwise so
-// we never ship a fake/placeholder tracking ID to production.
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Visit Museums",
+  name: "Top Museums in World - Visit Museums",
   url: SITE_URL,
-  logo: `${SITE_URL}/icon`,
+  logo: `${SITE_URL}/images/visit-museums-logo.png`,
   description:
-    "Independent global travel resource for museum and attraction tickets, guided tours, and combo passes.",
+    "Visiting a museum can be a rich and rewarding experience for several reasons. Check out the most visited museums in world.",
 };
 
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Visit Museums",
+  name: "Top Museums in World - Visit Museums",
   url: SITE_URL,
 };
 
@@ -51,48 +48,47 @@ export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: "Visit Museums | Museum & Attraction Tickets Worldwide 2026",
-      template: "%s | Visit Museums",
+      default: "Most Visited Museums in World - Visit Museums",
+      template: "%s - Visit Museums",
     },
     description:
-      "Compare official museum and attraction tickets, guided tours, and combo passes worldwide. Skip the line and find other great sights nearby.",
-    keywords: ["visit museums", "museum tickets", "attraction tickets", "skip the line tickets", "museum tours"],
+      "Visiting a museum can be a rich and rewarding experience for several reasons. Check out the most visited museums in world.",
+    keywords: ["visit museums", "museum tickets", "attraction tickets", "skip the line tickets", "museum tours", "popular museums"],
     alternates: {
       canonical: "/",
     },
     robots,
     openGraph: {
-      title: "Visit Museums | Museum & Attraction Tickets Worldwide",
+      title: "Most Visited Museums in World - Visit Museums",
       description:
-        "Compare official museum and attraction tickets and guided tours worldwide, and discover other great sights nearby.",
+        "Visiting a museum can be a rich and rewarding experience for several reasons. Check out the most visited museums in world.",
       type: "website",
       url: SITE_URL,
-      siteName: "Visit Museums",
+      siteName: "Top Museums in Europe - Visit Museums",
       images: [
         {
           url: DEFAULT_OG_IMAGE,
-          width: 2400,
-          height: 1350,
-          alt: "Grand museum gallery hall with visitors admiring artwork",
+          width: 1200,
+          height: 630,
+          alt: "Visit Museums - Most Visited Museums in World",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Visit Museums | Museum & Attraction Tickets Worldwide",
+      title: "Most Visited Museums in World - Visit Museums",
       description:
-        "Compare official museum and attraction tickets and guided tours worldwide, and discover other great sights nearby.",
+        "Visiting a museum can be a rich and rewarding experience for several reasons. Check out the most visited museums in world.",
       images: [DEFAULT_OG_IMAGE],
     },
   };
 }
 
-function buildThemeStyle(theme: { primary: string; secondary: string; dark: string; accent: string }) {
+function buildThemeStyle(theme: { primary: string; secondary: string; dark: string }) {
   const vars: [string, string | null][] = [
-    ["--color-canal-primary", hexToRgbTriplet(theme.primary)],
-    ["--color-canal-blue", hexToRgbTriplet(theme.secondary)],
-    ["--color-canal-ink", hexToRgbTriplet(theme.dark)],
-    ["--color-sage-400", hexToRgbTriplet(theme.accent)],
+    ["--color-canal-primary", hexToRgbTriplet(theme.primary || "#2D903A")],
+    ["--color-canal-blue", hexToRgbTriplet(theme.secondary || "#2A302F")],
+    ["--color-canal-ink", hexToRgbTriplet(theme.dark || "#1F2429")],
   ];
   const declarations = vars
     .filter(([, value]) => value !== null)
@@ -110,7 +106,7 @@ export default async function RootLayout({
   const themeStyle = buildThemeStyle(theme);
 
   return (
-    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <html lang="en" className={`${roboto.variable} ${robotoSlab.variable}`}>
       {GA_MEASUREMENT_ID && (
         <head>
           <link rel="preconnect" href="https://www.googletagmanager.com" />
@@ -119,7 +115,7 @@ export default async function RootLayout({
           <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         </head>
       )}
-      <body className="font-body bg-[#F7F4EC] text-[#141D28] antialiased selection:bg-navy-700 selection:text-marble-50">
+      <body className="font-sans bg-[#FFFFFF] text-[#54595F] antialiased selection:bg-brand-green selection:text-white">
         {themeStyle && <style dangerouslySetInnerHTML={{ __html: themeStyle }} />}
         {GA_MEASUREMENT_ID && (
           <>

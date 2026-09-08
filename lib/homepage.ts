@@ -10,12 +10,6 @@ import { sql } from "./db";
 /* and theme colors.                                                     */
 /* ------------------------------------------------------------------ */
 
-export interface GalleryImage {
-  src: string;
-  alt: string;
-  label: string;
-}
-
 export interface HeroFeature {
   title: string;
   subtitle: string;
@@ -71,46 +65,16 @@ export interface NotFoundSection {
   secondaryButtonHref: string;
 }
 
-export interface BlogTeaserSection {
-  eyebrow: string;
-  heading: string;
-  subheading: string;
-  viewAllText: string;
-  readArticleText: string;
-}
-
-export interface BlogPageSection {
-  eyebrow: string;
-  heading: string;
-  subheading: string;
-  emptyStateText: string;
-  featuredLinkText: string;
-  ctaHeading: string;
-  ctaButtonText: string;
-  backToGuidesText: string;
-  quickAnswerLabel: string;
-  tocLabel: string;
-  relatedGuidesHeading: string;
-  sidebarRelatedHeading: string;
-  sidebarRecommendedBadge: string;
-  sidebarCompareLinkText: string;
-  promoRecommendedText: string;
-}
-
 export interface HomepageSections {
   grid: GridSection;
   highlights: HighlightsSection;
   ctaBanner: CtaBannerSection;
   notFound: NotFoundSection;
-  blogTeaser: BlogTeaserSection;
-  blogPage: BlogPageSection;
 }
 
 export interface HeaderContent {
   logoImage: string;
   logoAlt: string;
-  logoLine1: string;
-  logoLine2: string;
   bookNowText: string;
   navLinks: NavLink[];
   ctaText: string;
@@ -130,7 +94,6 @@ export interface ThemeColors {
   primary: string;
   secondary: string;
   dark: string;
-  accent: string;
 }
 
 export interface HomepageContent {
@@ -139,14 +102,9 @@ export interface HomepageContent {
   heroSubheading: string;
   heroImage: string;
   heroImageAlt: string;
-  heroGallery: GalleryImage[];
   heroFeatures: HeroFeature[];
   heroCtaPrimaryText: string;
   heroCtaPrimaryHref: string;
-  heroCtaSecondaryText: string;
-  heroCtaSecondaryHref: string;
-  ratingValue: string;
-  ratingCount: string;
   sections: HomepageSections;
   header: HeaderContent;
   footer: FooterContent;
@@ -165,8 +123,6 @@ export interface HomepageContent {
 export const DEFAULT_HEADER: HeaderContent = {
   logoImage: "",
   logoAlt: "Visit Museums",
-  logoLine1: "Visit",
-  logoLine2: "Museums",
   bookNowText: "Explore Museums",
   navLinks: [
     { label: "Home", href: "/" },
@@ -221,7 +177,6 @@ export const DEFAULT_THEME: ThemeColors = {
   primary: "#2D903A",   // Brand Green
   secondary: "#1e4945", // Dark Teal
   dark: "#1F2429",      // Dark Slate
-  accent: "#E2A03F",    // Gold
 };
 
 export const DEFAULT_HERO_FEATURES: HeroFeature[] = [
@@ -261,30 +216,6 @@ export const DEFAULT_SECTIONS: HomepageSections = {
     secondaryButtonText: "Read Travel Guides",
     secondaryButtonHref: "/blog",
   },
-  blogTeaser: {
-    eyebrow: "Museum Travel Guides",
-    heading: "Insider Guides for Museum Visitors",
-    subheading: "Expert tips on booking tickets, avoiding queues, and planning your museum day.",
-    viewAllText: "View All Guides",
-    readArticleText: "Read Guide",
-  },
-  blogPage: {
-    eyebrow: "Museum Travel & Ticket Guides",
-    heading: "Museum Guides, Ticket Tips & Visitor Advice",
-    subheading: "Everything you need to know to book the right ticket and experience the world's best museums like an insider.",
-    emptyStateText: "No articles published yet — check back soon.",
-    featuredLinkText: "Read the guide",
-    ctaHeading: "Ready to plan your museum visit?",
-    ctaButtonText: "Browse Museum Tickets →",
-    backToGuidesText: "← All museum travel guides",
-    quickAnswerLabel: "Quick Answer",
-    tocLabel: "In This Guide",
-    relatedGuidesHeading: "Related Guides",
-    sidebarRelatedHeading: "Related Guides",
-    sidebarRecommendedBadge: "Recommended",
-    sidebarCompareLinkText: "Compare tickets & tours →",
-    promoRecommendedText: "Recommended Tour",
-  },
 };
 
 const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
@@ -294,14 +225,9 @@ const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
     "<p>From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.</p>",
   heroImage: "https://images.unsplash.com/photo-1565099824688-e93eb20fe622?q=80&w=1600&auto=format&fit=crop",
   heroImageAlt: "Louvre Museum Paris glass pyramid at sunset",
-  heroGallery: [],
   heroFeatures: DEFAULT_HERO_FEATURES,
   heroCtaPrimaryText: "Explore Museums",
   heroCtaPrimaryHref: "#museums",
-  heroCtaSecondaryText: "Explore Articles →",
-  heroCtaSecondaryHref: "/blog",
-  ratingValue: "4.8 / 5",
-  ratingCount: "From verified visitor reviews across our featured attractions",
   sections: DEFAULT_SECTIONS,
   header: DEFAULT_HEADER,
   footer: DEFAULT_FOOTER,
@@ -353,27 +279,17 @@ function rowToHomepage(row: any): HomepageContent {
     heroSubheading: row.hero_subheading || DEFAULT_HOMEPAGE_CONTENT.heroSubheading,
     heroImage: row.hero_image || DEFAULT_HOMEPAGE_CONTENT.heroImage,
     heroImageAlt: row.hero_image_alt || DEFAULT_HOMEPAGE_CONTENT.heroImageAlt,
-    heroGallery: (() => {
-      const g = parseArray<GalleryImage>(row.hero_gallery);
-      return g.length ? g : DEFAULT_HOMEPAGE_CONTENT.heroGallery;
-    })(),
     heroFeatures: (() => {
       const f = parseArray<HeroFeature>(row.hero_features);
       return f.length ? f : DEFAULT_HERO_FEATURES;
     })(),
     heroCtaPrimaryText: row.hero_cta_primary_text || DEFAULT_HOMEPAGE_CONTENT.heroCtaPrimaryText,
     heroCtaPrimaryHref: row.hero_cta_primary_href || DEFAULT_HOMEPAGE_CONTENT.heroCtaPrimaryHref,
-    heroCtaSecondaryText: row.hero_cta_secondary_text || DEFAULT_HOMEPAGE_CONTENT.heroCtaSecondaryText,
-    heroCtaSecondaryHref: row.hero_cta_secondary_href || DEFAULT_HOMEPAGE_CONTENT.heroCtaSecondaryHref,
-    ratingValue: row.rating_value || DEFAULT_HOMEPAGE_CONTENT.ratingValue,
-    ratingCount: row.rating_count || DEFAULT_HOMEPAGE_CONTENT.ratingCount,
     sections: {
       grid: { ...DEFAULT_SECTIONS.grid, ...sectionsRaw.grid },
       highlights: { ...DEFAULT_SECTIONS.highlights, ...sectionsRaw.highlights },
       ctaBanner: { ...DEFAULT_SECTIONS.ctaBanner, ...sectionsRaw.ctaBanner },
       notFound: { ...DEFAULT_SECTIONS.notFound, ...sectionsRaw.notFound },
-      blogTeaser: { ...DEFAULT_SECTIONS.blogTeaser, ...sectionsRaw.blogTeaser },
-      blogPage: { ...DEFAULT_SECTIONS.blogPage, ...sectionsRaw.blogPage },
     },
     header: parseJsonWithDefault<HeaderContent>(row.header_json, DEFAULT_HEADER),
     footer: parseJsonWithDefault<FooterContent>(row.footer_json, DEFAULT_FOOTER),
@@ -420,14 +336,9 @@ export async function saveHomepageCopy(data: {
   heroSubheading: string;
   heroImage: string;
   heroImageAlt: string;
-  heroGallery: GalleryImage[];
   heroFeatures: HeroFeature[];
   heroCtaPrimaryText: string;
   heroCtaPrimaryHref: string;
-  heroCtaSecondaryText: string;
-  heroCtaSecondaryHref: string;
-  ratingValue: string;
-  ratingCount: string;
   metaTitle: string;
   metaDescription: string;
   focusKeyword: string;
@@ -436,20 +347,23 @@ export async function saveHomepageCopy(data: {
   ogDescription: string;
   ogImage: string;
 }): Promise<void> {
+  // Note: the "homepage" table still has hero_gallery, hero_cta_secondary_*,
+  // and rating_value/rating_count columns (all NOT NULL DEFAULT) left over
+  // from fields that were removed from the admin UI because nothing on the
+  // public site ever rendered them. They're intentionally left unwritten
+  // here rather than dropped via migration, to avoid an unnecessary schema
+  // change against a live database.
   await sql`
     INSERT INTO homepage (
       id, hero_badge, hero_heading, hero_subheading, hero_image, hero_image_alt,
-      hero_gallery, hero_features, hero_cta_primary_text, hero_cta_primary_href,
-      hero_cta_secondary_text, hero_cta_secondary_href,
-      rating_value, rating_count, meta_title, meta_description, focus_keyword,
+      hero_features, hero_cta_primary_text, hero_cta_primary_href,
+      meta_title, meta_description, focus_keyword,
       canonical_url, og_title, og_description, og_image
     ) VALUES (
       1, ${data.heroBadge}, ${data.heroHeading}, ${data.heroSubheading}, ${data.heroImage},
-      ${data.heroImageAlt}, ${JSON.stringify(data.heroGallery || [])}::jsonb,
+      ${data.heroImageAlt},
       ${JSON.stringify(data.heroFeatures || [])}::jsonb,
       ${data.heroCtaPrimaryText || ""}, ${data.heroCtaPrimaryHref || ""},
-      ${data.heroCtaSecondaryText || ""}, ${data.heroCtaSecondaryHref || ""},
-      ${data.ratingValue}, ${data.ratingCount},
       ${data.metaTitle || ""}, ${data.metaDescription || ""}, ${data.focusKeyword || ""},
       ${data.canonicalUrl || ""}, ${data.ogTitle || ""}, ${data.ogDescription || ""}, ${data.ogImage || ""}
     )
@@ -459,14 +373,9 @@ export async function saveHomepageCopy(data: {
       hero_subheading = EXCLUDED.hero_subheading,
       hero_image = EXCLUDED.hero_image,
       hero_image_alt = EXCLUDED.hero_image_alt,
-      hero_gallery = EXCLUDED.hero_gallery,
       hero_features = EXCLUDED.hero_features,
       hero_cta_primary_text = EXCLUDED.hero_cta_primary_text,
       hero_cta_primary_href = EXCLUDED.hero_cta_primary_href,
-      hero_cta_secondary_text = EXCLUDED.hero_cta_secondary_text,
-      hero_cta_secondary_href = EXCLUDED.hero_cta_secondary_href,
-      rating_value = EXCLUDED.rating_value,
-      rating_count = EXCLUDED.rating_count,
       meta_title = EXCLUDED.meta_title,
       meta_description = EXCLUDED.meta_description,
       focus_keyword = EXCLUDED.focus_keyword,

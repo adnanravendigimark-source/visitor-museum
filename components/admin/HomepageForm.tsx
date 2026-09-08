@@ -16,7 +16,6 @@ import type {
   NavLink,
   FooterColumn,
   FooterLink,
-  GalleryImage,
   HeroFeature,
   HighlightCard,
 } from "@/lib/homepage";
@@ -44,8 +43,6 @@ const CONTENT_SECTIONS = [
   { id: "sec-grid", label: "Museums Grid" },
   { id: "sec-highlights", label: "Why Book With Us" },
   { id: "sec-ctabanner", label: "Bottom CTA Banner" },
-  { id: "sec-blogteaser", label: "Blog Teaser" },
-  { id: "sec-blogpages", label: "Blog Pages" },
   { id: "sec-404", label: "404 Page" },
   { id: "sec-footer", label: "Footer" },
 ] as const;
@@ -205,22 +202,6 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
     setSaved(false);
   }
 
-  function updateBlogTeaser(patch: Partial<HomepageContent["sections"]["blogTeaser"]>) {
-    setContent((c) => ({
-      ...c,
-      sections: { ...c.sections, blogTeaser: { ...c.sections.blogTeaser, ...patch } },
-    }));
-    setSaved(false);
-  }
-
-  function updateBlogPage(patch: Partial<HomepageContent["sections"]["blogPage"]>) {
-    setContent((c) => ({
-      ...c,
-      sections: { ...c.sections, blogPage: { ...c.sections.blogPage, ...patch } },
-    }));
-    setSaved(false);
-  }
-
   const focusChecklist = useMemo(() => {
     const kw = content.focusKeyword.trim().toLowerCase();
     if (!kw) return null;
@@ -338,14 +319,6 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
                 <input value={content.header.ctaHref} onChange={(e) => updateHeader({ ctaHref: e.target.value })} className={inputClass} />
               </Field>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Logo text — line 1">
-                <input value={content.header.logoLine1} onChange={(e) => updateHeader({ logoLine1: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Logo text — line 2">
-                <input value={content.header.logoLine2} onChange={(e) => updateHeader({ logoLine2: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
             <Field label={'Site-wide "Book Now" button text'} hint="Used on every tour card, the mobile sticky bar, and the blog sidebar.">
               <input value={content.header.bookNowText} onChange={(e) => updateHeader({ bookNowText: e.target.value })} className={inputClass} />
             </Field>
@@ -368,25 +341,11 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
               <RichTextEditor value={content.heroSubheading} onChange={(html) => update("heroSubheading", html)} minHeight="4rem" />
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Rating value" hint="e.g. 4.8 / 5">
-                <input value={content.ratingValue} onChange={(e) => update("ratingValue", e.target.value)} className={inputClass} />
-              </Field>
-              <Field label="Rating count label" hint="e.g. From verified visitor reviews">
-                <input value={content.ratingCount} onChange={(e) => update("ratingCount", e.target.value)} className={inputClass} />
-              </Field>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2">
               <Field label="Primary button text">
                 <input value={content.heroCtaPrimaryText} onChange={(e) => update("heroCtaPrimaryText", e.target.value)} className={inputClass} />
               </Field>
               <Field label="Primary button link">
                 <input value={content.heroCtaPrimaryHref} onChange={(e) => update("heroCtaPrimaryHref", e.target.value)} className={inputClass} />
-              </Field>
-              <Field label="Secondary button text">
-                <input value={content.heroCtaSecondaryText} onChange={(e) => update("heroCtaSecondaryText", e.target.value)} className={inputClass} />
-              </Field>
-              <Field label="Secondary button link">
-                <input value={content.heroCtaSecondaryHref} onChange={(e) => update("heroCtaSecondaryHref", e.target.value)} className={inputClass} />
               </Field>
             </div>
             <Field label="Feature strip (the floating card of 4 items below the hero text)">
@@ -425,8 +384,8 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
 
           <SectionCard
             id="sec-highlights"
-            title="“Why Book With Us” section"
-            description="The eyebrow, heading, intro text, and 4 trust cards shown below the museums grid."
+            title="“Cultural Journey & Adventure” section"
+            description="The eyebrow, heading, intro text, and 4 feature cards shown in the 'Plan Your Museum Adventure' banner below the museums grid."
             open={!!openSections["sec-highlights"]}
             onToggle={() => toggleSection("sec-highlights")}
           >
@@ -477,99 +436,6 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
               </Field>
               <Field label="Button link">
                 <input value={content.sections.ctaBanner.buttonHref} onChange={(e) => updateCtaBanner({ buttonHref: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            id="sec-blogteaser"
-            title="Blog teaser section"
-            description={'The "From the Blog" section on the homepage, right above the bottom CTA.'}
-            open={!!openSections["sec-blogteaser"]}
-            onToggle={() => toggleSection("sec-blogteaser")}
-          >
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Eyebrow">
-                <input value={content.sections.blogTeaser.eyebrow} onChange={(e) => updateBlogTeaser({ eyebrow: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Heading (H2)">
-                <input value={content.sections.blogTeaser.heading} onChange={(e) => updateBlogTeaser({ heading: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-            <Field label="Subheading">
-              <textarea rows={2} value={content.sections.blogTeaser.subheading} onChange={(e) => updateBlogTeaser({ subheading: e.target.value })} className={inputClass} />
-            </Field>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label={'"View all" button text'}>
-                <input value={content.sections.blogTeaser.viewAllText} onChange={(e) => updateBlogTeaser({ viewAllText: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label={'"Read article" link text'}>
-                <input value={content.sections.blogTeaser.readArticleText} onChange={(e) => updateBlogTeaser({ readArticleText: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            id="sec-blogpages"
-            title="Blog pages"
-            description="Shared labels used across the blog listing page and every article page (not the posts themselves — edit those from /admin/posts)."
-            open={!!openSections["sec-blogpages"]}
-            onToggle={() => toggleSection("sec-blogpages")}
-          >
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Listing page eyebrow">
-                <input value={content.sections.blogPage.eyebrow} onChange={(e) => updateBlogPage({ eyebrow: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Listing page heading (H1)">
-                <input value={content.sections.blogPage.heading} onChange={(e) => updateBlogPage({ heading: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-            <Field label="Listing page subheading">
-              <input value={content.sections.blogPage.subheading} onChange={(e) => updateBlogPage({ subheading: e.target.value })} className={inputClass} />
-            </Field>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Empty-state message" hint="Shown when there are no posts yet.">
-                <input value={content.sections.blogPage.emptyStateText} onChange={(e) => updateBlogPage({ emptyStateText: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label={'Featured post "Read the guide" link text'}>
-                <input value={content.sections.blogPage.featuredLinkText} onChange={(e) => updateBlogPage({ featuredLinkText: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Bottom CTA heading">
-                <input value={content.sections.blogPage.ctaHeading} onChange={(e) => updateBlogPage({ ctaHeading: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Bottom CTA button text">
-                <input value={content.sections.blogPage.ctaButtonText} onChange={(e) => updateBlogPage({ ctaButtonText: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label={'"Back to all guides" link text'}>
-                <input value={content.sections.blogPage.backToGuidesText} onChange={(e) => updateBlogPage({ backToGuidesText: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label={'"Quick Answer" callout label'}>
-                <input value={content.sections.blogPage.quickAnswerLabel} onChange={(e) => updateBlogPage({ quickAnswerLabel: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label={'"In This Guide" box label'}>
-                <input value={content.sections.blogPage.tocLabel} onChange={(e) => updateBlogPage({ tocLabel: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Related Guides heading">
-                <input value={content.sections.blogPage.relatedGuidesHeading} onChange={(e) => updateBlogPage({ relatedGuidesHeading: e.target.value })} className={inputClass} />
-              </Field>
-            </div>
-            <p className="text-xs font-medium text-stone-500">Sidebar (shown next to every article)</p>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Recommended tour badge">
-                <input value={content.sections.blogPage.sidebarRecommendedBadge} onChange={(e) => updateBlogPage({ sidebarRecommendedBadge: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Related Articles heading">
-                <input value={content.sections.blogPage.sidebarRelatedHeading} onChange={(e) => updateBlogPage({ sidebarRelatedHeading: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label="Compare-all-museums link text">
-                <input value={content.sections.blogPage.sidebarCompareLinkText} onChange={(e) => updateBlogPage({ sidebarCompareLinkText: e.target.value })} className={inputClass} />
-              </Field>
-              <Field label={'Mid-article promo card "Recommended for you" label'}>
-                <input value={content.sections.blogPage.promoRecommendedText} onChange={(e) => updateBlogPage({ promoRecommendedText: e.target.value })} className={inputClass} />
               </Field>
             </div>
           </SectionCard>
@@ -749,24 +615,6 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
               <input value={content.heroImageAlt} onChange={(e) => update("heroImageAlt", e.target.value)} className={inputClass} />
             </Field>
           </SectionCard>
-
-          <SectionCard title="Hero photo strip" description="The photos under the hero section.">
-            <RepeatableList<GalleryImage>
-              items={content.heroGallery}
-              onChange={(heroGallery) => update("heroGallery", heroGallery)}
-              newItem={() => ({ src: "", alt: "", label: "" })}
-              addLabel="+ Add photo"
-              renderItem={(img, upd) => (
-                <div className="space-y-2">
-                  <ImageUploadField label="Photo" value={img.src} onChange={(url) => upd({ ...img, src: url })} aspectRatio={1} />
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <input value={img.label} onChange={(e) => upd({ ...img, label: e.target.value })} placeholder="Caption shown on the photo" className={inputClass} />
-                    <input value={img.alt} onChange={(e) => upd({ ...img, alt: e.target.value })} placeholder="Alt text" className={inputClass} />
-                  </div>
-                </div>
-              )}
-            />
-          </SectionCard>
         </div>
       )}
 
@@ -789,12 +637,11 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
             )}
           </SectionCard>
 
-          <SectionCard title="Brand colors" description="Changes these colors everywhere they're used across the whole site — buttons, links, hero background, ratings. Leave a field blank to keep the default.">
+          <SectionCard title="Brand colors" description="Changes these colors everywhere they're used across the whole site — buttons, links, hero background. Leave a field blank to keep the default.">
             <div className="grid gap-5 sm:grid-cols-2">
               <ColorField label="Primary (buttons)" value={content.theme.primary} fallback="#1F2937" onChange={(hex) => updateTheme({ primary: hex })} />
               <ColorField label="Secondary (links, accents)" value={content.theme.secondary} fallback="#B08D57" onChange={(hex) => updateTheme({ secondary: hex })} />
               <ColorField label="Dark (hero background)" value={content.theme.dark} fallback="#0F1419" onChange={(hex) => updateTheme({ dark: hex })} />
-              <ColorField label="Accent (ratings, badges)" value={content.theme.accent} fallback="#C0392B" onChange={(hex) => updateTheme({ accent: hex })} />
             </div>
           </SectionCard>
 

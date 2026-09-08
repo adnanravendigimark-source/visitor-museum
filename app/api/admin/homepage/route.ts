@@ -22,9 +22,9 @@ export async function GET() {
   return NextResponse.json(await getHomepageContent());
 }
 
-// Saves everything the Homepage admin tabs own: hero copy/gallery/CTA
-// buttons, the site-wide sections (Grid/Highlights/CtaBanner/NotFound/
-// BlogTeaser/BlogPage), the site-wide header/footer, and brand colors.
+// Saves everything the Homepage admin tabs own: hero copy/CTA button, the
+// site-wide sections (Grid/Highlights/CtaBanner/NotFound), the site-wide
+// header/footer, and brand colors.
 // Deliberately does NOT touch no_index/no_follow (owned by PUT
 // /api/admin/indexing) even though the client still posts the full
 // HomepageContent shape — see each save function in lib/homepage.ts for
@@ -50,14 +50,9 @@ export async function PUT(req: Request) {
         heroSubheading: body.heroSubheading,
         heroImage: body.heroImage,
         heroImageAlt: body.heroImageAlt,
-        heroGallery: body.heroGallery || [],
         heroFeatures: body.heroFeatures || [],
         heroCtaPrimaryText: body.heroCtaPrimaryText || "",
         heroCtaPrimaryHref: body.heroCtaPrimaryHref || "",
-        heroCtaSecondaryText: body.heroCtaSecondaryText || "",
-        heroCtaSecondaryHref: body.heroCtaSecondaryHref || "",
-        ratingValue: body.ratingValue,
-        ratingCount: body.ratingCount,
         metaTitle: body.metaTitle || "",
         metaDescription: body.metaDescription || "",
         focusKeyword: body.focusKeyword || "",
