@@ -17,14 +17,16 @@ export default async function MuseumFaqSection({ museum }: { museum: Museum }) {
   };
 
   return (
-    <section id="faq" className="py-16 sm:py-20 bg-[#FAF8F5] border-t border-[#EAE6DE]/70">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="text-center max-w-xl mx-auto">
-          <p className="text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[#B85D3E]">
-            {museum.faqEyebrow}
-          </p>
-          <h2 className="mt-2.5 font-serif text-2xl sm:text-3xl lg:text-[2.15rem] font-bold text-[#112338] tracking-tight">
-            {museum.faqHeading}
+    <section id="faq" className="py-16 sm:py-20 bg-white border-t border-gray-100">
+      <div className="mx-auto max-w-[1140px] px-4 sm:px-6">
+        <div className="text-center mb-10">
+          {museum.faqEyebrow && (
+            <span className="block text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[#B85D3E]">
+              {museum.faqEyebrow}
+            </span>
+          )}
+          <h2 className="mt-2.5 text-3xl sm:text-4xl font-bold text-[#2A302F]">
+            {museum.faqHeading || "FAQ"}
           </h2>
         </div>
 
