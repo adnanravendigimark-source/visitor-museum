@@ -172,15 +172,7 @@ export default function MuseumForm({ initial, isNew }: { initial: Museum; isNew:
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
       {!isNew && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
-          <div className="flex items-center gap-3">
-            <Link href={`/admin/museums/${museum.id}/tours`} className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50">
-              Manage Tours & Tickets →
-            </Link>
-            <Link href={`/admin/museums/${museum.id}/faqs`} className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50">
-              Manage FAQs →
-            </Link>
-          </div>
+        <div className="flex items-center justify-end rounded-xl border border-stone-200 bg-stone-50 p-4">
           <Link href={`/${museum.slug}`} target="_blank" className="shrink-0 text-xs font-medium text-canal-blue hover:underline">
             View live page →
           </Link>
