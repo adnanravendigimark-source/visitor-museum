@@ -1,0 +1,135 @@
+[
+  {
+    "id": "louvre-faq-1",
+    "museumId": "louvre-museum",
+    "question": "Do I need to book Louvre tickets in advance?",
+    "answer": "Yes. The Louvre requires a timed-entry reservation for every visitor, including those with free admission. Tickets — especially for weekends and school holidays — regularly sell out days in advance, so booking ahead is strongly recommended.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "louvre-faq-2",
+    "museumId": "louvre-museum",
+    "question": "How much does it cost to visit the Louvre?",
+    "answer": "Since January 2026, the Louvre uses two-tier pricing: a lower rate for residents of the European Economic Area (EU plus Iceland, Liechtenstein, and Norway), and a higher rate for non-EEA visitors. Children under 18 and EU/EEA residents aged 18–25 enter free with valid ID, though a booking fee may still apply on third-party tickets.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "louvre-faq-3",
+    "museumId": "louvre-museum",
+    "question": "Is the Louvre free on any days?",
+    "answer": "Yes. Entry is free for all visitors on the first Friday of the month after 6:00 PM (except August, when the museum closes earlier that day), and on the first Sunday of the month from October to March. A free timed-entry reservation is still required on these dates.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "louvre-faq-4",
+    "museumId": "louvre-museum",
+    "question": "How long should I plan for a Louvre visit?",
+    "answer": "Most first-time visitors spend 2–4 hours seeing the museum's highlights, such as the Mona Lisa, the Venus de Milo, and the Winged Victory of Samothrace. Seeing the entire museum in depth would take multiple full days, so it's worth planning a route in advance.",
+    "category": "Visiting Tips"
+  },
+  {
+    "id": "louvre-faq-5",
+    "museumId": "louvre-museum",
+    "question": "What is the closest metro station to the Louvre?",
+    "answer": "Palais-Royal–Musée du Louvre, served by Métro lines 1 and 7, sits directly beneath the museum and is the most convenient stop.",
+    "category": "Getting There"
+  },
+  {
+    "id": "duomo-faq-1",
+    "museumId": "duomo-florence",
+    "question": "Which ticket includes access to climb Brunelleschi's Dome?",
+    "answer": "Only the <strong>Brunelleschi Pass</strong> (or a dedicated guided Dome tour) includes access to climb the 463 steps of Brunelleschi's Dome. The <em>Giotto Pass</em> includes the Bell Tower, Baptistery, Museum, and Crypt, but not the Dome. To climb the Dome, you must select a Brunelleschi Pass or a guided Dome tour with a mandatory timed reservation.",
+    "category": "Tickets & Passes"
+  },
+  {
+    "id": "duomo-faq-2",
+    "museumId": "duomo-florence",
+    "question": "How many steps is the Dome climb, and is there an elevator?",
+    "answer": "There are <strong>463 stone steps</strong> to climb Brunelleschi's Dome, and there is <strong>no elevator</strong>. The ascent winds through narrow 15th-century corridors, tight spiral staircases, and catwalks below the Last Judgment ceiling frescoes.",
+    "category": "Dome Climb Access"
+  },
+  {
+    "id": "duomo-faq-3",
+    "museumId": "duomo-florence",
+    "question": "Why do I need to book my Dome Climb time slot in advance?",
+    "answer": "Due to safety regulations and the narrow physical constraints of the double dome shell, only a limited number of visitors are permitted to ascend every 45 minutes. During peak season, <strong>Dome Climb time slots sell out 2–4 weeks in advance</strong>.",
+    "category": "Booking & Reservations"
+  },
+  {
+    "id": "duomo-faq-4",
+    "museumId": "duomo-florence",
+    "question": "What is the dress code for visiting Florence Cathedral?",
+    "answer": "Florence Cathedral is an active consecrated Catholic church with a strict dress code. <strong>Shoulders and knees must be fully covered</strong> for both men and women. Hats and sunglasses must be removed inside.",
+    "category": "Visitor Rules"
+  },
+  {
+    "id": "duomo-faq-5",
+    "museumId": "duomo-florence",
+    "question": "How long is my Florence Duomo Pass valid for?",
+    "answer": "All official Duomo passes are <strong>valid for 3 consecutive calendar days (72 hours)</strong> from the moment you scan your barcode at your first monument. Your Dome Climb must take place at your exact reserved time slot, but other monuments can be visited any time during the 3-day window.",
+    "category": "Tickets & Passes"
+  },
+  {
+    "id": "duomo-faq-6",
+    "museumId": "duomo-florence",
+    "question": "Can I enter the Florence Cathedral for free?",
+    "answer": "Admission to the main Cathedral nave floor is technically free, but the free public queue routinely takes 1.5 to 2.5 hours. Free entry only allows you to view the empty main nave — it does not include the Dome climb, Bell Tower, Baptistery, Museum, or Crypt.",
+    "category": "Visitor Information"
+  },
+  {
+    "id": "uffizi-faq-1",
+    "museumId": "uffizi-gallery",
+    "question": "Do I need to book Uffizi Gallery tickets in advance?",
+    "answer": "It's strongly recommended. The Uffizi limits the number of visitors admitted per time slot, and tickets — especially for mornings and weekends — can sell out several days ahead in high season.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "uffizi-faq-2",
+    "museumId": "uffizi-gallery",
+    "question": "How much does an Uffizi ticket cost?",
+    "answer": "A standard adult ticket costs around €25 bought on the day at the museum, or slightly more when booked online in advance including a booking fee. A discounted afternoon rate applies for visits starting at 4:00 PM or later. Under-18s enter free year-round.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "uffizi-faq-3",
+    "museumId": "uffizi-gallery",
+    "question": "Is the Uffizi free on any day?",
+    "answer": "Entry is free for everyone on the first Sunday of each month, but online booking isn't available on that day and queues are typically very long.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "uffizi-faq-4",
+    "museumId": "uffizi-gallery",
+    "question": "How far is the Uffizi Gallery from the Duomo?",
+    "answer": "About a 5-minute walk. The Uffizi sits between Palazzo Vecchio and the Arno river, making it easy to combine with a Duomo visit on the same day.",
+    "category": "Getting There"
+  },
+  {
+    "id": "lindt-faq-1",
+    "museumId": "lindt-home-of-chocolate",
+    "question": "Do I need to book Lindt Home of Chocolate tickets in advance?",
+    "answer": "Booking online in advance is recommended, particularly for weekends and Swiss school holidays, since the museum can reach capacity on its busiest days.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "lindt-faq-2",
+    "museumId": "lindt-home-of-chocolate",
+    "question": "How do I get to the Lindt Home of Chocolate from Zurich?",
+    "answer": "Take the S8 S-Bahn train from Zurich Hauptbahnhof to Kilchberg station, then follow the signposted short walk to the museum. In summer, a scenic option is the Lake Zurich boat to Kilchberg.",
+    "category": "Getting There"
+  },
+  {
+    "id": "lindt-faq-3",
+    "museumId": "lindt-home-of-chocolate",
+    "question": "Is chocolate included with my ticket?",
+    "answer": "Yes — the visit includes chocolate tasting stations throughout the exhibition. Additional pralines and treats can be purchased in the on-site shop, the largest Lindt boutique in the world.",
+    "category": "Visitor Information"
+  },
+  {
+    "id": "lindt-faq-4",
+    "museumId": "lindt-home-of-chocolate",
+    "question": "How long does a visit take?",
+    "answer": "Most visitors spend around 1.5 to 2 hours exploring the seven interactive \"chocolate worlds,\" the fountain, and the shop.",
+    "category": "Visiting Tips"
+  }
+]

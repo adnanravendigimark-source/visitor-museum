@@ -1,0 +1,79 @@
+[
+  {
+    "slug": "how-to-skip-the-line-at-the-louvre",
+    "title": "How to Skip the Line at the Louvre: A Practical Guide",
+    "metaTitle": "How to Skip the Line at the Louvre Museum (2026 Guide)",
+    "metaDescription": "Practical tips for skipping the queue at the Louvre Museum in Paris, including the best entrances, timing, and ticket options.",
+    "category": "Museum Guides",
+    "excerpt": "The Louvre is the world's most-visited museum, which means queues can be brutal without a plan. Here's how to get inside faster.",
+    "quickAnswer": "Book a timed-entry ticket online before you go, arrive right at opening or during Wednesday/Friday evening hours, and use the Carrousel du Louvre entrance at 99 Rue de Rivoli instead of the pyramid when it's busy.",
+    "readTime": "5 min read",
+    "date": "2026-08-15",
+    "updatedAt": "2026-09-01",
+    "image": "/images/louvre-hero.jpg",
+    "imageAlt": "Visitors gathering at the Louvre glass pyramid entrance",
+    "author": "Visit Museums Editorial Team",
+    "recommendedTourId": "louvre-skip-the-line-standard",
+    "recommendedTourAfterBlock": 2,
+    "focusKeyword": "visit museums",
+    "noIndex": false,
+    "noFollow": false,
+    "canonicalUrl": "",
+    "ogTitle": "",
+    "ogDescription": "",
+    "ogImage": "",
+    "content": [
+      { "type": "paragraph", "text": "The Louvre welcomes close to nine million visitors a year, which makes it the most-visited museum on earth — and, on a busy afternoon, one of the slowest to get into. A little planning goes a long way." },
+      { "type": "heading", "level": 2, "text": "Book a timed-entry ticket before you arrive" },
+      { "type": "paragraph", "text": "Every visitor needs a timed-entry reservation, whether it's a paid ticket or a free-admission slot. Booking online in advance guarantees your entry time and lets you walk past the general ticket queue entirely." },
+      { "type": "heading", "level": 2, "text": "Pick the right entrance" },
+      { "type": "paragraph", "text": "The glass pyramid in the Cour Napoléon is the most iconic entrance, but it's also where the longest queues form. The Carrousel du Louvre entrance at 99 Rue de Rivoli, accessible from the underground shopping mall, is often much quieter and leads to the same security checkpoint." },
+      { "type": "heading", "level": 2, "text": "Visit on a late-opening evening" },
+      { "type": "paragraph", "text": "The Louvre stays open until 9:45 PM on Wednesdays and Fridays. Evening visits are noticeably calmer than the mid-morning to early-afternoon rush, and the lighting inside the galleries is just as good." },
+      { "type": "heading", "level": 2, "text": "Know before you go" },
+      { "type": "list", "ordered": false, "items": [
+        "Large bags and suitcases are not permitted inside — travel light",
+        "The Mona Lisa is displayed in the Salle des États and draws the biggest crowds of any single work",
+        "Free museum Wi-Fi and a mobile app can help you navigate once inside"
+      ] }
+    ]
+  },
+  {
+    "slug": "duomo-florence-dome-climb-what-to-know",
+    "title": "Duomo Florence Dome Climb: What to Know Before You Book",
+    "metaTitle": "Duomo Florence Dome Climb Guide 2026 | What to Know",
+    "metaDescription": "Everything to know before climbing Brunelleschi's Dome in Florence: ticket types, timing, dress code, and what the climb is actually like.",
+    "category": "Museum Guides",
+    "excerpt": "Climbing Brunelleschi's Dome is one of Florence's must-do experiences — and one of its most limited. Here's what to expect.",
+    "quickAnswer": "Book a Brunelleschi Pass or guided Dome tour weeks in advance, wear comfortable shoes and shoulder-covering clothing, and expect a physically demanding 463-step climb with no elevator.",
+    "readTime": "4 min read",
+    "date": "2026-08-05",
+    "updatedAt": "2026-09-01",
+    "image": "/images/dome-climb.jpg",
+    "imageAlt": "Climbing the interior stairs of Brunelleschi's Dome in Florence",
+    "author": "Visit Museums Editorial Team",
+    "recommendedTourId": "duomo-brunelleschi-pass",
+    "recommendedTourAfterBlock": 2,
+    "focusKeyword": "visit museums",
+    "noIndex": false,
+    "noFollow": false,
+    "canonicalUrl": "",
+    "ogTitle": "",
+    "ogDescription": "",
+    "ogImage": "",
+    "content": [
+      { "type": "paragraph", "text": "Brunelleschi's Dome has crowned Florence's skyline since 1436, and climbing it is one of the most memorable things you can do in the city — but the visit is more limited, and more physical, than most people expect." },
+      { "type": "heading", "level": 2, "text": "Only the Brunelleschi Pass includes the Dome" },
+      { "type": "paragraph", "text": "Florence's cathedral complex sells several different passes, and only the Brunelleschi Pass (or a dedicated guided Dome tour) includes the climb itself. Passes without 'Brunelleschi' in the name — like the Giotto Pass — cover the Bell Tower, Baptistery, Museum, and Crypt, but not the Dome." },
+      { "type": "heading", "level": 2, "text": "Book weeks ahead in peak season" },
+      { "type": "paragraph", "text": "Because only a limited number of visitors are allowed up every 45 minutes for safety reasons, Dome Climb slots can sell out two to four weeks ahead during spring, summer, and early autumn." },
+      { "type": "heading", "level": 2, "text": "What the climb is actually like" },
+      { "type": "list", "ordered": false, "items": [
+        "463 stone steps with no elevator — plan on roughly 45–60 minutes round trip",
+        "Narrow spiral staircases and low passageways, not recommended for severe claustrophobia",
+        "Shoulders and knees must be covered — bring a light scarf in summer",
+        "The reward: a close-up view of Vasari's Last Judgment fresco and 360° views from the lantern terrace"
+      ] }
+    ]
+  }
+]
