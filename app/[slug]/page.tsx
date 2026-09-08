@@ -11,7 +11,7 @@ import MuseumPriceComparison from "@/components/MuseumPriceComparison";
 import MuseumFaqSection from "@/components/MuseumFaqSection";
 import NearbyAttractions from "@/components/NearbyAttractions";
 import CtaBanner from "@/components/CtaBanner";
-import { getMuseumBySlug } from "@/lib/museums";
+import { getMuseumBySlug, getToursByMuseum, getFaqsByMuseum } from "@/lib/museums";
 import { getHomepageContent } from "@/lib/homepage";
 import {
   resolveRobots,
@@ -48,11 +48,28 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
+// Best-effort ISO 4217 currency code from the admin-editable display symbol
+// (e.g. "€" -> EUR, "CHF " -> CHF) — schema.org's Offer.priceCurrency needs
+// a real currency code, not the symbol shown to visitors. Falls back to EUR
+// (this project's most common currency) for any symbol not recognized here
+// rather than emitting an invalid/omitted priceCurrency.
+function currencyCode(symbol: string): string {
+  const s = (symbol || "").trim().toUpperCase();
+  if (s.startsWith("CHF")) return "CHF";
+  if (s === "$" || s === "US$" || s === "USD") return "USD";
+  if (s === "£" || s === "GBP") return "GBP";
+  return "EUR";
+}
+
 export default async function MuseumPage({ params }: { params: { slug: string } }) {
   const museum = await getMuseumBySlug(params.slug);
   if (!museum) notFound();
 
-  const { header } = await getHomepageContent();
+  const [{ header }, tours, faqs] = await Promise.all([
+    getHomepageContent(),
+    getToursByMuseum(museum.id),
+    getFaqsByMuseum(museum.id),
+  ]);
   const bookNowText = header.bookNowText || "Book Tickets";
 
   const touristAttractionJsonLd = {
@@ -71,6 +88,48 @@ export default async function MuseumPage({ params }: { params: { slug: string } 
       ? { geo: { "@type": "GeoCoordinates", latitude: museum.lat, longitude: museum.lng } }
       : {}),
   };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: museum.name, item: `${SITE_URL}/${museum.slug}` },
+    ],
+  };
+
+  const faqJsonLd =
+    faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: stripHtml(f.question),
+            acceptedAnswer: { "@type": "Answer", text: stripHtml(f.answer) },
+          })),
+        }
+      : null;
+
+  const productJsonLd = tours
+    .filter((t) => t.featured)
+    .map((t) => ({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: t.title,
+      description: stripHtml(t.description),
+      // Google Search Console's Merchant listings check flags Product
+      // structured data missing an "image" as a critical error.
+      image: resolveAbsoluteUrl(t.image),
+      aggregateRating: { "@type": "AggregateRating", ratingValue: t.rating, reviewCount: t.reviews },
+      offers: {
+        "@type": "Offer",
+        priceCurrency: currencyCode(museum.currencySymbol),
+        price: t.price,
+        availability: "https://schema.org/InStock",
+        url: t.href,
+      },
+    }));
 
   return (
     <>
@@ -93,6 +152,11 @@ export default async function MuseumPage({ params }: { params: { slug: string } 
       </main>
       <Footer />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(touristAttractionJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      {faqJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />}
+      {productJsonLd.map((data, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+      ))}
     </>
   );
 }
