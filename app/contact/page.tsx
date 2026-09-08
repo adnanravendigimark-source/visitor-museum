@@ -63,7 +63,12 @@ export default async function ContactPage() {
           </div>
 
           {/* What we can help with */}
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          {contact.reasonsHeading && (
+            <h2 className="mt-10 text-center font-serif text-xl font-bold text-[#112338] sm:text-2xl">
+              {contact.reasonsHeading}
+            </h2>
+          )}
+          <div className={`grid gap-5 sm:grid-cols-3 ${contact.reasonsHeading ? "mt-6" : "mt-10"}`}>
             {contact.reasons.map(({ icon, title, body }) => {
               const Icon = getIconComponent(icon);
               return (
