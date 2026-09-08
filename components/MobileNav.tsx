@@ -2,54 +2,89 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { NavLink } from "@/lib/homepage";
+import { usePathname } from "next/navigation";
+import type { NavLink } from "@/lib/homepage";
 
 export default function MobileNav({
   links,
   ctaText,
   ctaHref,
 }: {
-  links: NavLink[];
-  ctaText: string;
-  ctaHref: string;
+  links?: NavLink[];
+  ctaText?: string;
+  ctaHref?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Same reasoning as HeaderNav.tsx — no local hardcoded fallback; Header.tsx
+  // always passes real links sourced from the admin (with its own generic
+  // default already applied upstream in lib/homepage.ts).
+  const navLinks = links || [];
+
+  const checkIsActive = (href: string) => {
+    if (!pathname) return false;
+    const cleanPath = pathname.replace(/\/$/, "");
+    const cleanHref = href.replace(/\/$/, "");
+
+    if (cleanHref === "") return cleanPath === "";
+    if (cleanHref === "/blog" || cleanHref === "/category/popular") {
+      return cleanPath === "/blog" || cleanPath.startsWith("/blog/") || cleanPath.startsWith("/category/");
+    }
+    return cleanPath === cleanHref || cleanPath.startsWith(cleanHref + "/");
+  };
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        aria-label="Toggle navigation menu"
-        className="flex h-10 w-10 items-center justify-center rounded-xl border border-warmstone-200 bg-cream-50 text-charcoal-800 transition hover:bg-warmstone-100"
+        aria-label="Menu Toggle"
+        className="flex h-10 w-10 items-center justify-center text-[#2A302F] hover:text-[#184E3A] transition"
       >
         {open ? (
-          <span className="text-xl font-bold">✕</span>
+          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         ) : (
-          <span className="text-xl font-bold">☰</span>
+          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         )}
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-16 z-50 border-b border-warmstone-200 bg-cream-100 p-6 shadow-2xl animate-in slide-in-from-top-2">
-          <nav className="flex flex-col gap-4">
-            {links.map((link) => (
-              <Link
-                key={link.href + link.label}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="text-base font-bold text-charcoal-800 transition hover:text-olive-700"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <a
-              href={ctaHref}
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-xl bg-olive-700 py-3 text-center text-sm font-bold uppercase tracking-wider text-cream-100 shadow-md transition hover:bg-olive-800"
-            >
-              {ctaText}
-            </a>
+        <div className="absolute inset-x-0 top-20 z-50 border-b border-gray-200 bg-[#F2F2F2] p-6 shadow-xl animate-in slide-in-from-top-2">
+          <nav className="flex flex-col gap-3">
+            {navLinks.map((link) => {
+              const isActive = checkIsActive(link.href);
+              return (
+                <Link
+                  key={link.href + link.label}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`py-2 text-[15px] font-medium border-b border-gray-200/60 transition ${
+                    isActive ? "text-[#184E3A] font-bold" : "text-[#2A302F] hover:text-[#184E3A]"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            {ctaText && ctaHref && (
+              <div className="pt-3">
+                <Link
+                  href={ctaHref}
+                  onClick={() => setOpen(false)}
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[#184E3A] py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[#123b2c]"
+                >
+                  {ctaText}
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}

@@ -2,47 +2,39 @@ import Link from "next/link";
 import Logo from "./Logo";
 import MobileNav from "./MobileNav";
 import HeaderNav from "./HeaderNav";
+import HeaderSearch from "./HeaderSearch";
 import { getHomepageContent } from "@/lib/homepage";
 
 export default async function Header() {
   const content = await getHomepageContent();
-  const header = content.header;
+  const header = content.header || {};
   const navLinks = header.navLinks || [];
-  const ctaText = header.ctaText || header.bookNowText || "Book Tickets";
-  const ctaHref = header.ctaHref || "/#museums";
+  const ctaText = (header as any).buttonText || header.ctaText || header.bookNowText || "Explore Museums";
+  const ctaHref = (header as any).buttonHref || header.ctaHref || "/#museums";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#EAE6DE]/60 bg-[#FAF8F5]/90 backdrop-blur-md transition-all duration-300">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-8">
-        <Logo
-          logoImage={header.logoImage}
-          logoAlt={header.logoAlt || "Visit Museums"}
-          line1={header.logoLine1}
-          line2={header.logoLine2}
-        />
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)] transition-all duration-200">
+      <div className="mx-auto flex h-20 max-w-[1380px] items-center justify-between px-4 sm:px-6 lg:px-8 gap-4 xl:gap-6">
+        <div className="shrink-0">
+          <Logo
+            logoImage={header.logoImage}
+            logoAlt={header.logoAlt || "Visit Museums"}
+          />
+        </div>
 
-        <HeaderNav links={navLinks.length ? navLinks : undefined} />
+        <HeaderNav links={navLinks} />
 
-        <div className="flex items-center gap-3">
-          <a
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <HeaderSearch />
+          <Link
             href={ctaHref}
-            className="hidden items-center gap-2.5 rounded-lg bg-[#112338] px-5 py-2.5 text-[11px] font-bold uppercase tracking-widest text-white shadow-sm transition-all hover:bg-[#1c3654] hover:shadow-md sm:inline-flex"
+            className="hidden sm:inline-flex items-center justify-center whitespace-nowrap rounded-full bg-[#184E3A] hover:bg-[#123b2c] text-white px-5 py-2.5 text-xs sm:text-sm font-semibold shadow-sm transition-all hover:shadow-md"
           >
-            <svg
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              className="h-3.5 w-3.5"
-            >
-              <path d="M3 17h14M4 17V8M8 17V8M12 17V8M16 17V8M2 8l8-5 8 5M1 17h18" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {ctaText.toUpperCase()}
-          </a>
-          <MobileNav links={navLinks || []} ctaText={ctaText} ctaHref={ctaHref} />
+            {ctaText}
+          </Link>
+          <MobileNav links={navLinks} ctaText={ctaText} ctaHref={ctaHref} />
         </div>
       </div>
     </header>
   );
 }
-
