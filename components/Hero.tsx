@@ -1,109 +1,153 @@
+import Link from "next/link";
 import SafeImage from "./SafeImage";
 import { getHomepageContent } from "@/lib/homepage";
-
-// Purely decorative icons for the feature strip — cycled by index so the
-// strip still renders correctly no matter how many admin-editable feature
-// cards are configured.
-const HERO_FEATURE_ICONS = [
-  <svg key="ticket" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="h-5 w-5">
-    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z" />
-    <path d="M13 5v2M13 17v2M13 11v2" />
-  </svg>,
-  <svg key="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="h-5 w-5">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>,
-  <svg key="pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="h-5 w-5">
-    <path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="12" cy="10" r="2.4" />
-  </svg>,
-  <svg key="support" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="h-5 w-5">
-    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-  </svg>,
-];
+import { getMuseums } from "@/lib/museums";
 
 export default async function Hero() {
-  const content = await getHomepageContent();
+  const [content, museums] = await Promise.all([getHomepageContent(), getMuseums()]);
+
+  const heroImage = content.heroImage || "/images/hero-louvre.jpg";
+  const heroBadge =
+    content.heroBadge || "WORLD-CLASS MUSEUMS, UNFORGETTABLE EXPERIENCES";
+  const heroHeading =
+    content.heroHeading || "Discover the World's Most Iconic Museums";
+  const heroSubheading =
+    content.heroSubheading.replace(/<[^>]+>/g, "").trim() ||
+    "From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.";
+  const ctaText = content.heroCtaPrimaryText || "Explore Museums";
+  const ctaHref = content.heroCtaPrimaryHref || "#museums";
+  const features = content.heroFeatures?.length ? content.heroFeatures : [];
+
+  // Floating "featured museum" badge on the hero image — the museum shown
+  // and linked here is whichever one is marked "Featured" (first, by sort
+  // order) in the Museums admin, never a fixed museum name/link, so it
+  // stays correct as museums are added, reordered, or unfeatured.
+  const spotlightMuseum = museums.find((m) => m.featured) || museums[0];
 
   return (
-    <section className="relative w-full bg-[#FAF8F5] overflow-hidden">
-      {/* Full-bleed Panoramic Background Image — admin-editable (Hero photo) */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+    <section className="relative w-full overflow-hidden bg-[#FAFAFA]">
+      {/* Right Side Background Image on Desktop */}
+      <div className="absolute top-0 right-0 bottom-0 w-full lg:w-[46%] xl:w-[48%] z-0">
         <SafeImage
-          src={content.heroImage}
-          alt={content.heroImageAlt}
+          src={heroImage}
+          alt={content.heroImageAlt || "Louvre Museum in Paris at sunset with glass pyramid"}
           fill
           priority
-          quality={68}
-          sizes="100vw"
-          className="object-cover object-[75%_top] sm:object-right-top lg:object-right"
+          sizes="(min-width: 1024px) 48vw, 100vw"
+          className="object-cover object-center"
         />
-        {/* Responsive Gradient overlay ensuring text readability and seamless left fade */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F5] via-[#FAF8F5]/90 via-40% lg:via-50% to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#FAF8F5] to-transparent" />
+        {/* Mobile Gradient Overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/85 to-transparent lg:hidden" />
       </div>
 
-      {/* Hero Content Layer */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-8 pt-8 sm:pt-10 lg:pt-14 pb-12 lg:pb-16">
-        <div className="max-w-xl">
-          {/* Top Eyebrow Tag */}
-          <p className="text-[11px] sm:text-xs font-bold tracking-[0.18em] uppercase text-[#B85D3E]">
-            {content.heroBadge}
-          </p>
+      {/* Sweeping S-Curve SVG Overlay dividing left off-white area and right photo */}
+      <div className="pointer-events-none absolute inset-y-0 right-[42%] lg:right-[44%] xl:right-[46%] w-24 sm:w-32 z-[1] hidden lg:block">
+        <svg
+          className="h-full w-full text-[#FAFAFA]"
+          preserveAspectRatio="none"
+          viewBox="0 0 100 100"
+          fill="currentColor"
+        >
+          <path d="M0,0 L80,0 C45,30 35,65 100,100 L0,100 Z" />
+        </svg>
+      </div>
 
-          {/* Main Headline */}
-          <h1 className="mt-3 font-serif text-3xl sm:text-4xl lg:text-[2.85rem] font-bold leading-[1.14] tracking-tight text-[#112338]">
-            {content.heroHeading}
-          </h1>
+      {/* Main Container */}
+      <div className="relative z-10 mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-20 lg:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Column: Content */}
+          <div className="lg:col-span-7 pr-0 lg:pr-6 max-w-2xl">
+            {/* Eyebrow */}
+            <span className="inline-block text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[#184E3A]">
+              {heroBadge}
+            </span>
 
-          {/* Short Accent Line */}
-          <div className="mt-3.5 mb-5 h-[2.5px] w-10 rounded-full bg-[#B85D3E]" />
+            {/* H1 Heading */}
+            <h1 className="mt-3.5 font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.15rem] font-bold text-[#182220] leading-[1.14] tracking-tight">
+              {heroHeading}
+            </h1>
 
-          {/* Subtitle */}
-          <div
-            className="rich-content text-xs sm:text-sm text-[#556476] leading-relaxed max-w-md"
-            dangerouslySetInnerHTML={{ __html: content.heroSubheading }}
-          />
+            {/* Subheading */}
+            <p className="mt-4 text-sm sm:text-base text-[#55605E] leading-relaxed max-w-xl">
+              {heroSubheading}
+            </p>
 
-          {/* Action Buttons */}
-          <div className="mt-6 flex flex-wrap items-center gap-3.5">
-            <a
-              href={content.heroCtaPrimaryHref}
-              className="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#112338] px-6 py-3 text-xs font-semibold text-white shadow-md transition-all hover:bg-[#1a3452] hover:shadow-lg hover:-translate-y-0.5"
-            >
-              <span>{content.heroCtaPrimaryText}</span>
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </a>
-
-            <a
-              href={content.heroCtaSecondaryHref}
-              className="group inline-flex items-center justify-center gap-2 rounded-lg border border-[#CBD5E1] bg-white/95 backdrop-blur-sm px-6 py-3 text-xs font-semibold text-[#112338] shadow-sm transition-all hover:bg-white hover:border-[#94A3B8] hover:-translate-y-0.5"
-            >
-              <span>{content.heroCtaSecondaryText}</span>
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </a>
-          </div>
-        </div>
-
-        {/* Floating Key Features Strip Bar — admin-editable (Hero feature strip) */}
-        {content.heroFeatures.length > 0 && (
-          <div className="mt-10 lg:mt-14 rounded-2xl bg-white/95 backdrop-blur-md p-5 sm:p-6 shadow-xl shadow-black/[0.04] border border-[#EBECEF]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
-              {content.heroFeatures.map((feature, i) => (
-                <div key={i} className="flex items-center gap-3.5 pt-3.5 sm:pt-0 sm:px-3 first:pt-0 first:px-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#FAF8F5] text-[#112338] border border-[#ECE8DE]">
-                    {HERO_FEATURE_ICONS[i % HERO_FEATURE_ICONS.length]}
-                  </div>
-                  <div>
-                    <h2 className="text-xs sm:text-[13px] font-bold text-[#112338]">{feature.title}</h2>
-                    {feature.subtitle && <p className="text-[11px] text-[#718096]">{feature.subtitle}</p>}
-                  </div>
-                </div>
-              ))}
+            {/* Action Buttons */}
+            <div className="mt-7 flex items-center">
+              <Link
+                href={ctaHref}
+                className="inline-flex items-center justify-center rounded-full bg-[#184E3A] hover:bg-[#123b2c] text-white px-7 py-3 text-sm font-semibold shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+              >
+                {ctaText}
+              </Link>
             </div>
+
+            {/* Trust points row — every item comes from the admin's Hero
+                "Feature strip" field (content.heroFeatures); nothing here is
+                a fixed set of claims baked into the page. */}
+            {features.length > 0 && (
+              <div className="mt-8 flex flex-wrap items-center gap-y-3 gap-x-6 sm:gap-x-7 text-xs font-semibold text-[#54595F]">
+                {features.map((feature, i) => (
+                  <div key={`${feature.title}-${i}`} className="flex items-center gap-x-6 sm:gap-x-7">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#184E3A]">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
+                      <span title={feature.subtitle || undefined}>{feature.title}</span>
+                    </div>
+                    {i < features.length - 1 && (
+                      <span className="hidden sm:inline-block w-px h-3.5 bg-gray-300" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Right Column: Floating Badge overlay on image */}
+          {spotlightMuseum && (
+            <div className="lg:col-span-5 flex justify-end items-end h-full pt-10 sm:pt-16 lg:pt-0">
+              <Link
+                href={`/${spotlightMuseum.slug}`}
+                className="group flex items-center gap-3.5 rounded-2xl bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.15)] border border-white transition-all duration-300 hover:scale-[1.03] hover:bg-white"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E2EFE7] text-[#184E3A]">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-[#182220] leading-tight group-hover:text-[#184E3A] transition-colors">
+                    {spotlightMuseum.name}
+                  </p>
+                  <p className="text-[10px] text-gray-500 font-medium">
+                    {spotlightMuseum.city}, {spotlightMuseum.country}
+                  </p>
+                </div>
+                <span className="ml-1 text-gray-400 group-hover:text-[#184E3A] transition-colors text-xs font-bold">
+                  ›
+                </span>
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

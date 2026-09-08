@@ -167,14 +167,14 @@ export const DEFAULT_HEADER: HeaderContent = {
   logoAlt: "Visit Museums",
   logoLine1: "Visit",
   logoLine2: "Museums",
-  bookNowText: "Book Tickets",
+  bookNowText: "Explore Museums",
   navLinks: [
     { label: "Home", href: "/" },
     { label: "About Us", href: "/about" },
     { label: "Blog", href: "/blog" },
     { label: "Contact", href: "/contact" },
   ],
-  ctaText: "Browse Museums",
+  ctaText: "Explore Museums",
   ctaHref: "/#museums",
 };
 
@@ -183,17 +183,29 @@ export const DEFAULT_FOOTER: FooterContent = {
     "<strong>Your independent guide to museum & attraction tickets worldwide.</strong> We curate skip-the-line tickets, guided tours, and combo passes for the world's most iconic museums and cultural landmarks with verified authorized providers.",
   columns: [
     {
-      title: "Explore",
+      title: "Popular Museums",
       links: [
-        { label: "All Museums & Attractions", href: "/#museums" },
-        { label: "Travel Blog & Guides", href: "/blog" },
-        { label: "About Us", href: "/about" },
-        { label: "Contact Us", href: "/contact" },
+        { label: "Louvre Museum", href: "/louvre-museum-tickets-tour" },
+        { label: "Duomo Florence", href: "/duomo-florence-tickets" },
+        { label: "Uffizi Gallery", href: "/uffizi-gallery-museum-tickets-tour" },
+        { label: "Lindt Home of Chocolate", href: "/lindt-home-of-chocolate" },
+        { label: "Van Gogh Museum", href: "/van-gogh-museum-tickets-tour" },
       ],
     },
     {
-      title: "Site Info",
+      title: "Popular Guides",
       links: [
+        { label: "Why You Must Visit Museums", href: "/why-one-must-visit-museums" },
+        { label: "Best Time to Visit Amsterdam", href: "/best-time-to-visit-amsterdam" },
+        { label: "Best Time to Visit Louvre", href: "/best-time-to-visit-louvre-museum" },
+        { label: "Best Time to Visit Uffizi", href: "/best-time-to-visit-uffizi-gallery" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About Us", href: "/about" },
+        { label: "Contact Us", href: "/contact" },
         { label: "Privacy Policy", href: "/privacy-policy" },
       ],
     },
@@ -202,52 +214,51 @@ export const DEFAULT_FOOTER: FooterContent = {
   addressLine1: "An independent global museum ticketing guide",
   addressLine2: "Covering iconic museums, galleries, and attractions worldwide",
   copyrightText:
-    "Visit Museums. All prices shown in local currency where applicable. Ticket availability subject to each attraction's own quota rules and seasonal hours.",
+    "Visit Museums. All rights reserved. All prices shown in local currency where applicable.",
 };
 
 export const DEFAULT_THEME: ThemeColors = {
-  primary: "#1F2937",   // Gallery Charcoal
-  secondary: "#B08D57", // Museum Gold
-  dark: "#0F1419",      // Deep Ink
-  accent: "#C0392B",    // Curator Red
+  primary: "#2D903A",   // Brand Green
+  secondary: "#1e4945", // Dark Teal
+  dark: "#1F2429",      // Dark Slate
+  accent: "#E2A03F",    // Gold
 };
 
 export const DEFAULT_HERO_FEATURES: HeroFeature[] = [
-  { title: "Official Tickets", subtitle: "100% Verified" },
-  { title: "Skip The Line", subtitle: "Save time, see more" },
-  { title: "Nearby Attractions", subtitle: "Plan a full day out" },
-  { title: "24/7 Support", subtitle: "We're here to help" },
+  { title: "Trusted Tickets", subtitle: "100% Verified" },
+  { title: "Easy Booking", subtitle: "Instant confirmation" },
+  { title: "Best Prices", subtitle: "Guaranteed value" },
 ];
 
 export const DEFAULT_SECTIONS: HomepageSections = {
   grid: {
-    eyebrow: "Explore by Destination",
-    heading: "Find Museum & Attraction Tickets Worldwide",
-    subheading: "Skip-the-line tickets, guided tours, and combo passes for the world's most iconic museums and cultural landmarks.",
+    eyebrow: "POPULAR MUSEUMS",
+    heading: "Explore the World's Best Museums",
+    subheading: "From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.",
   },
   highlights: {
-    eyebrow: "Why Book With Visit Museums",
-    heading: "Plan a Better Museum Day",
-    subheading: "We make it easy to compare official tickets and find other great sights nearby, so you spend less time in line and more time exploring.",
+    eyebrow: "YOUR NEXT CULTURAL JOURNEY",
+    heading: "Plan Your Museum Adventure",
+    subheading: "Get the latest museum news, travel tips, exhibition highlights and insider guides — all in one place.",
     cards: [
-      { icon: "🎟️", title: "Skip-the-Line Tickets", body: "Compare verified skip-the-line tickets and guided tours for museums and attractions across the globe." },
-      { icon: "📍", title: "Nearby Attractions", body: "Every museum page shows other great sights within walking or driving distance, calculated from real coordinates." },
-      { icon: "🧭", title: "Practical Visitor Info", body: "Hours, addresses, and best-time-to-visit tips kept current for every destination we cover." },
-      { icon: "💬", title: "Independent & Transparent", body: "We're not affiliated with any museum. Our comparisons and affiliate links are always clearly disclosed." },
+      { icon: "🏛️", title: "Museum Guides", body: "Tips for your next trip" },
+      { icon: "📰", title: "Latest News", body: "Updates & exhibitions" },
+      { icon: "🗝️", title: "Insider Tips", body: "Make the most of your visit" },
+      { icon: "🧳", title: "Travel Inspiration", body: "Discover new places" },
     ],
   },
   ctaBanner: {
-    heading: "Ready to plan your museum visit?",
-    subtext: "Browse tickets and tours for top museums and attractions worldwide.",
-    buttonText: "Explore Museums",
-    buttonHref: "/#museums",
+    heading: "Plan Your Museum Adventure",
+    subtext: "Get the latest museum news, travel tips, exhibition highlights and insider guides — all in one place.",
+    buttonText: "Explore Articles →",
+    buttonHref: "/blog",
   },
   notFound: {
     heading: "This page seems to have wandered off the gallery floor.",
     body: "The page you are looking for does not exist or may have been moved. Explore our featured museums and attractions below.",
     primaryButtonText: "Browse Museums & Attractions →",
     primaryButtonHref: "/#museums",
-    secondaryButtonText: "Read the Travel Guide",
+    secondaryButtonText: "Read Travel Guides",
     secondaryButtonHref: "/blog",
   },
   blogTeaser: {
@@ -277,17 +288,17 @@ export const DEFAULT_SECTIONS: HomepageSections = {
 };
 
 const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
-  heroBadge: "VISIT MUSEUMS | TICKETS & TOURS WORLDWIDE",
-  heroHeading: "Discover the World's Best Museums & Attractions",
+  heroBadge: "WORLD-CLASS MUSEUMS, UNFORGETTABLE EXPERIENCES",
+  heroHeading: "Discover the World's Most Iconic Museums",
   heroSubheading:
-    "<p>Compare official skip-the-line tickets, guided tours, and combo passes for iconic museums and cultural landmarks — then find other great sights nearby.</p>",
-  heroImage: "/images/hero-museums.jpg",
-  heroImageAlt: "Grand museum gallery hall with visitors admiring artwork",
+    "<p>From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.</p>",
+  heroImage: "https://images.unsplash.com/photo-1565099824688-e93eb20fe622?q=80&w=1600&auto=format&fit=crop",
+  heroImageAlt: "Louvre Museum Paris glass pyramid at sunset",
   heroGallery: [],
   heroFeatures: DEFAULT_HERO_FEATURES,
   heroCtaPrimaryText: "Explore Museums",
   heroCtaPrimaryHref: "#museums",
-  heroCtaSecondaryText: "Read Travel Guides",
+  heroCtaSecondaryText: "Explore Articles →",
   heroCtaSecondaryHref: "/blog",
   ratingValue: "4.8 / 5",
   ratingCount: "From verified visitor reviews across our featured attractions",
@@ -295,17 +306,17 @@ const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
   header: DEFAULT_HEADER,
   footer: DEFAULT_FOOTER,
   theme: DEFAULT_THEME,
-  metaTitle: "Visit Museums | Museum & Attraction Tickets Worldwide 2026",
+  metaTitle: "Visit Museums | Discover the World's Most Iconic Museums",
   metaDescription:
-    "Compare official museum and attraction tickets, guided tours, and combo passes worldwide. Skip the line and find other great sights nearby with Visit Museums.",
+    "From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.",
   focusKeyword: "visit museums",
   noIndex: false,
   noFollow: false,
   canonicalUrl: "",
-  ogTitle: "Visit Museums — Museum & Attraction Tickets Worldwide",
+  ogTitle: "Visit Museums | Discover the World's Most Iconic Museums",
   ogDescription:
-    "Compare skip-the-line tickets and guided tours for the world's best museums and attractions, and discover other great sights nearby.",
-  ogImage: "/images/hero-museums.jpg",
+    "From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.",
+  ogImage: "https://images.unsplash.com/photo-1565099824688-e93eb20fe622?q=80&w=1600&auto=format&fit=crop",
 };
 
 function parseArray<T>(value: unknown): T[] {

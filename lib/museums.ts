@@ -65,29 +65,23 @@ export interface Museum {
   lng: number;
   sortOrder: number;
   featured: boolean;
-
   cardImage: string;
   cardImageAlt: string;
   cardTagline: string;
-
   heroBadge: string;
   heroHeading: string;
   heroSubheading: string;
   heroImage: string;
   heroImageAlt: string;
-
   highlightsEyebrow: string;
   highlightsHeading: string;
   highlightsSubheading: string;
   highlights: HighlightCard[];
-
   aboutHeading: string;
   aboutBody: string;
-
   toursEyebrow: string;
   toursHeading: string;
   toursSubheading: string;
-
   practicalHoursHeading: string;
   practicalHours: HoursRow[];
   practicalHoursNote: string;
@@ -96,20 +90,18 @@ export interface Museum {
   practicalGettingThere: string;
   practicalBestTimeHeading: string;
   practicalBestTimeBody: string;
-
   priceEyebrow: string;
   priceHeading: string;
   priceSubheading: string;
   priceNote: string;
-
   faqEyebrow: string;
   faqHeading: string;
-
   ctaHeading: string;
   ctaSubtext: string;
   ctaButtonText: string;
-
   nearbyHeadingOverride: string;
+  rating?: number;
+  reviewsCount?: string;
 
   metaTitle: string;
   metaDescription: string;
@@ -172,6 +164,8 @@ function seedToMuseum(seed: any): Museum {
     ctaSubtext: seed.ctaSubtext || "",
     ctaButtonText: seed.ctaButtonText || "Compare Tickets & Tours",
     nearbyHeadingOverride: seed.nearbyHeadingOverride || "",
+    rating: seed.rating !== undefined ? Number(seed.rating) : 4.7,
+    reviewsCount: seed.reviewsCount || "10.2k",
     metaTitle: seed.metaTitle || seed.name,
     metaDescription: seed.metaDescription || "",
     focusKeyword: seed.focusKeyword || "visit museums",
@@ -233,6 +227,8 @@ function rowToMuseum(row: any): Museum {
     ctaSubtext: row.cta_subtext || "",
     ctaButtonText: row.cta_button_text || "Compare Tickets & Tours",
     nearbyHeadingOverride: row.nearby_heading_override || "",
+    rating: row.rating !== null && row.rating !== undefined ? Number(row.rating) : 4.7,
+    reviewsCount: row.reviews_count || "10.2k",
     metaTitle: row.meta_title || row.name,
     metaDescription: row.meta_description || "",
     focusKeyword: row.focus_keyword || "visit museums",
@@ -298,6 +294,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       price_eyebrow, price_heading, price_subheading, price_note,
       faq_eyebrow, faq_heading,
       cta_heading, cta_subtext, cta_button_text, nearby_heading_override,
+      rating, reviews_count,
       meta_title, meta_description, focus_keyword, canonical_url,
       no_index, no_follow, og_title, og_description, og_image
     ) VALUES (
@@ -312,6 +309,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       ${m.priceEyebrow}, ${m.priceHeading}, ${m.priceSubheading}, ${m.priceNote},
       ${m.faqEyebrow}, ${m.faqHeading},
       ${m.ctaHeading}, ${m.ctaSubtext}, ${m.ctaButtonText}, ${m.nearbyHeadingOverride},
+      ${m.rating ?? 4.7}, ${m.reviewsCount || "10.2k"},
       ${m.metaTitle}, ${m.metaDescription}, ${m.focusKeyword}, ${m.canonicalUrl || ""},
       ${!!m.noIndex}, ${!!m.noFollow}, ${m.ogTitle || ""}, ${m.ogDescription || ""}, ${m.ogImage || ""}
     )
@@ -341,6 +339,7 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
       faq_eyebrow = ${m.faqEyebrow}, faq_heading = ${m.faqHeading},
       cta_heading = ${m.ctaHeading}, cta_subtext = ${m.ctaSubtext}, cta_button_text = ${m.ctaButtonText},
       nearby_heading_override = ${m.nearbyHeadingOverride},
+      rating = ${m.rating ?? 4.7}, reviews_count = ${m.reviewsCount || "10.2k"},
       meta_title = ${m.metaTitle}, meta_description = ${m.metaDescription}, focus_keyword = ${m.focusKeyword},
       canonical_url = ${m.canonicalUrl || ""},
       no_index = ${!!m.noIndex}, no_follow = ${!!m.noFollow},

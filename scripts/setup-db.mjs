@@ -121,6 +121,8 @@ async function createTables() {
       cta_subtext TEXT NOT NULL DEFAULT '',
       cta_button_text TEXT NOT NULL DEFAULT '',
       nearby_heading_override TEXT NOT NULL DEFAULT '',
+      rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7,
+      reviews_count TEXT NOT NULL DEFAULT '10.2k',
       meta_title TEXT NOT NULL DEFAULT '',
       meta_description TEXT NOT NULL DEFAULT '',
       focus_keyword TEXT NOT NULL DEFAULT '',
@@ -134,6 +136,13 @@ async function createTables() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+
+  // Idempotent migration for installs that already ran setup-db.mjs before
+  // rating/reviews_count existed — CREATE TABLE IF NOT EXISTS above won't
+  // retroactively add columns to an existing museums table, so this must
+  // run every time regardless (a no-op once the columns are already there).
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7`;
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS reviews_count TEXT NOT NULL DEFAULT '10.2k'`;
 
   // A real lat/lng on every row is what makes the Nearby Attractions
   // feature possible at all — see lib/nearby.ts. Indexing them isn't
@@ -397,6 +406,7 @@ async function seedMuseums() {
         price_eyebrow, price_heading, price_subheading, price_note,
         faq_eyebrow, faq_heading,
         cta_heading, cta_subtext, cta_button_text, nearby_heading_override,
+        rating, reviews_count,
         meta_title, meta_description, focus_keyword, canonical_url,
         no_index, no_follow, og_title, og_description, og_image
       ) VALUES (
@@ -412,6 +422,7 @@ async function seedMuseums() {
         ${m.priceEyebrow || ""}, ${m.priceHeading || ""}, ${m.priceSubheading || ""}, ${m.priceNote || ""},
         ${m.faqEyebrow || ""}, ${m.faqHeading || ""},
         ${m.ctaHeading || ""}, ${m.ctaSubtext || ""}, ${m.ctaButtonText || ""}, ${m.nearbyHeadingOverride || ""},
+        ${m.rating ?? 4.7}, ${m.reviewsCount || "10.2k"},
         ${m.metaTitle || m.name}, ${m.metaDescription || ""}, ${m.focusKeyword || "visit museums"}, ${m.canonicalUrl || ""},
         ${!!m.noIndex}, ${!!m.noFollow}, ${m.ogTitle || ""}, ${m.ogDescription || ""}, ${m.ogImage || ""}
       )

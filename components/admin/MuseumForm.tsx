@@ -221,6 +221,27 @@ export default function MuseumForm({ initial, isNew }: { initial: Museum; isNew:
                 <input required value={museum.slug} onChange={(e) => update("slug", slugify(e.target.value))} className={inputClass} placeholder="e.g. louvre-museum-tickets-tour" />
               </Field>
             </div>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <Field label="Rating" hint="Shown as the ★ rating on the homepage museums grid card (0–5).">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="5"
+                  value={museum.rating ?? 4.7}
+                  onChange={(e) => update("rating", e.target.value === "" ? undefined : Number(e.target.value))}
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Review count" hint='Free text, e.g. "10.2k" or "1,204" — shown next to the rating.'>
+                <input
+                  value={museum.reviewsCount ?? ""}
+                  onChange={(e) => update("reviewsCount", e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. 10.2k"
+                />
+              </Field>
+            </div>
             <label className="mt-5 flex items-center gap-2 text-sm text-stone-700">
               <input type="checkbox" checked={!!museum.featured} onChange={(e) => update("featured", e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
               Featured (shown first / highlighted on the museums grid)

@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import MuseumsGrid from "@/components/MuseumsGrid";
-import TrustHighlights from "@/components/TrustHighlights";
-import BlogSection from "@/components/BlogSection";
-import CtaBanner from "@/components/CtaBanner";
+import CulturalJourneyBanner from "@/components/CulturalJourneyBanner";
 import Footer from "@/components/Footer";
 import { getHomepageContent } from "@/lib/homepage";
+import { getMuseums } from "@/lib/museums";
 import { resolveRobots, resolveCanonical, resolveOg, stripHtml } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -28,15 +27,33 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
+  const [homepage, museums] = await Promise.all([
+    getHomepageContent(),
+    getMuseums(),
+  ]);
+
+  // Which museums show on the homepage grid, and in what order, is driven
+  // entirely by each museum's own admin fields (Museums -> Details ->
+  // "Featured" checkbox, and the Museums list's drag/reorder) — never a
+  // fixed list of slugs baked into the page. getMuseums() already returns
+  // museums sorted by sort_order, so this only needs to filter.
+  const featuredMuseums = museums.filter((m) => m.featured);
+  const homepageMuseums = featuredMuseums.length ? featuredMuseums : museums.slice(0, 6);
+
+  const gridSection = homepage.sections.grid;
+
   return (
     <>
       <Header />
       <main>
         <Hero />
-        <MuseumsGrid />
-        <TrustHighlights />
-        <BlogSection />
-        <CtaBanner />
+        <MuseumsGrid
+          initialMuseums={homepageMuseums}
+          eyebrow={gridSection.eyebrow}
+          heading={gridSection.heading}
+          subheading={gridSection.subheading}
+        />
+        <CulturalJourneyBanner />
       </main>
       <Footer />
     </>
