@@ -169,13 +169,20 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
+  // Matches lib/museums.ts's getMuseumBySlug(): falls through to the seed
+  // file per-slug whenever the DB doesn't have this post, not just when the
+  // DB is unreachable — otherwise a post that exists in data/posts.json but
+  // hasn't been synced into the database yet would 404 on the live site
+  // even though getPosts() (the list) can still see it via its own
+  // whole-table fallback.
   try {
     const rows = await sql`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
-    return rows.length ? rowToPost(rows[0]) : null;
+    if (rows.length) return rowToPost(rows[0]);
   } catch {
-    const seed = (postsSeed as any[]).find((p) => p.slug === slug);
-    return seed ? seedToPost(seed) : null;
+    // fall through to seed
   }
+  const seed = (postsSeed as any[]).find((p) => p.slug === slug);
+  return seed ? seedToPost(seed) : null;
 }
 
 export async function savePost(post: Post): Promise<void> {
@@ -237,6 +244,41 @@ export async function savePost(post: Post): Promise<void> {
 
 export async function deletePost(slug: string): Promise<void> {
   await sql`DELETE FROM posts WHERE slug = ${slug}`;
+}
+
+// Turns a free-text category (e.g. "Ticket Tips", "Skip-the-Line") into the
+// URL-safe slug used at /category/[category] — the admin's Category field
+// on each post is the single source of truth for both the category badge
+// shown on the post and which /category page it belongs to, so this must
+// stay in sync with however category links are built anywhere on the site.
+export function categorySlug(category: string): string {
+  return (category || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export interface CategorySummary {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+// Real distinct categories, derived from whatever posts actually exist —
+// never a fixed/hardcoded list — so the "Categories" sidebar widget always
+// reflects what admins have actually typed into each post's Category field.
+export function getCategoriesFromPosts(posts: Post[]): CategorySummary[] {
+  const bySlug = new Map<string, CategorySummary>();
+  for (const p of posts) {
+    const name = p.category || "Museum Guides";
+    const slug = categorySlug(name);
+    if (!slug) continue;
+    const existing = bySlug.get(slug);
+    if (existing) existing.count += 1;
+    else bySlug.set(slug, { name, slug, count: 1 });
+  }
+  return Array.from(bySlug.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
 export async function getRelatedPosts(slug: string, count?: number): Promise<Post[]> {

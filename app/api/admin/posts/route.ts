@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { getPosts, savePost, type Post } from "@/lib/posts";
+import { getPosts, savePost, categorySlug, type Post } from "@/lib/posts";
 import { dbErrorMessage } from "@/lib/db";
 
 // Force this route to always run as a live serverless function rather than
@@ -47,10 +47,12 @@ export async function POST(req: Request) {
   }
 
   // Belt-and-suspenders on top of the existing force-dynamic + no-store
-  // setup (middleware.ts) — new posts affect the listing page and the
-  // sitemap immediately, not just their own detail page.
+  // setup (middleware.ts) — new posts affect the blog listing, their
+  // category page, and the sitemap immediately, not just their own detail
+  // page.
   revalidatePath("/blog");
-  revalidatePath(`/blog/${body.slug}`);
+  revalidatePath(`/category/${categorySlug(newPost.category)}`);
+  revalidatePath(`/${body.slug}`);
   revalidatePath("/sitemap.xml");
 
   return NextResponse.json({ ok: true });

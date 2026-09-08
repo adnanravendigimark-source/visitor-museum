@@ -53,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const postRoutes: MetadataRoute.Sitemap = posts
     .filter((post) => !post.noIndex && !post.noFollow)
     .map((post) => ({
-      url: `${SITE_URL}/blog/${post.slug}`,
+      url: `${SITE_URL}/${post.slug}`,
       lastModified: post.updatedAt || post.date ? new Date(post.updatedAt || post.date) : now,
       changeFrequency: "monthly" as const,
       priority: 0.8,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { getPosts, getPost, savePost, deletePost, type Post } from "@/lib/posts";
+import { getPosts, getPost, savePost, deletePost, categorySlug, type Post } from "@/lib/posts";
 import { recordSlugRename } from "@/lib/redirects";
 import { getSession } from "@/lib/session";
 import { dbErrorMessage } from "@/lib/db";
@@ -61,8 +61,9 @@ export async function PUT(req: Request, { params }: { params: { slug: string } }
   }
 
   revalidatePath("/blog");
-  revalidatePath(`/blog/${params.slug}`);
-  if (renamed) revalidatePath(`/blog/${nextSlug}`);
+  revalidatePath(`/category/${categorySlug(updated.category)}`);
+  revalidatePath(`/${params.slug}`);
+  if (renamed) revalidatePath(`/${nextSlug}`);
   revalidatePath("/sitemap.xml");
 
   return NextResponse.json({ ok: true, slug: nextSlug });
@@ -85,7 +86,8 @@ export async function DELETE(_req: Request, { params }: { params: { slug: string
   }
 
   revalidatePath("/blog");
-  revalidatePath(`/blog/${params.slug}`);
+  revalidatePath(`/category/${categorySlug(existing.category)}`);
+  revalidatePath(`/${params.slug}`);
   revalidatePath("/sitemap.xml");
 
   return NextResponse.json({ ok: true });

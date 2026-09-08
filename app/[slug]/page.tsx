@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import QuickAnswer from "@/components/QuickAnswer";
+import BlogPostBody from "@/components/BlogPostBody";
+import BlogSidebar from "@/components/BlogSidebar";
 import MuseumHero from "@/components/MuseumHero";
 import MuseumTourGrid from "@/components/MuseumTourGrid";
 import MuseumHighlights from "@/components/MuseumHighlights";
@@ -15,6 +17,7 @@ import CtaBanner from "@/components/CtaBanner";
 import SafeImage from "@/components/SafeImage";
 import { getMuseumBySlug, getToursByMuseum, getFaqsByMuseum } from "@/lib/museums";
 import { getPost, getPosts } from "@/lib/posts";
+import { extractTableOfContents } from "@/lib/tableOfContents";
 import { getHomepageContent } from "@/lib/homepage";
 import {
   resolveRobots,
@@ -178,6 +181,9 @@ export default async function SlugPage({ params }: { params: { slug: string } })
   if (post) {
     const allPosts = await getPosts();
     const recentPosts = allPosts.filter((p) => p.slug !== post.slug).slice(0, 6);
+    // Headings in the article body get an id injected so the sidebar's
+    // Table of Contents can jump-link to them.
+    const { toc, html: contentHtml } = extractTableOfContents(post.content);
 
     const articleJsonLd = {
       "@context": "https://schema.org",
@@ -240,30 +246,34 @@ export default async function SlugPage({ params }: { params: { slug: string } })
                   </div>
                 )}
 
-                <div
-                  className="rich-content text-[#54595F] leading-relaxed text-base"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
+                {post.quickAnswer && <QuickAnswer>{post.quickAnswer}</QuickAnswer>}
+
+                <BlogPostBody
+                  content={contentHtml}
+                  recommendedTourId={post.recommendedTourId}
+                  showRecommendedTour={!!post.recommendedTourAfterBlock && !!post.recommendedTourId}
                 />
+
+                <div className="mt-10">
+                  <CtaBanner
+                    heading={post.ctaHeading}
+                    subtext={post.ctaBody}
+                    buttonText={post.ctaButtonText}
+                    buttonHref={post.ctaButtonHref}
+                  />
+                </div>
               </article>
 
-              {/* Right Column: Recent Posts Sidebar (1/3 width) */}
-              <aside className="lg:col-span-4 rounded-xl border border-gray-100 bg-[#F9F9F9] p-6 sm:p-7 shadow-sm">
-                <h5 className="text-lg font-bold text-[#2A302F] mb-4 pb-2 border-b border-gray-200">
-                  Recent Posts
-                </h5>
-                <ul className="space-y-3.5 text-sm">
-                  {recentPosts.map((p) => (
-                    <li key={p.slug} className="border-b border-gray-200/60 pb-3 last:border-0 last:pb-0">
-                      <Link
-                        href={`/${p.slug}`}
-                        className="font-medium text-[#2A302F] hover:text-[#2D903A] transition-colors leading-snug block"
-                      >
-                        {p.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </aside>
+              {/* Right Column: Sidebar (1/3 width) — search, table of
+                  contents for this article, popular guides, and the
+                  tickets promo card */}
+              <div className="lg:col-span-4">
+                <BlogSidebar
+                  slug={post.slug}
+                  popularPosts={recentPosts}
+                  toc={toc}
+                />
+              </div>
             </div>
           </div>
         </main>

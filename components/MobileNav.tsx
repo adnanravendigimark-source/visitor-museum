@@ -28,7 +28,7 @@ export default function MobileNav({
     const cleanHref = href.replace(/\/$/, "");
 
     if (cleanHref === "") return cleanPath === "";
-    if (cleanHref === "/blog" || cleanHref === "/category/popular") {
+    if (cleanHref === "/blog") {
       return cleanPath === "/blog" || cleanPath.startsWith("/blog/") || cleanPath.startsWith("/category/");
     }
     return cleanPath === cleanHref || cleanPath.startsWith(cleanHref + "/");

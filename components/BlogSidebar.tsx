@@ -60,18 +60,18 @@ export default function BlogSidebar({
   return (
     <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
       {/* Search Bar */}
-      <form onSubmit={handleSearch} className="flex rounded-xl border border-[#CBD5E1] bg-white overflow-hidden shadow-sm focus-within:border-[#112338]">
+      <form onSubmit={handleSearch} className="flex rounded-xl border border-[#CBD5E1] bg-white overflow-hidden shadow-sm focus-within:border-[#2D903A]">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search guides..."
-          className="w-full bg-transparent px-3.5 py-2.5 text-xs text-[#112338] placeholder-[#718096] focus:outline-none"
+          className="w-full bg-transparent px-3.5 py-2.5 text-xs text-[#2A302F] placeholder-[#718096] focus:outline-none"
         />
         <button
           type="submit"
           aria-label="Search"
-          className="flex items-center justify-center bg-[#112338] px-3.5 text-white transition hover:bg-[#1a3452]"
+          className="flex items-center justify-center bg-[#2D903A] px-3.5 text-white transition hover:bg-[#257630]"
         >
           <SearchIcon className="h-4 w-4" />
         </button>
@@ -83,17 +83,17 @@ export default function BlogSidebar({
       {/* Popular Articles */}
       {popular.length > 0 && (
         <div className="rounded-2xl border border-[#E8ECEF] bg-white p-5 shadow-sm">
-          <p className="font-serif text-xs font-bold uppercase tracking-wider text-[#112338]">
+          <p className="font-serif text-xs font-bold uppercase tracking-wider text-[#2A302F]">
             {relatedHeading}
           </p>
           <div className="mt-4 space-y-3.5">
             {popular.map((post) => (
               <Link
                 key={post.slug}
-                href={`/blog/${post.slug}`}
+                href={`/${post.slug}`}
                 className="group flex items-center gap-3"
               >
-                <div className="relative h-13 w-16 shrink-0 aspect-[4/3] overflow-hidden rounded-xl bg-[#0B1B2B]">
+                <div className="relative h-13 w-16 shrink-0 aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
                   <SafeImage
                     src={post.image}
                     alt={post.imageAlt || post.title}
@@ -104,11 +104,11 @@ export default function BlogSidebar({
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-xs font-bold leading-snug text-[#112338] transition-colors group-hover:text-[#B85D3E]">
+                  <p className="line-clamp-2 text-xs font-bold leading-snug text-[#2A302F] transition-colors group-hover:text-[#2D903A]">
                     {post.title}
                   </p>
                   <p className="mt-1 flex items-center gap-1 text-[11px] text-[#718096] font-medium">
-                    <CalendarIcon className="h-3 w-3 text-[#B85D3E]" />
+                    <CalendarIcon className="h-3 w-3 text-[#2D903A]" />
                     {formatDate(post.date)}
                   </p>
                 </div>

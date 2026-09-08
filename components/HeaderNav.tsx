@@ -24,7 +24,7 @@ export default function HeaderNav({ links }: { links?: NavLink[] }) {
     if (cleanHref === "") {
       return cleanPath === "";
     }
-    if (cleanHref === "/blog" || cleanHref === "/category/popular") {
+    if (cleanHref === "/blog") {
       return cleanPath === "/blog" || cleanPath.startsWith("/blog/") || cleanPath.startsWith("/category/");
     }
     return cleanPath === cleanHref || cleanPath.startsWith(cleanHref + "/");
