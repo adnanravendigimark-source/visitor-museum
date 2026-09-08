@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -18,6 +18,7 @@ import SafeImage from "@/components/SafeImage";
 import { getMuseumBySlug, getToursByMuseum, getFaqsByMuseum } from "@/lib/museums";
 import { getPost, getPosts } from "@/lib/posts";
 import { extractTableOfContents } from "@/lib/tableOfContents";
+import { getRedirectTarget } from "@/lib/redirects";
 import { getHomepageContent } from "@/lib/homepage";
 import {
   resolveRobots,
@@ -284,6 +285,19 @@ export default async function SlugPage({ params }: { params: { slug: string } })
         />
       </>
     );
+  }
+
+  // 3. Neither a museum nor a post — but this might be an old post slug
+  // that was renamed. The Advanced SEO tab on every post explicitly tells
+  // admins that renaming a slug "automatically 301-redirects the old
+  // address here — no broken links": recordSlugRename() (called from the
+  // posts PUT route) does write that row, but until now nothing ever read
+  // it back, so old links and search rankings actually broke on every
+  // rename. Only checked here, on the 404 path, so normal page loads never
+  // pay for the extra lookup.
+  const redirectTarget = await getRedirectTarget(params.slug);
+  if (redirectTarget) {
+    permanentRedirect(`/${redirectTarget}`);
   }
 
   // If neither a museum nor a post is found, return 404
