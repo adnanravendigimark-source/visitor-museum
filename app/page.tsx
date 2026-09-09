@@ -3,6 +3,9 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import MuseumsGrid from "@/components/MuseumsGrid";
 import CulturalJourneyBanner from "@/components/CulturalJourneyBanner";
+import BlogSection from "@/components/BlogSection";
+import SiteFaqSection from "@/components/SiteFaqSection";
+import CtaBanner from "@/components/CtaBanner";
 import Footer from "@/components/Footer";
 import { getHomepageContent } from "@/lib/homepage";
 import { getMuseums } from "@/lib/museums";
@@ -54,6 +57,9 @@ export default async function HomePage() {
           subheading={gridSection.subheading}
         />
         <CulturalJourneyBanner />
+        <BlogSection />
+        <SiteFaqSection />
+        <CtaBanner />
       </main>
       <Footer />
     </>

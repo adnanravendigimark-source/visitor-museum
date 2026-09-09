@@ -30,6 +30,12 @@ export async function PUT(req: Request) {
     ogTitle: body?.ogTitle || "",
     ogDescription: body?.ogDescription || "",
     ogImage: body?.ogImage || "",
+    heroEyebrow: body?.heroEyebrow || "",
+    heroHeading: body?.heroHeading || "",
+    heroSubheading: body?.heroSubheading || "",
+    emptyStateText: body?.emptyStateText || "",
+    ctaButtonText: body?.ctaButtonText || "",
+    ctaButtonHref: body?.ctaButtonHref || "",
   };
 
   try {

@@ -1,219 +1,602 @@
 [
   {
-    "id": "louvre-skip-the-line-standard",
+    "id": "louvre-museum-tickets-std",
     "museumId": "louvre-museum",
-    "title": "Louvre Museum Skip-the-Line Entry Ticket",
-    "description": "Timed-entry ticket that lets you skip the general admission queue at the glass pyramid and head straight into the museum to explore at your own pace.",
-    "price": 32,
-    "duration": "Full day (single museum visit)",
-    "rating": 4.6,
-    "reviews": 18500,
+    "title": "Paris: Louvre Museum Tickets",
+    "description": "Admission to Louvre Museum with skip-the-ticket-line timed entrance and full access to the permanent collection and all temporary exhibitions.",
+    "price": 22,
+    "duration": "1 Day",
+    "rating": 4.5,
+    "reviews": 49884,
     "featured": true,
     "badge": "Bestseller",
-    "image": "/images/louvre-card.jpg",
-    "imageAlt": "The glass pyramid entrance of the Louvre Museum",
-    "hrefPath": "paris-l16/",
-    "category": "Skip-the-Line Ticket",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/louvre-museum.jpg",
+    "imageAlt": "Louvre Museum Tickets",
+    "hrefPath": "https://gyg.me/ta3eAWoh",
+    "category": "Admission Ticket",
     "highlights": [
-      "Skip the general admission queue at the pyramid",
-      "Self-guided access to all permanent collections",
-      "Valid for one full day inside the museum",
-      "Free cancellation up to 24 hours before your slot"
-    ],
-    "includes": ["Timed-entry Louvre ticket", "Access to all permanent collections", "Digital mobile ticket"],
-    "excludes": ["Live tour guide", "Audio guide (available on site for a fee)"],
-    "bestFor": "First-time visitors who want to explore independently",
-    "priceTableColumn1": "1 day",
-    "priceTableFeature": "Skip-the-line entry"
-  },
-  {
-    "id": "louvre-guided-masterpieces-tour",
-    "museumId": "louvre-museum",
-    "title": "Louvre Guided Highlights Tour: Mona Lisa & Masterpieces",
-    "description": "A small-group guided tour with a licensed local guide covering the Louvre's must-see works, including the Mona Lisa, the Venus de Milo, and the Winged Victory of Samothrace.",
-    "price": 69,
-    "duration": "2.5 hours guided",
-    "rating": 4.7,
-    "reviews": 9200,
-    "featured": true,
-    "badge": "Top Rated Guide",
-    "image": "/images/louvre-hero.jpg",
-    "imageAlt": "Guide leading a small group through the Louvre",
-    "hrefPath": "paris-l16/",
-    "category": "Guided Tour",
-    "highlights": [
-      "Skip-the-line entry included",
-      "Licensed English-speaking art historian guide",
-      "Small-group setting",
-      "Covers the Louvre's most iconic works"
-    ],
-    "includes": ["Skip-the-line entry", "Licensed guide", "Headsets for clear audio"],
-    "excludes": ["Gratuities", "Hotel pickup"],
-    "bestFor": "Visitors who want context and stories behind the art",
-    "priceTableColumn1": "2.5 hours",
-    "priceTableFeature": "Guided with art historian"
-  },
-  {
-    "id": "duomo-brunelleschi-pass",
-    "museumId": "duomo-florence",
-    "title": "Brunelleschi Pass — All-Inclusive Duomo & Guaranteed Dome Climb Access",
-    "description": "The definitive Florence Duomo experience. Includes guaranteed timed entry to climb the 463 steps of Brunelleschi's Dome, plus 3-day access to Giotto's Bell Tower, the Baptistery of San Giovanni, the Museo dell'Opera del Duomo, and the Crypt of Santa Reparata.",
-    "price": 42,
-    "duration": "3 days validity (Dome Climb ~1.5 hours)",
-    "rating": 4.9,
-    "reviews": 24800,
-    "featured": true,
-    "badge": "Bestseller · Must Reserve Early",
-    "image": "/images/dome-climb.jpg",
-    "imageAlt": "Climbing the 463 steps of Brunelleschi's Dome in Florence",
-    "hrefPath": "florence-l32/",
-    "category": "Duomo Passes",
-    "highlights": [
-      "Guaranteed timed reservation to climb Brunelleschi's Dome (463 steps)",
-      "Full access to Giotto's Bell Tower (414 steps)",
-      "Admission to the Baptistery of San Giovanni & Gates of Paradise",
-      "Entry to the Museo dell'Opera del Duomo",
-      "Exploration of the Crypt of Santa Reparata",
-      "Pass valid for 72 consecutive hours from first monument entry"
+      "Admission to Louvre Museum",
+      "Skip-the-ticket-line timed entrance",
+      "Full access to the permanent collection and all temporary exhibitions"
     ],
     "includes": [
-      "Official Brunelleschi Pass barcode ticket",
-      "Mandatory timed entry reservation for Brunelleschi's Dome",
-      "Access to Giotto's Campanile bell tower",
-      "Access to San Giovanni Baptistery & Opera del Duomo Museum",
-      "Access to Crypt of Santa Reparata"
+      "Admission to Louvre Museum",
+      "Skip-the-ticket-line timed entrance",
+      "Full permanent and temporary access"
     ],
-    "excludes": ["Live human tour guide (audio guide included)", "Hotel pickup and drop-off"],
-    "bestFor": "All travelers",
-    "priceTableColumn1": "3 days",
-    "priceTableFeature": "Timed Dome Climb"
+    "excludes": [
+      "Guided tour"
+    ],
+    "bestFor": "Independent visitors wanting fastest entry",
+    "priceTableColumn1": "1 Day",
+    "priceTableFeature": "Skip-the-line Entry"
   },
   {
-    "id": "duomo-guided-dome-tour",
-    "museumId": "duomo-florence",
-    "title": "Florence Duomo & Brunelleschi Dome Climb VIP Guided Tour",
-    "description": "Ascend the iconic dome with an expert licensed art historian. Skip long lines, discover Renaissance architectural engineering, and take in panoramic 360° views from the rooftop lantern terrace.",
-    "price": 68,
-    "duration": "2.5 hours guided",
-    "rating": 4.95,
-    "reviews": 11200,
+    "id": "louvre-guided-masterpieces",
+    "museumId": "louvre-museum",
+    "title": "Skip-the-Line Louvre Museum Masterpieces Guided Tour",
+    "description": "Louvre Museum skip-the-line ticket with professional tour guide and freedom to explore the Louvre after the tour.",
+    "price": 64,
+    "duration": "2 Hours",
+    "rating": 4.8,
+    "reviews": 4127,
     "featured": true,
-    "badge": "Top Rated VIP Tour",
-    "image": "/images/dome-frescoes.jpg",
-    "imageAlt": "Vasari's Last Judgment frescoes inside the Florence Duomo cupola ceiling",
-    "hrefPath": "florence-l32/",
-    "category": "Guided Tours",
+    "badge": "Top Rated Guide",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/louvre-tour.jpg",
+    "imageAlt": "Louvre Museum Tour",
+    "hrefPath": "https://gyg.me/TLDDnWmA",
+    "category": "Guided Tour",
     "highlights": [
-      "Priority skip-the-line entrance to Santa Maria del Fiore & the Dome",
-      "Expert commentary on Brunelleschi's engineering feat",
-      "360° panoramic Florence city vistas from the open-air lantern",
-      "Includes 72h pass to Giotto's Tower, Baptistery & Duomo Museum"
+      "Louvre Museum skip-the-line ticket",
+      "Tour guide",
+      "Freedom to explore the Louvre after the tour"
     ],
-    "includes": ["Licensed English-speaking guide", "Skip-the-line fast track entry ticket", "Full 3-day Cathedral complex pass", "Personal audio headsets"],
-    "excludes": ["Gratuities", "Hotel transfers"],
-    "bestFor": "Visitors who want expert context on the dome's history",
-    "priceTableColumn1": "2.5 hours",
-    "priceTableFeature": "Guided with art historian"
+    "includes": [
+      "Skip-the-line ticket",
+      "Tour guide",
+      "Headsets"
+    ],
+    "excludes": [
+      "Hotel pickup"
+    ],
+    "bestFor": "First-time visitors wanting expert context",
+    "priceTableColumn1": "2 Hours",
+    "priceTableFeature": "Licensed Guide"
   },
   {
-    "id": "duomo-giotto-pass",
-    "museumId": "duomo-florence",
-    "title": "Giotto Pass — Bell Tower, Baptistery, Museum & Crypt",
-    "description": "Perfect for travelers who want stunning Florence views without climbing the Dome. Climb the 414 steps of Giotto's free-standing Bell Tower, and visit the Baptistery, Duomo Museum, and Crypt.",
-    "price": 28,
-    "duration": "3 days validity (Bell Tower ~1 hour)",
-    "rating": 4.85,
-    "reviews": 8900,
-    "featured": false,
-    "badge": "Great Alternative",
-    "image": "/images/giotto-campanile.jpg",
-    "imageAlt": "Giotto's Bell Tower Campanile in Piazza del Duomo Florence",
-    "hrefPath": "florence-l32/",
-    "category": "Duomo Passes",
-    "highlights": [
-      "Climb 414 steps of Giotto's Campanile for the best panoramic view of the Dome",
-      "Direct entry to the octagonal Baptistery of San Giovanni",
-      "Admission to the Opera del Duomo Museum",
-      "Discover the Crypt of Santa Reparata"
-    ],
-    "includes": ["Official Giotto Pass voucher", "Entry to Giotto's Bell Tower", "Baptistery entry", "Opera del Duomo Museum entry", "Crypt entry"],
-    "excludes": ["Brunelleschi Dome climb", "Live tour guide"],
-    "bestFor": "Visitors who prefer not to climb inside the Dome",
-    "priceTableColumn1": "3 days",
-    "priceTableFeature": "Standard Pass"
-  },
-  {
-    "id": "uffizi-skip-the-line-standard",
-    "museumId": "uffizi-gallery",
-    "title": "Uffizi Gallery Skip-the-Line Entry Ticket",
-    "description": "Timed-entry ticket to the Uffizi Gallery. Skip the ticket-office queue and go straight in to see Botticelli, Michelangelo, and Raphael at your own pace.",
-    "price": 29,
-    "duration": "Full day (single museum visit)",
+    "id": "louvre-mona-lisa-host",
+    "museumId": "louvre-museum",
+    "title": "Paris: Louvre Ticket with Host for Mona Lisa",
+    "description": "Skip-the-line Louvre Museum entry with priority entrance through a dedicated door and escort to the Mona Lisa.",
+    "price": 32.5,
+    "duration": "1.5 Hours",
     "rating": 4.7,
+    "reviews": 6543,
+    "featured": true,
+    "badge": "Fast Track Host",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/louvre-mona-lisa-host.jpg",
+    "imageAlt": "Louvre Mona Lisa Host",
+    "hrefPath": "https://gyg.me/U3Iz9Koj",
+    "category": "Host Escort",
+    "highlights": [
+      "Skip-the-line Louvre Museum entry",
+      "Priority entrance through a dedicated door",
+      "Escort to the Mona Lisa"
+    ],
+    "includes": [
+      "Priority entrance",
+      "Host escort to Mona Lisa",
+      "Full museum access after"
+    ],
+    "excludes": [
+      "Full guided tour"
+    ],
+    "bestFor": "Seeing the Mona Lisa with priority access",
+    "priceTableColumn1": "1.5 Hours",
+    "priceTableFeature": "Mona Lisa Escort"
+  },
+  {
+    "id": "duomo-florence-brunelleschi",
+    "museumId": "duomo-florence",
+    "title": "Florence: Duomo Entry Ticket with Dome Climb & Pass",
+    "description": "Guaranteed timed access to climb Brunelleschi's Dome, plus 3-day access to Giotto's Bell Tower, Baptistery, and Duomo Museum.",
+    "price": 42,
+    "duration": "3 Days",
+    "rating": 4.8,
+    "reviews": 18230,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2025/12/duomo-visit-museum-1024x682.jpg",
+    "imageAlt": "Duomo Florence Dome Climb",
+    "hrefPath": "https://gyg.me/t974Aucw",
+    "category": "Full Pass",
+    "highlights": [
+      "Guaranteed Brunelleschi Dome climb (463 steps)",
+      "Access to Giotto's Bell Tower (414 steps)",
+      "Entry to Baptistery of San Giovanni & Crypt",
+      "3-day validity for all monuments"
+    ],
+    "includes": [
+      "Official Brunelleschi Pass barcode",
+      "Reserved Dome climb time slot",
+      "3-day access to all complex sites"
+    ],
+    "excludes": [
+      "Live guide"
+    ],
+    "bestFor": "The definitive Florence Duomo experience",
+    "priceTableColumn1": "3 Days",
+    "priceTableFeature": "Dome Climb Included"
+  },
+  {
+    "id": "duomo-florence-guided",
+    "museumId": "duomo-florence",
+    "title": "Florence Duomo & Dome Climb VIP Guided Tour",
+    "description": "Ascend the iconic dome with an expert licensed art historian. Skip long lines and take in 360° views.",
+    "price": 68,
+    "duration": "2.5 Hours",
+    "rating": 4.9,
+    "reviews": 7450,
+    "featured": true,
+    "badge": "Top Rated VIP",
+    "image": "https://visit-museums.com/wp-content/uploads/2025/12/duomo-tour-1024x682.jpg",
+    "imageAlt": "Duomo Florence Guided Tour",
+    "hrefPath": "https://gyg.me/t974Aucw",
+    "category": "Guided Tour",
+    "highlights": [
+      "Fast-track priority entrance",
+      "Expert commentary on Renaissance engineering",
+      "Includes full 3-day complex pass"
+    ],
+    "includes": [
+      "Licensed guide",
+      "Skip-the-line ticket",
+      "Audio headsets"
+    ],
+    "excludes": [
+      "Gratuities"
+    ],
+    "bestFor": "History and architecture enthusiasts",
+    "priceTableColumn1": "2.5 Hours",
+    "priceTableFeature": "VIP Guide"
+  },
+  {
+    "id": "uffizi-gallery-tickets-std",
+    "museumId": "uffizi-gallery",
+    "title": "Florence: Uffizi Gallery Skip-the-Line Ticket",
+    "description": "Timed-entry ticket to the Uffizi Gallery. Skip the ticket-office queue and explore Renaissance masterpieces.",
+    "price": 26,
+    "duration": "1 Day",
+    "rating": 4.7,
+    "reviews": 32150,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/uffizi-gallery.jpg",
+    "imageAlt": "Uffizi Gallery Tickets",
+    "hrefPath": "https://visit-museums.com/uffizi-gallery-museum-tickets-tour/",
+    "category": "Admission Ticket",
+    "highlights": [
+      "Skip the general admission queue",
+      "See Botticelli's Birth of Venus and Primavera",
+      "Full access to permanent collections"
+    ],
+    "includes": [
+      "Timed-entry ticket",
+      "Permanent galleries access"
+    ],
+    "excludes": [
+      "Guide"
+    ],
+    "bestFor": "Independent museum exploration",
+    "priceTableColumn1": "1 Day",
+    "priceTableFeature": "Priority Entry"
+  },
+  {
+    "id": "lindt-home-chocolate-std",
+    "museumId": "lindt-home-of-chocolate",
+    "title": "Zurich: Lindt Home of Chocolate Entry Ticket",
+    "description": "Timed-entry ticket to the Lindt Home of Chocolate, including interactive exhibition, giant chocolate fountain, and unlimited tastings.",
+    "price": 17,
+    "duration": "2 Hours",
+    "rating": 4.8,
     "reviews": 14200,
     "featured": true,
     "badge": "Bestseller",
-    "image": "/images/uffizi-card.jpg",
-    "imageAlt": "The Uffizi Gallery courtyard in Florence",
-    "hrefPath": "florence-l32/",
-    "category": "Skip-the-Line Ticket",
-    "highlights": [
-      "Skip the ticket-office queue",
-      "Self-guided access to all permanent galleries",
-      "Free cancellation up to 24 hours before your slot"
-    ],
-    "includes": ["Timed-entry Uffizi ticket", "Access to all permanent collections"],
-    "excludes": ["Live tour guide", "Audio guide (available on site)"],
-    "bestFor": "First-time visitors exploring independently",
-    "priceTableColumn1": "1 day",
-    "priceTableFeature": "Skip-the-line entry"
-  },
-  {
-    "id": "uffizi-afternoon-discount",
-    "museumId": "uffizi-gallery",
-    "title": "Uffizi Gallery Afternoon Discount Ticket (4 PM Entry)",
-    "description": "A lower-priced timed-entry ticket for visits starting at 4:00 PM or later — a quieter, more affordable way to see the Uffizi in the late afternoon light.",
-    "price": 20,
-    "duration": "From 4:00 PM until closing",
-    "rating": 4.6,
-    "reviews": 3100,
-    "featured": false,
-    "badge": "Best Value",
-    "image": "/images/uffizi-hero.jpg",
-    "imageAlt": "Uffizi Gallery corridor in late afternoon light",
-    "hrefPath": "florence-l32/",
-    "category": "Skip-the-Line Ticket",
-    "highlights": ["Discounted rate for late-afternoon entry", "Typically quieter than daytime slots", "Same access as the standard ticket"],
-    "includes": ["Timed-entry Uffizi ticket (4 PM onward)"],
-    "excludes": ["Live tour guide"],
-    "bestFor": "Budget-conscious travelers and photographers wanting quieter galleries",
-    "priceTableColumn1": "4 PM – close",
-    "priceTableFeature": "Discounted afternoon rate"
-  },
-  {
-    "id": "lindt-museum-entry",
-    "museumId": "lindt-home-of-chocolate",
-    "title": "Lindt Home of Chocolate Entry Ticket",
-    "description": "Timed-entry ticket to the Lindt Home of Chocolate, including the interactive multimedia exhibition and the giant chocolate fountain.",
-    "price": 17,
-    "duration": "1.5–2 hours",
-    "rating": 4.6,
-    "reviews": 7600,
-    "featured": true,
-    "badge": "Bestseller",
-    "image": "/images/lindt-card.jpg",
-    "imageAlt": "The Lindt Home of Chocolate building in Kilchberg",
-    "hrefPath": "zurich-l55/",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/lindt.jpg",
+    "imageAlt": "Lindt Home of Chocolate",
+    "hrefPath": "https://visit-museums.com/lindt-home-of-chocolate/",
     "category": "Museum Ticket",
     "highlights": [
-      "Timed entry to skip the ticket-office line",
-      "Access to all seven interactive chocolate worlds",
-      "See the world's largest chocolate fountain"
+      "Skip-the-ticket-office entry",
+      "Interactive exhibition through 7 chocolate worlds",
+      "Unlimited chocolate tasting stations"
     ],
-    "includes": ["Timed-entry museum ticket", "Access to the full exhibition"],
-    "excludes": ["Chocolate tasting workshop (booked separately)", "Transport to Kilchberg"],
-    "bestFor": "Families and chocolate lovers visiting from Zurich",
-    "priceTableColumn1": "1.5–2 hours",
-    "priceTableFeature": "Standard entry"
+    "includes": [
+      "Museum entry",
+      "Audio guide",
+      "Chocolate tasting"
+    ],
+    "excludes": [
+      "Transport"
+    ],
+    "bestFor": "Families and chocolate lovers",
+    "priceTableColumn1": "2 Hours",
+    "priceTableFeature": "Tasting Included"
+  },
+  {
+    "id": "van-gogh-std",
+    "museumId": "van-gogh-museum",
+    "title": "Amsterdam: Van Gogh Museum Ticket",
+    "description": "Admission to Van Gogh Museum with timed entry ticket to all temporary and permanent exhibitions.",
+    "price": 24,
+    "duration": "1 Day",
+    "rating": 4.7,
+    "reviews": 25322,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/van-gogh-1.jpg",
+    "imageAlt": "Van Gogh Museum Ticket",
+    "hrefPath": "https://gyg.me/mwjQB9GA",
+    "category": "Admission Ticket",
+    "highlights": [
+      "Admission to Van Gogh Museum",
+      "Timed entry ticket",
+      "All temporary and permanent exhibitions"
+    ],
+    "includes": [
+      "Timed entry admission",
+      "Access to all floors"
+    ],
+    "excludes": [
+      "Audio guide"
+    ],
+    "bestFor": "Seeing Van Gogh's greatest works",
+    "priceTableColumn1": "1 Day",
+    "priceTableFeature": "Timed Entry"
+  },
+  {
+    "id": "van-gogh-guided",
+    "museumId": "van-gogh-museum",
+    "title": "Van Gogh Museum Guided Tour with Entrance Ticket",
+    "description": "Entrance ticket to the Van Gogh Museum with professional guide to discover over 200 paintings and 500 drawings.",
+    "price": 67,
+    "duration": "2 Hours",
+    "rating": 4.8,
+    "reviews": 243,
+    "featured": true,
+    "badge": "Top Rated Guide",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/vangogh-tour.jpg",
+    "imageAlt": "Van Gogh Guided Tour",
+    "hrefPath": "https://gyg.me/xrVBtJH3",
+    "category": "Guided Tour",
+    "highlights": [
+      "Entrance ticket included",
+      "Discover over 200 paintings, 500 drawings",
+      "Professional guide"
+    ],
+    "includes": [
+      "Entrance ticket",
+      "Guided tour"
+    ],
+    "excludes": [
+      "Gratuities"
+    ],
+    "bestFor": "In-depth understanding of Van Gogh",
+    "priceTableColumn1": "2 Hours",
+    "priceTableFeature": "Professional Guide"
+  },
+  {
+    "id": "van-gogh-cruise",
+    "museumId": "van-gogh-museum",
+    "title": "Van Gogh Museum Ticket & Canal Cruise",
+    "description": "Time slot ticket to the Van Gogh Museum combined with a 1-hour Amsterdam Canal Cruise with audio commentary in 19 languages.",
+    "price": 37,
+    "duration": "3 Hours",
+    "rating": 4.7,
+    "reviews": 25322,
+    "featured": true,
+    "badge": "Best Combo",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/vangoghcruise.jpg",
+    "imageAlt": "Van Gogh and Canal Cruise",
+    "hrefPath": "https://gyg.me/njtAdBoR",
+    "category": "Combo Experience",
+    "highlights": [
+      "Time slot ticket to the Van Gogh Museum",
+      "1-hour Amsterdam Canal Cruise",
+      "Audio commentary on the cruise in 19 languages"
+    ],
+    "includes": [
+      "Museum entry ticket",
+      "1-hour canal cruise"
+    ],
+    "excludes": [
+      "Hotel transfer"
+    ],
+    "bestFor": "Combining art with sightseeing",
+    "priceTableColumn1": "3 Hours",
+    "priceTableFeature": "Museum + Cruise"
+  },
+  {
+    "id": "rijksmuseum-tickets-std",
+    "museumId": "rijksmuseum",
+    "title": "Amsterdam: Rijksmuseum Skip-the-Line Ticket",
+    "description": "Direct timed-entry ticket to the Rijksmuseum to marvel at Rembrandt's The Night Watch and Vermeer's The Milkmaid.",
+    "price": 24.5,
+    "duration": "1 Day",
+    "rating": 4.8,
+    "reviews": 38400,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/rijkmuseum.jpg",
+    "imageAlt": "Rijksmuseum Ticket",
+    "hrefPath": "https://visit-museums.com/rijksmuseum-tickets-tour/",
+    "category": "Admission Ticket",
+    "highlights": [
+      "Fast-track timed entry",
+      "See Rembrandt's The Night Watch",
+      "Access to Cuypers Library and 80+ galleries"
+    ],
+    "includes": [
+      "Timed-entry ticket",
+      "All permanent exhibitions"
+    ],
+    "excludes": [
+      "Live guide"
+    ],
+    "bestFor": "Dutch Golden Age art lovers",
+    "priceTableColumn1": "1 Day",
+    "priceTableFeature": "Skip-the-line"
+  },
+  {
+    "id": "vasa-museum-std",
+    "museumId": "vasa-museum",
+    "title": "Stockholm: Vasa Museum Entry Ticket",
+    "description": "Admission ticket to the Vasa Museum to experience the world's only preserved 17th-century warship.",
+    "price": 18,
+    "duration": "2 Hours",
+    "rating": 4.9,
+    "reviews": 16900,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/vasa-museum-1.jpg",
+    "imageAlt": "Vasa Museum Ticket",
+    "hrefPath": "https://visit-museums.com/vasa-museum-tickets-tour/",
+    "category": "Admission Ticket",
+    "highlights": [
+      "Access to all 6 exhibition levels",
+      "See the 98% original 1628 warship Vasa",
+      "Includes screening of the historical salvage documentary"
+    ],
+    "includes": [
+      "Museum entry ticket",
+      "Film screenings"
+    ],
+    "excludes": [
+      "Food and drink"
+    ],
+    "bestFor": "History and maritime enthusiasts",
+    "priceTableColumn1": "2 Hours",
+    "priceTableFeature": "Standard Entry"
+  },
+  {
+    "id": "accademia-gallery-std",
+    "museumId": "accademia-gallery",
+    "title": "Florence: Accademia Gallery Priority Ticket",
+    "description": "Skip-the-line timed ticket to see Michelangelo's iconic David and unfinished Slaves in Florence.",
+    "price": 20,
+    "duration": "1.5 Hours",
+    "rating": 4.8,
+    "reviews": 28900,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2024/01/accademia-tickets.jpg",
+    "imageAlt": "Accademia Gallery Ticket",
+    "hrefPath": "https://visit-museums.com/accademia-gallery-tickets/",
+    "category": "Admission Ticket",
+    "highlights": [
+      "Skip the main ticket line",
+      "Guaranteed access to Michelangelo's David",
+      "Explore the Musical Instruments Museum"
+    ],
+    "includes": [
+      "Priority timed entry ticket"
+    ],
+    "excludes": [
+      "Live guide"
+    ],
+    "bestFor": "Seeing Michelangelo's David quickly",
+    "priceTableColumn1": "1.5 Hours",
+    "priceTableFeature": "Priority Entry"
+  },
+  {
+    "id": "brussels-atomium-std",
+    "museumId": "brussels-atomium",
+    "title": "Brussels: Atomium & Design Museum Entry Ticket",
+    "description": "Timed-entry ticket to the Atomium spheres, panoramic viewpoint, and Design Museum Brussels.",
+    "price": 16,
+    "duration": "2 Hours",
+    "rating": 4.6,
+    "reviews": 15400,
+    "featured": true,
+    "badge": "Bestseller",
+    "image": "https://visit-museums.com/wp-content/uploads/2023/11/atomium.jpg",
+    "imageAlt": "Brussels Atomium Ticket",
+    "hrefPath": "https://visit-museums.com/brussels-atomium-tickets/",
+    "category": "Admission Ticket",
+    "highlights": [
+      "Access to all public spheres of the Atomium",
+      "360° panoramic views from the top sphere",
+      "Includes entry to Design Museum Brussels"
+    ],
+    "includes": [
+      "Atomium ticket",
+      "Design Museum Brussels entry"
+    ],
+    "excludes": [
+      "Audio guide"
+    ],
+    "bestFor": "Panoramic Brussels views & iconic architecture",
+    "priceTableColumn1": "2 Hours",
+    "priceTableFeature": "Atomium + Museum"
+  },
+  {
+    "id": "uffizi-guided-tour",
+    "museumId": "uffizi-gallery",
+    "title": "Florence: Uffizi Gallery Small Group Guided Tour",
+    "description": "Discover Renaissance masterpieces with a professional art historian guide and priority skip-the-line entrance.",
+    "price": 65,
+    "duration": "2 Hours",
+    "rating": 4.8,
+    "reviews": 8420,
+    "featured": true,
+    "badge": "Top Rated",
+    "image": "/images/uffizi-card.jpg",
+    "imageAlt": "Uffizi Gallery Guided Tour",
+    "hrefPath": "https://visit-museums.com/uffizi-gallery-museum-tickets-tour/",
+    "category": "Guided Tour",
+    "highlights": [
+      "Priority skip-the-line group entrance",
+      "Expert licensed art historian guide",
+      "Headsets to hear the guide clearly"
+    ],
+    "includes": [
+      "Skip-the-line ticket",
+      "Tour guide",
+      "Headsets"
+    ],
+    "excludes": [
+      "Hotel pickup"
+    ],
+    "bestFor": "Art enthusiasts seeking in-depth commentary",
+    "priceTableColumn1": "2 Hours",
+    "priceTableFeature": "Expert Guide"
+  },
+  {
+    "id": "uffizi-accademia-combo",
+    "museumId": "uffizi-gallery",
+    "title": "Florence: Uffizi & Accademia VIP Combo Tour",
+    "description": "Experience Florence's top two museums in one day: Michelangelo's David at Accademia and Botticelli at Uffizi.",
+    "price": 98,
+    "duration": "4 Hours",
+    "rating": 4.9,
+    "reviews": 6150,
+    "featured": true,
+    "badge": "Best Value",
+    "image": "/images/david-sculpture.jpg",
+    "imageAlt": "Uffizi and Accademia Combo Tour",
+    "hrefPath": "https://visit-museums.com/uffizi-gallery-museum-tickets-tour/",
+    "category": "Combo Tour",
+    "highlights": [
+      "Skip-the-line access to both Uffizi & Accademia",
+      "See Michelangelo's David & Botticelli's Venus",
+      "Walking tour through historic Florence center"
+    ],
+    "includes": [
+      "Both museum tickets",
+      "Guided tours",
+      "City walk"
+    ],
+    "excludes": [
+      "Meals"
+    ],
+    "bestFor": "First-time visitors to Florence",
+    "priceTableColumn1": "4 Hours",
+    "priceTableFeature": "Dual Museum VIP"
+  },
+  {
+    "id": "lindt-cruise-combo",
+    "museumId": "lindt-home-of-chocolate",
+    "title": "Zurich: City Tour, Lake Cruise & Lindt Home of Chocolate",
+    "description": "Comprehensive Zurich sightseeing tour including old town, scenic lake boat ride, and Lindt chocolate museum entry.",
+    "price": 72,
+    "duration": "4.5 Hours",
+    "rating": 4.7,
+    "reviews": 5890,
+    "featured": true,
+    "badge": "Popular Combo",
+    "image": "/images/lindt-card.jpg",
+    "imageAlt": "Zurich City Tour and Lindt Chocolate",
+    "hrefPath": "https://visit-museums.com/lindt-home-of-chocolate/",
+    "category": "Day Tour",
+    "highlights": [
+      "Guided Zurich city highlights tour",
+      "Scenic Lake Zurich passenger boat cruise",
+      "Admission to Lindt Home of Chocolate & tasting"
+    ],
+    "includes": [
+      "Bus tour",
+      "Boat ticket",
+      "Lindt entry"
+    ],
+    "excludes": [
+      "Lunch"
+    ],
+    "bestFor": "Visitors wanting a full Zurich day out",
+    "priceTableColumn1": "4.5 Hours",
+    "priceTableFeature": "Cruise + Museum"
+  },
+  {
+    "id": "lindt-fondue-experience",
+    "museumId": "lindt-home-of-chocolate",
+    "title": "Zurich: Lindt Chocolate & Swiss Fondue Culinary Tour",
+    "description": "Indulge your sweet and savory cravings with Lindt interactive exhibits and a traditional Swiss cheese fondue dinner.",
+    "price": 89,
+    "duration": "5 Hours",
+    "rating": 4.9,
+    "reviews": 3120,
+    "featured": true,
+    "badge": "Culinary Experience",
+    "image": "/images/lindt-card.jpg",
+    "imageAlt": "Lindt Chocolate and Fondue Tour",
+    "hrefPath": "https://visit-museums.com/lindt-home-of-chocolate/",
+    "category": "Food Tour",
+    "highlights": [
+      "Lindt museum entry & unlimited chocolate tastings",
+      "Authentic Swiss cheese fondue dinner",
+      "Private transfers from Zurich HB"
+    ],
+    "includes": [
+      "Lindt ticket",
+      "Fondue dinner",
+      "Transfers"
+    ],
+    "excludes": [
+      "Extra drinks"
+    ],
+    "bestFor": "Foodies and couples",
+    "priceTableColumn1": "5 Hours",
+    "priceTableFeature": "Dinner Included"
+  },
+  {
+    "id": "duomo-dome-climb-guided",
+    "museumId": "duomo-florence",
+    "title": "Florence: Duomo Guided Tour with Brunelleschi's Dome Climb",
+    "description": "Climb the 463 steps of Brunelleschi's Dome for panoramic views of Florence with priority reserved entry and an expert guide.",
+    "price": 55,
+    "duration": "2.5 Hours",
+    "rating": 4.8,
+    "reviews": 15400,
+    "featured": true,
+    "badge": "Top Rated",
+    "image": "/images/uffizi-card.jpg",
+    "imageAlt": "Duomo Florence Dome Climb",
+    "hrefPath": "https://visit-museums.com/duomo-florence-tickets/",
+    "category": "Guided Climb",
+    "highlights": [
+      "Priority skip-the-line Brunelleschi Dome entrance",
+      "Expert guide explaining Vasari's Last Judgment frescoes",
+      "Full access to the Duomo terraces & museum"
+    ],
+    "includes": [
+      "Dome climb pass",
+      "Cathedral guide",
+      "Duomo museum"
+    ],
+    "excludes": [
+      "Transport"
+    ],
+    "bestFor": "Adventurous travelers and photographers",
+    "priceTableColumn1": "2.5 Hours",
+    "priceTableFeature": "Dome Climb VIP"
   }
 ]

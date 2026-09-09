@@ -11,12 +11,14 @@ export default function BlogIndexContainer({
   ctaHeading,
   ctaBody,
   ctaButtonText,
+  ctaButtonHref,
 }: {
   posts: Post[];
   emptyStateText: string;
   ctaHeading?: string;
   ctaBody?: string;
   ctaButtonText?: string;
+  ctaButtonHref?: string;
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -35,7 +37,7 @@ export default function BlogIndexContainer({
     <div id="articles-section" className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:grid lg:grid-cols-[1fr_280px] lg:gap-10">
       <div>
         <div className="mb-6">
-          <h2 className="font-serif text-2xl font-bold text-[#112338] sm:text-3xl">Latest Guides</h2>
+          <h2 className="font-blog-display text-2xl font-bold text-[#112338] sm:text-3xl">Latest Guides</h2>
           <p className="mt-1.5 text-xs text-[#556476] sm:text-sm">
             Expert tips, travel guides and everything you need to know about visiting museums and attractions worldwide.
           </p>
@@ -68,6 +70,7 @@ export default function BlogIndexContainer({
           ctaHeading={ctaHeading}
           ctaBody={ctaBody}
           ctaButtonText={ctaButtonText}
+          ctaButtonHref={ctaButtonHref}
         />
       </div>
     </div>

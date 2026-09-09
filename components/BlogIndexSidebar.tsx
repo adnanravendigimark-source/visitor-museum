@@ -59,7 +59,7 @@ export default function BlogIndexSidebar({
       {/* Categories Widget */}
       {categories.length > 0 && (
         <div className="rounded-2xl border border-[#E8ECEF] bg-white p-5 shadow-sm">
-          <p className="font-serif text-base font-bold text-[#112338]">Categories</p>
+          <p className="font-blog-display text-base font-bold text-[#112338]">Categories</p>
           <div className="mt-3.5 space-y-1">
             {categories.map((cat) => {
               const isSelected = selectedCategory?.toLowerCase() === cat.name.toLowerCase();
@@ -88,15 +88,15 @@ export default function BlogIndexSidebar({
       {/* Popular Articles Widget */}
       {popular.length > 0 && (
         <div className="rounded-2xl border border-[#E8ECEF] bg-white p-5 shadow-sm">
-          <p className="font-serif text-base font-bold text-[#112338]">Popular Guides</p>
+          <p className="font-blog-display text-base font-bold text-[#112338]">Popular Guides</p>
           <div className="mt-4 space-y-3.5">
             {popular.map((post) => (
               <Link
                 key={post.slug}
-                href={`/blog/${post.slug}`}
+                href={`/${post.slug}`}
                 className="group flex items-center gap-3"
               >
-                <div className="relative h-13 w-16 shrink-0 aspect-[4/3] overflow-hidden rounded-xl bg-[#0B1B2B]">
+                <div className="relative h-13 w-16 shrink-0 aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
                   <SafeImage
                     src={post.image}
                     alt={post.imageAlt || post.title}
@@ -107,11 +107,11 @@ export default function BlogIndexSidebar({
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-xs font-bold leading-snug text-[#112338] transition-colors group-hover:text-[#B85D3E]">
+                  <p className="line-clamp-2 text-xs font-bold leading-snug text-[#2A302F] transition-colors group-hover:text-[#2D903A]">
                     {post.title}
                   </p>
                   <p className="mt-1 flex items-center gap-1 text-[11px] text-[#718096] font-medium">
-                    <CalendarIcon className="h-3 w-3 text-[#B85D3E]" />
+                    <CalendarIcon className="h-3 w-3 text-[#2D903A]" />
                     {formatDate(post.date)}
                   </p>
                 </div>
@@ -126,7 +126,7 @@ export default function BlogIndexSidebar({
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/15 shadow-sm">
           <TicketIcon className="h-5 w-5" />
         </div>
-        <p className="mt-3.5 font-serif text-base font-bold text-white">{ctaHeading}</p>
+        <p className="font-blog-display mt-3.5 text-base font-bold text-white">{ctaHeading}</p>
         <p className="mt-1.5 text-xs leading-relaxed text-[#CBD5E1]">{ctaBody}</p>
         <a
           href={ctaButtonHref}

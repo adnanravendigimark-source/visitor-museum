@@ -346,10 +346,26 @@ async function createTables() {
       blog_og_title TEXT NOT NULL DEFAULT '',
       blog_og_description TEXT NOT NULL DEFAULT '',
       blog_og_image TEXT NOT NULL DEFAULT '',
+      blog_hero_eyebrow TEXT NOT NULL DEFAULT '',
+      blog_hero_heading TEXT NOT NULL DEFAULT '',
+      blog_hero_subheading TEXT NOT NULL DEFAULT '',
+      blog_empty_state_text TEXT NOT NULL DEFAULT '',
+      blog_cta_button_text TEXT NOT NULL DEFAULT '',
+      blog_cta_button_href TEXT NOT NULL DEFAULT '',
       admin_password_hash TEXT,
       CONSTRAINT site_settings_singleton CHECK (id = 1)
     )
   `;
+
+  // Idempotent migration for installs that already ran setup-db.mjs before
+  // the Blog Page's hero/content fields existed — same reasoning as the
+  // museums rating/reviews_count migration above.
+  await sql`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_hero_eyebrow TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_hero_heading TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_hero_subheading TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_empty_state_text TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_cta_button_text TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS blog_cta_button_href TEXT NOT NULL DEFAULT ''`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS users (

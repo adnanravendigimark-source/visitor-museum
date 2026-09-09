@@ -44,7 +44,7 @@ export default async function MuseumPriceComparison({ museum }: { museum: Museum
                   {museum.currencySymbol}{tour.price} <span className="font-normal text-xs text-[#8A9BA8]">/ person</span>
                 </td>
                 <td className="px-6 py-4 text-[#556476]">{tour.priceTableColumn1 || tour.duration}</td>
-                <td className="px-6 py-4 text-[#556476]">{tour.priceTableFeature || tour.category || "Standard Ticket"}</td>
+                <td className="px-6 py-4 text-[#556476]">{tour.priceTableFeature || "Standard Ticket"}</td>
                 <td className="px-6 py-4 text-[#556476]">{tour.bestFor || "All Travelers"}</td>
                 <td className="px-6 py-4 text-right">
                   <a

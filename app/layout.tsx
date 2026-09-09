@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Roboto, Roboto_Slab } from "next/font/google";
+import { Roboto, Roboto_Slab, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
 import { resolveRobots } from "@/lib/seo";
 import { getSiteChrome } from "@/lib/homepage";
@@ -19,6 +19,24 @@ const robotoSlab = Roboto_Slab({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-roboto-slab",
+});
+
+// Loaded specifically for the Blog section (listing page + single posts),
+// which is styled to match the amsterdam-boat-tours reference site's
+// typography (Outfit for headings, Plus Jakarta Sans for body copy) via the
+// scoped `font-blog-display` / `font-blog-body` utilities in
+// tailwind.config.ts. The rest of the site keeps its own Roboto / Roboto
+// Slab pairing — these variables are additive, not a site-wide font change.
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-outfit",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plus-jakarta-sans",
 });
 
 const DEFAULT_OG_IMAGE = "/images/hero-louvre.jpg";
@@ -106,7 +124,7 @@ export default async function RootLayout({
   const themeStyle = buildThemeStyle(theme);
 
   return (
-    <html lang="en" className={`${roboto.variable} ${robotoSlab.variable}`}>
+    <html lang="en" className={`${roboto.variable} ${robotoSlab.variable} ${outfit.variable} ${plusJakartaSans.variable}`}>
       {GA_MEASUREMENT_ID && (
         <head>
           <link rel="preconnect" href="https://www.googletagmanager.com" />

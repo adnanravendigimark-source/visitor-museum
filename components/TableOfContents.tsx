@@ -12,7 +12,7 @@ export default function TableOfContents({
 
   return (
     <div className="rounded-2xl border border-[#E8ECEF] bg-white p-5 shadow-sm">
-      <p className="font-serif text-xs font-bold uppercase tracking-wider text-[#112338]">
+      <p className="font-blog-display text-xs font-bold uppercase tracking-wider text-[#112338]">
         {label}
       </p>
       <ol className="mt-3.5 space-y-2 border-l-2 border-[#E8ECEF] pl-3.5 text-xs">

@@ -12,7 +12,14 @@ export default function TourCard({
   bookNowText?: string;
   currencySymbol?: string;
 }) {
-  const highlights = tour.highlights && tour.highlights.length > 0 ? tour.highlights : tour.includes;
+  const highlights = tour.includes || [];
+
+  // "Ribbon badge" in the admin form is the
+  // editable field (tour.ribbon). Older tours were seeded with this same
+  // promotional text (e.g. "Bestseller") in the legacy `badge` column
+  // before the admin form existed — fall back to it so nothing that was
+  // already live goes blank, but any admin edit always wins.
+  const ribbonText = tour.ribbon || tour.badge;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -25,10 +32,10 @@ export default function TourCard({
           sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover transition duration-500 hover:scale-105"
         />
-        {tour.ribbon && (
+        {ribbonText && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-lg bg-[#2D903A] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
             <span>★</span>
-            {tour.ribbon}
+            {ribbonText}
           </span>
         )}
       </div>

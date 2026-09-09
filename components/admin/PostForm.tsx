@@ -217,7 +217,7 @@ export default function PostForm({
           </div>
           {!isNew && (
             <a
-              href={`/blog/${initial.slug}`}
+              href={`/${initial.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               title="Open this post on the live site"
@@ -254,9 +254,9 @@ export default function PostForm({
                   label="URL slug"
                   hint={
                     isNew
-                      ? "Auto-fills from the title. Page will live at /blog/" + (post.slug || "…")
+                      ? "Auto-fills from the title. Page will live at /" + (post.slug || "…")
                       : slugChanged
-                        ? "Changing this will automatically redirect the old address (/blog/" + initial.slug + ") to the new one, so links and search rankings aren't lost."
+                        ? "Changing this will automatically redirect the old address (/" + initial.slug + ") to the new one, so links and search rankings aren't lost."
                         : "Safe to change — the old address will automatically redirect to the new one."
                   }
                 >
@@ -417,7 +417,7 @@ export default function PostForm({
                 <textarea required rows={3} value={post.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} className={inputClass} />
                 <CharCounter length={post.metaDescription.length} min={120} max={158} />
               </Field>
-              <SeoPreview title={post.metaTitle || post.title} description={post.metaDescription || autoExcerpt} path={`/blog/${post.slug || "…"}`} />
+              <SeoPreview title={post.metaTitle || post.title} description={post.metaDescription || autoExcerpt} path={`/${post.slug || "…"}`} />
             </SectionCard>
 
             <SectionCard title="Social Share Preview" description="What this looks like when the link is shared on Facebook, WhatsApp, or X.">
@@ -429,7 +429,7 @@ export default function PostForm({
             </SectionCard>
 
             <SeoFieldsCard
-              pathHint={`/blog/${post.slug || "…"}`}
+              pathHint={`/${post.slug || "…"}`}
               value={{
                 canonicalUrl: post.canonicalUrl,
                 noIndex: post.noIndex,
@@ -485,7 +485,7 @@ export default function PostForm({
                   <ul className="space-y-1 text-sm text-stone-700">
                     {incomingRedirects.map((r) => (
                       <li key={r.oldSlug} className="rounded-lg bg-stone-50 px-3 py-1.5 font-mono text-xs">
-                        /blog/{r.oldSlug} → /blog/{post.slug}
+                        /{r.oldSlug} → /{post.slug}
                       </li>
                     ))}
                   </ul>

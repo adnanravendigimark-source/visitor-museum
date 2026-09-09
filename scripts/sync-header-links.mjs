@@ -1,25 +1,26 @@
-// Syncs the header's nav links to the site's current *featured* museums,
-// plus the standard utility links (About, Blog, Contact).
+// One-time cleanup for the header's saved nav links.
 //
-// Why this exists: the header's nav links (admin: Homepage -> Navbar ->
-// "Nav links") are a manually-curated list, edited independently from the
-// Museums admin. That's normal for a handful of links, but it means the
-// header can quietly go stale — e.g. this script used to hardcode exactly
-// the 4 museums the site launched with, so when more museums were added
-// and marked "Featured" later, the header kept showing the original 4
-// while the homepage grid (which reads the "Featured" flag live) moved on
-// to 6. Nothing kept them in sync.
+// The header's 4 museum ticket links used to be a manually-curated list
+// (admin: Homepage -> Navbar -> "Nav links") that this same script kept in
+// sync by re-writing it from the site's current *featured* museums. That
+// meant the header could quietly go stale between runs — e.g. it used to
+// hardcode exactly the museums the site launched with, so when more
+// museums were added and marked "Featured" later, the header kept showing
+// the original set while the homepage grid (which reads the "Featured"
+// flag live, every request) moved on.
 //
-// Run it any time the header should be brought back in line with which
-// museums are currently featured:
+// Header.tsx no longer stores museum links at all — it computes the top 4
+// featured museums itself, live, on every request. So this script now only
+// has one job: strip any leftover museum entries (and the old "Contact"
+// entry, which is no longer shown in the header) out of the saved
+// header_json, leaving just the non-museum links (About Us, Blog, or
+// anything else you've added) that Header.tsx layers in after the 4
+// dynamic museum links.
+//
+// Run it once to clean up old saved data:
 //   node scripts/sync-header-links.mjs
 //
-// This is a one-off convenience tool, not something to run automatically
-// on every deploy — if you've manually customized the header's nav links
-// in the admin (different labels, a different order, extra links), running
-// this will overwrite that customization with the auto-generated list
-// below. Prefer editing Admin -> Homepage -> Navbar directly for anything
-// beyond "just match the featured museums."
+// Safe to run again any time — it's idempotent.
 
 import fs from "fs";
 import path from "path";
@@ -51,33 +52,38 @@ async function main() {
   }
   const sql = neon(process.env.DATABASE_URL);
 
-  const museums = await sql`
-    SELECT name, slug FROM museums WHERE featured = true ORDER BY sort_order ASC, name ASC
-  `;
-
-  if (!museums.length) {
-    console.log("No museums are marked \"Featured\" — nothing to sync. Mark museums as Featured in the admin first.");
-    return;
-  }
-
-  const navLinks = [
-    ...museums.map((m) => ({ label: m.name, href: `/${m.slug}` })),
-    { label: "About Us", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
-  ];
+  const museums = await sql`SELECT slug FROM museums`;
+  const museumHrefs = new Set(museums.map((m) => `/${m.slug}`));
 
   const rows = await sql`SELECT header_json FROM homepage WHERE id = 1 LIMIT 1`;
   const header = rows[0]?.header_json || {};
-  header.navLinks = navLinks;
+  const before = Array.isArray(header.navLinks) ? header.navLinks : [];
+
+  const navLinks = before.filter(
+    (l) => l && !museumHrefs.has(l.href) && l.href !== "/contact" && l.href !== "/"
+  );
+
+  // If nothing is left (e.g. the header had never been customized), fall
+  // back to the same default Header.tsx itself would use.
+  const finalLinks = navLinks.length
+    ? navLinks
+    : [
+        { label: "About Us", href: "/about" },
+        { label: "Blog", href: "/blog" },
+      ];
+
+  header.navLinks = finalLinks;
 
   await sql`
     INSERT INTO homepage (id, header_json) VALUES (1, ${JSON.stringify(header)}::jsonb)
     ON CONFLICT (id) DO UPDATE SET header_json = EXCLUDED.header_json
   `;
 
-  console.log(`Updated the header's nav links to match ${museums.length} featured museum(s), plus About/Blog/Contact:`);
-  for (const link of navLinks) console.log(`  - ${link.label}  ->  ${link.href}`);
+  const removed = before.length - finalLinks.length;
+  console.log(`Removed ${removed} stale/museum/contact/home entr${removed === 1 ? "y" : "ies"} from the header's saved nav links.`);
+  console.log("Remaining non-museum links in the header:");
+  for (const link of finalLinks) console.log(`  - ${link.label}  ->  ${link.href}`);
+  console.log("\nThe 4 museum ticket links now come automatically from whichever museums are marked \"Featured\" — nothing to sync there anymore.");
 }
 
 main().catch((err) => {

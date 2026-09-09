@@ -11,10 +11,12 @@ import MuseumTourGrid from "@/components/MuseumTourGrid";
 import MuseumHighlights from "@/components/MuseumHighlights";
 import MuseumPracticalInfo from "@/components/MuseumPracticalInfo";
 import MuseumPriceComparison from "@/components/MuseumPriceComparison";
+import OtherAttractionsInCity from "@/components/OtherAttractionsInCity";
 import NearbyAttractions from "@/components/NearbyAttractions";
 import MuseumFaqSection from "@/components/MuseumFaqSection";
 import CtaBanner from "@/components/CtaBanner";
 import SafeImage from "@/components/SafeImage";
+import { CalendarIcon, ClockPayIcon, TicketIcon } from "@/components/icons";
 import { getMuseumBySlug, getToursByMuseum, getFaqsByMuseum } from "@/lib/museums";
 import { getPost, getPosts } from "@/lib/posts";
 import { extractTableOfContents } from "@/lib/tableOfContents";
@@ -77,6 +79,28 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   return {};
+}
+
+function formatPostDate(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function getAuthorParts(author: string) {
+  const [namePart, rolePart] = (author || "").split("/").map((s) => s.trim());
+  const name = namePart || "Visit Museums";
+  const role = rolePart || "";
+  const initials =
+    name
+      .replace(/^(Dr|Mr|Mrs|Ms|Prof)\.?\s+/i, "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "VM";
+  return { name, role, initials };
 }
 
 function currencyCode(symbol: string): string {
@@ -158,6 +182,7 @@ export default async function SlugPage({ params }: { params: { slug: string } })
           <MuseumHighlights museum={museum} />
           <MuseumPracticalInfo museum={museum} />
           <MuseumPriceComparison museum={museum} />
+          <OtherAttractionsInCity museum={museum} />
           <NearbyAttractions museum={museum} />
           <MuseumFaqSection museum={museum} />
           <CtaBanner
@@ -212,11 +237,13 @@ export default async function SlugPage({ params }: { params: { slug: string } })
       },
     };
 
+    const author = getAuthorParts(post.author);
+
     return (
       <>
         <Header />
-        <main className="bg-white py-10 sm:py-16">
-          <div className="mx-auto max-w-[1140px] px-4 sm:px-6">
+        <main className="font-blog-body min-h-screen bg-stone-50">
+          <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
             <Breadcrumbs
               items={[
                 { name: "Home", path: "/" },
@@ -225,28 +252,63 @@ export default async function SlugPage({ params }: { params: { slug: string } })
               ]}
             />
 
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-              {/* Left Column: Article Content (2/3 width) */}
-              <article className="lg:col-span-8">
-                <header className="mb-6">
-                  <h1 className="text-3xl sm:text-4xl font-bold text-[#2A302F] leading-tight">
-                    {post.title}
-                  </h1>
-                </header>
+            {/* Post Header */}
+            <div className="mt-5">
+              {post.category && (
+                <span className="inline-block rounded-md bg-[#FAF8F5] border border-[#ECE8DE] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#B85D3E]">
+                  {post.category}
+                </span>
+              )}
 
-                {post.image && (
-                  <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-gray-100 mb-8">
-                    <SafeImage
-                      src={post.image}
-                      alt={post.imageAlt || post.title}
-                      fill
-                      priority
-                      sizes="(min-width: 1024px) 66vw, 100vw"
-                      className="object-cover"
-                    />
-                  </div>
+              <h1 className="font-blog-display mt-3.5 text-3xl font-bold leading-tight text-[#112338] sm:text-4xl lg:text-5xl">
+                {post.title}
+              </h1>
+
+              {post.excerpt && (
+                <p className="mt-3.5 max-w-3xl text-sm leading-relaxed text-[#556476] sm:text-base">
+                  {post.excerpt}
+                </p>
+              )}
+
+              {/* Author Meta Row */}
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-[#556476]">
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarIcon className="h-4 w-4 text-[#B85D3E]" />
+                  {formatPostDate(post.date)}
+                </span>
+                {post.readTime && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <ClockPayIcon className="h-4 w-4 text-[#B85D3E]" />
+                    {post.readTime}
+                  </span>
                 )}
+                <span className="inline-flex items-center gap-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#112338] text-[10px] font-bold text-white">
+                    {author.initials}
+                  </span>
+                  <span className="font-semibold text-[#112338]">By {author.name}</span>
+                </span>
+              </div>
 
+              {/* Hero Cover Image */}
+              {post.image && (
+                <div className="relative mt-6 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-[#E8ECEF] bg-gray-100 shadow-sm sm:aspect-[21/10]">
+                  <SafeImage
+                    src={post.image}
+                    alt={post.imageAlt || post.title}
+                    fill
+                    priority
+                    sizes="(min-width: 1152px) 1152px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 2-Column Main Content & Sidebar */}
+            <div className="mt-10 pb-20 lg:grid lg:grid-cols-[1fr_280px] lg:gap-10">
+              {/* Left Column: Article Body */}
+              <div>
                 {post.quickAnswer && <QuickAnswer>{post.quickAnswer}</QuickAnswer>}
 
                 <BlogPostBody
@@ -255,20 +317,33 @@ export default async function SlugPage({ params }: { params: { slug: string } })
                   showRecommendedTour={!!post.recommendedTourAfterBlock && !!post.recommendedTourId}
                 />
 
-                <div className="mt-10">
-                  <CtaBanner
-                    heading={post.ctaHeading}
-                    subtext={post.ctaBody}
-                    buttonText={post.ctaButtonText}
-                    buttonHref={post.ctaButtonHref}
-                  />
-                </div>
-              </article>
+                {/* Bottom Article CTA Card */}
+                <div className="mt-12 flex flex-col items-center justify-between gap-5 rounded-2xl border border-[#E8ECEF] bg-gradient-to-br from-[#FAF8F5] via-white to-[#FAF8F5] p-6 text-center shadow-sm sm:flex-row sm:text-left">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#B85D3E]/10 text-[#B85D3E]">
+                      <TicketIcon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="font-blog-display text-base font-bold text-[#112338]">
+                        {post.ctaHeading}
+                      </p>
+                      <p className="mt-0.5 text-xs text-[#556476]">
+                        {post.ctaBody}
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Right Column: Sidebar (1/3 width) — search, table of
-                  contents for this article, popular guides, and the
-                  tickets promo card */}
-              <div className="lg:col-span-4">
+                  <a
+                    href={post.ctaButtonHref}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#0B1B2B] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:scale-[1.02]"
+                  >
+                    {post.ctaButtonText}
+                  </a>
+                </div>
+              </div>
+
+              {/* Right Column: Sidebar */}
+              <div className="mt-12 lg:mt-0">
                 <BlogSidebar
                   slug={post.slug}
                   popularPosts={recentPosts}

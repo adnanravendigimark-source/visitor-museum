@@ -48,7 +48,7 @@ export async function getIndexingOverview(): Promise<IndexingRow[]> {
       type: "post" as const,
       key: `post:${p.slug}`,
       label: p.title,
-      url: `/blog/${p.slug}`,
+      url: `/${p.slug}`,
       slug: p.slug,
       noIndex: p.noIndex,
       noFollow: p.noFollow,

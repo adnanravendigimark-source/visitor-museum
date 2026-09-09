@@ -42,7 +42,7 @@ export default async function AdminPostsPage() {
               </p>
             </div>
             <Link
-              href={`/blog/${post.slug}`}
+              href={`/${post.slug}`}
               target="_blank"
               className="shrink-0 text-sm font-medium text-stone-500 hover:underline"
             >

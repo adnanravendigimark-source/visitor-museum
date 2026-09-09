@@ -125,7 +125,7 @@ export default function BlogSearchGrid({
           {pageItems.map((post) => (
             <Link
               key={post.slug}
-              href={`/blog/${post.slug}`}
+              href={`/${post.slug}`}
               className="group flex flex-col overflow-hidden rounded-2xl border border-[#E8ECEF] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#CBD5E1] hover:shadow-lg"
             >
               <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
@@ -160,7 +160,7 @@ export default function BlogSearchGrid({
                 </div>
 
                 {/* Title */}
-                <h2 className="mt-2.5 line-clamp-2 font-serif text-[15px] font-bold leading-snug text-[#112338] transition-colors group-hover:text-[#B85D3E]">
+                <h2 className="font-blog-display mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[#112338] transition-colors group-hover:text-[#B85D3E]">
                   {post.title}
                 </h2>
 

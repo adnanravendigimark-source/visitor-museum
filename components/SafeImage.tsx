@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image, { ImageProps } from "next/image";
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=900&auto=format&fit=crop";
+  "/images/hero-louvre.jpg";
 
 export default function SafeImage({
   src,
@@ -14,6 +14,11 @@ export default function SafeImage({
 }: ImageProps & { fallbackSrc?: string }) {
   const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(src || fallbackSrc);
+    setHasError(false);
+  }, [src, fallbackSrc]);
 
   return (
     <Image

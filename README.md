@@ -103,3 +103,4 @@ A few things worth doing before pointing a real domain at this:
   baked into component-level hex literals rather than driven centrally by
   `lib/homepage.ts`'s theme fields. Ask if you'd like a full visual reskin
   as a follow-up.
+# visitor-museum

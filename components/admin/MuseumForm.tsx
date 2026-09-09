@@ -10,24 +10,32 @@ import SeoPreview from "./SeoPreview";
 import CharCounter from "./CharCounter";
 import SaveBar from "./SaveBar";
 import { useToast } from "./Toast";
-import type { Museum, HighlightCard, HoursRow } from "@/lib/museums";
+import type { Museum, HighlightCard, HoursRow, TourRecord } from "@/lib/museums";
 
 const inputClass =
   "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-canal-blue focus:outline-none focus:ring-1 focus:ring-canal-blue";
 const labelClass = "mb-1 block text-sm font-medium text-stone-700";
 const hintClass = "mt-1 text-xs text-stone-500";
 
-const TABS = [
-  { key: "details", label: "Details", icon: "🏛️" },
-  { key: "location", label: "Location", icon: "📍" },
-  { key: "highlights", label: "Highlights", icon: "✨" },
-  { key: "practical", label: "Practical Info", icon: "🕒" },
-  { key: "tickets", label: "Tickets & FAQ", icon: "🎟️" },
-  { key: "seo", label: "SEO", icon: "🔍" },
-  { key: "social", label: "Social Media", icon: "📣" },
+// One entry per section card, in the same order those sections actually
+// appear on the live museum page (hero → tickets → highlights → practical
+// info → price table → nearby attractions → FAQ → CTA), with the
+// non-visual identity/SEO/social sections bookending the flow. Powers both
+// the "Jump to section" quick nav and each card's default open/closed state.
+const SECTIONS = [
+  { id: "sec-basics", label: "Museum Basics" },
+  { id: "sec-card", label: "Homepage Grid Card" },
+  { id: "sec-hero", label: "Hero" },
+  { id: "sec-tickets", label: "Tickets Section" },
+  { id: "sec-highlights", label: "Highlights & About" },
+  { id: "sec-practical", label: "Practical Info" },
+  { id: "sec-price", label: "Price Comparison Table" },
+  { id: "sec-nearby", label: "Nearby Attractions" },
+  { id: "sec-faq", label: "FAQ Section" },
+  { id: "sec-cta", label: "Bottom CTA Banner" },
+  { id: "sec-seo", label: "SEO" },
+  { id: "sec-social", label: "Social Media" },
 ] as const;
-
-type TabKey = (typeof TABS)[number]["key"];
 
 function Field({
   label,
@@ -47,6 +55,41 @@ function Field({
   );
 }
 
+// Collapsible section card — same pattern as the Homepage editor's Content
+// tab, so the whole form is one continuous scroll instead of tabs.
+function SectionCard({
+  id,
+  title,
+  description,
+  children,
+  open,
+  onToggle,
+}: {
+  id: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div id={id} className="scroll-mt-24 rounded-2xl border border-stone-200 bg-white p-6">
+      <button type="button" onClick={onToggle} className="block w-full text-left">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-semibold text-stone-900">{title}</p>
+            {description && <p className="mt-0.5 text-xs text-stone-500">{description}</p>}
+          </div>
+          <span className={`shrink-0 text-stone-400 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true">
+            ▾
+          </span>
+        </div>
+      </button>
+      {open && <div className="mt-4 space-y-5">{children}</div>}
+    </div>
+  );
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -55,14 +98,39 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export default function MuseumForm({ initial, isNew }: { initial: Museum; isNew: boolean }) {
+export default function MuseumForm({
+  initial,
+  isNew,
+  tours = [],
+}: {
+  initial: Museum;
+  isNew: boolean;
+  tours?: TourRecord[];
+}) {
   const router = useRouter();
   const { showToast } = useToast();
   const [museum, setMuseum] = useState<Museum>(initial);
-  const [activeTab, setActiveTab] = useState<TabKey>("details");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [dirty, setDirty] = useState(false);
+
+  // Only the first section starts open — everything else is one click (or
+  // one "Jump to section" tap) away, so the page doesn't read as one huge
+  // wall of fields.
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    [SECTIONS[0].id]: true,
+  });
+
+  function toggleSection(id: string) {
+    setOpenSections((s) => ({ ...s, [id]: !s[id] }));
+  }
+
+  function jumpToSection(id: string) {
+    setOpenSections((s) => ({ ...s, [id]: true }));
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   function update<K extends keyof Museum>(key: K, value: Museum[K]) {
     setMuseum((m) => ({ ...m, [key]: value }));
@@ -110,7 +178,7 @@ export default function MuseumForm({ initial, isNew }: { initial: Museum; isNew:
     }
     if (!Number.isFinite(museum.lat) || !Number.isFinite(museum.lng) || (museum.lat === 0 && museum.lng === 0)) {
       setSaving(false);
-      setError("A real latitude/longitude is required for the Nearby Attractions feature to work — see the Location tab.");
+      setError("A real latitude/longitude is required for the Nearby Attractions feature to work — see the Practical Info section.");
       return;
     }
 
@@ -153,20 +221,20 @@ export default function MuseumForm({ initial, isNew }: { initial: Museum; isNew:
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="flex flex-wrap gap-1 rounded-2xl border border-stone-200 bg-white p-1.5">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition ${
-              activeTab === tab.key ? "bg-canal-blue text-white shadow-sm" : "text-stone-600 hover:bg-stone-100"
-            }`}
-          >
-            <span aria-hidden="true">{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
+      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-stone-400">Jump to section</p>
+        <div className="flex flex-wrap gap-1.5">
+          {SECTIONS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => jumpToSection(s.id)}
+              className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-100"
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -179,413 +247,448 @@ export default function MuseumForm({ initial, isNew }: { initial: Museum; isNew:
         </div>
       )}
 
-      {/* ---------------- DETAILS TAB ---------------- */}
-      {activeTab === "details" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Museum / attraction name">
-                <input required value={museum.name} onChange={(e) => handleNameChange(e.target.value)} className={inputClass} placeholder="e.g. Louvre Museum" />
-              </Field>
-              <Field label="Currency symbol" hint='e.g. "€", "CHF ", "$"'>
-                <input value={museum.currencySymbol} onChange={(e) => update("currencySymbol", e.target.value)} className={inputClass} />
-              </Field>
-            </div>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <Field label="City">
-                <input required value={museum.city} onChange={(e) => update("city", e.target.value)} className={inputClass} />
-              </Field>
-              <Field label="Country">
-                <input required value={museum.country} onChange={(e) => update("country", e.target.value)} className={inputClass} />
-              </Field>
-            </div>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <Field label="ID (URL-safe, unique)" hint="Used internally for tours/FAQs — generated from the name, can't be changed after creation.">
-                <input
-                  required
-                  disabled={!isNew}
-                  value={museum.id}
-                  onChange={(e) => update("id", slugify(e.target.value))}
-                  className={`${inputClass} ${!isNew ? "bg-stone-100 text-stone-500" : ""}`}
-                />
-              </Field>
-              <Field label="URL slug" hint={`Public URL: /${museum.slug || "your-slug"}`}>
-                <input required value={museum.slug} onChange={(e) => update("slug", slugify(e.target.value))} className={inputClass} placeholder="e.g. louvre-museum-tickets-tour" />
-              </Field>
-            </div>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <Field label="Rating" hint="Shown as the ★ rating on the homepage museums grid card (0–5).">
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  value={museum.rating ?? 4.7}
-                  onChange={(e) => update("rating", e.target.value === "" ? undefined : Number(e.target.value))}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Review count" hint='Free text, e.g. "10.2k" or "1,204" — shown next to the rating.'>
-                <input
-                  value={museum.reviewsCount ?? ""}
-                  onChange={(e) => update("reviewsCount", e.target.value)}
-                  className={inputClass}
-                  placeholder="e.g. 10.2k"
-                />
-              </Field>
-            </div>
-            <label className="mt-5 flex items-center gap-2 text-sm text-stone-700">
-              <input type="checkbox" checked={!!museum.featured} onChange={(e) => update("featured", e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
-              Featured (shown first / highlighted on the museums grid)
-            </label>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Museums grid card</p>
-            <ImageUploadField label="Card photo" value={museum.cardImage} onChange={(url) => update("cardImage", url)} aspectRatio={4 / 3} />
-            <Field label="Card photo alt text">
-              <input value={museum.cardImageAlt} onChange={(e) => update("cardImageAlt", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Card tagline" hint="Short line shown under the museum name on the grid card.">
-              <input value={museum.cardTagline} onChange={(e) => update("cardTagline", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Museum page hero</p>
-            <Field label="Hero badge (small pill above the headline)">
-              <input value={museum.heroBadge} onChange={(e) => update("heroBadge", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Hero headline (H1)">
-              <textarea rows={2} value={museum.heroHeading} onChange={(e) => update("heroHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Hero subheading">
-              <RichTextEditor value={museum.heroSubheading} onChange={(html) => update("heroSubheading", html)} minHeight="4rem" />
-            </Field>
-            <ImageUploadField label="Hero photo" value={museum.heroImage} onChange={(url) => update("heroImage", url)} aspectRatio={16 / 9} />
-            <Field label="Hero photo alt text">
-              <input value={museum.heroImageAlt} onChange={(e) => update("heroImageAlt", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
+      {/* ---------------- MUSEUM BASICS ---------------- */}
+      <SectionCard
+        id="sec-basics"
+        title="Museum Basics"
+        description="Core identity — not tied to one visual section, used across the whole page and site."
+        open={!!openSections["sec-basics"]}
+        onToggle={() => toggleSection("sec-basics")}
+      >
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Museum / attraction name">
+            <input required value={museum.name} onChange={(e) => handleNameChange(e.target.value)} className={inputClass} placeholder="e.g. Louvre Museum" />
+          </Field>
+          <Field label="Currency symbol" hint='e.g. "€", "CHF ", "$"'>
+            <input value={museum.currencySymbol} onChange={(e) => update("currencySymbol", e.target.value)} className={inputClass} />
+          </Field>
         </div>
-      )}
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="City">
+            <input required value={museum.city} onChange={(e) => update("city", e.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Country">
+            <input required value={museum.country} onChange={(e) => update("country", e.target.value)} className={inputClass} />
+          </Field>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="ID (URL-safe, unique)" hint="Used internally for tours/FAQs — generated from the name, can't be changed after creation.">
+            <input
+              required
+              disabled={!isNew}
+              value={museum.id}
+              onChange={(e) => update("id", slugify(e.target.value))}
+              className={`${inputClass} ${!isNew ? "bg-stone-100 text-stone-500" : ""}`}
+            />
+          </Field>
+          <Field label="URL slug" hint={`Public URL: /${museum.slug || "your-slug"}`}>
+            <input required value={museum.slug} onChange={(e) => update("slug", slugify(e.target.value))} className={inputClass} placeholder="e.g. louvre-museum-tickets-tour" />
+          </Field>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Rating" hint="Shown as the ★ rating on the homepage museums grid card (0–5).">
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="5"
+              value={museum.rating ?? 4.7}
+              onChange={(e) => update("rating", e.target.value === "" ? undefined : Number(e.target.value))}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Review count" hint='Free text, e.g. "10.2k" or "1,204" — shown next to the rating.'>
+            <input value={museum.reviewsCount ?? ""} onChange={(e) => update("reviewsCount", e.target.value)} className={inputClass} placeholder="e.g. 10.2k" />
+          </Field>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-stone-700">
+          <input type="checkbox" checked={!!museum.featured} onChange={(e) => update("featured", e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
+          Featured (shown first / highlighted on the museums grid)
+        </label>
+      </SectionCard>
 
-      {/* ---------------- LOCATION TAB ---------------- */}
-      {activeTab === "location" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Coordinates</p>
-            <p className="text-xs text-stone-500">
-              Powers the "Other Attractions in {museum.city || "this city"}" section on the live page — real
-              lat/lng is required so walking (≤3km) and driving (≤10km) distances to every other museum can be
-              calculated. Get exact coordinates from Google Maps: right-click the pin → click the coordinates to copy them.
+      {/* ---------------- HOMEPAGE GRID CARD ---------------- */}
+      <SectionCard
+        id="sec-card"
+        title="Homepage Grid Card"
+        description="How this museum appears in the grid of cards on the homepage."
+        open={!!openSections["sec-card"]}
+        onToggle={() => toggleSection("sec-card")}
+      >
+        <ImageUploadField label="Card photo" value={museum.cardImage} onChange={(url) => update("cardImage", url)} aspectRatio={4 / 3} />
+        <Field label="Card photo alt text">
+          <input value={museum.cardImageAlt} onChange={(e) => update("cardImageAlt", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Card tagline" hint="Short line shown under the museum name on the grid card.">
+          <input value={museum.cardTagline} onChange={(e) => update("cardTagline", e.target.value)} className={inputClass} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- HERO ---------------- */}
+      <SectionCard
+        id="sec-hero"
+        title="Hero"
+        description="The full-width banner at the top of this museum's page."
+        open={!!openSections["sec-hero"]}
+        onToggle={() => toggleSection("sec-hero")}
+      >
+        <Field label="Hero badge (small pill above the headline)">
+          <input value={museum.heroBadge} onChange={(e) => update("heroBadge", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Hero headline (H1)">
+          <textarea rows={2} value={museum.heroHeading} onChange={(e) => update("heroHeading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Hero subheading">
+          <RichTextEditor value={museum.heroSubheading} onChange={(html) => update("heroSubheading", html)} minHeight="4rem" />
+        </Field>
+        <ImageUploadField label="Hero photo" value={museum.heroImage} onChange={(url) => update("heroImage", url)} aspectRatio={16 / 9} />
+        <Field label="Hero photo alt text">
+          <input value={museum.heroImageAlt} onChange={(e) => update("heroImageAlt", e.target.value)} className={inputClass} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- TICKETS SECTION ---------------- */}
+      <SectionCard
+        id="sec-tickets"
+        title="Tickets Section"
+        description="The heading above the ticket cards. The tickets themselves are managed from the Tours & Tickets section in the sidebar."
+        open={!!openSections["sec-tickets"]}
+        onToggle={() => toggleSection("sec-tickets")}
+      >
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
+          <div>
+            <p className="text-sm font-semibold text-stone-900">
+              {tours.length} {tours.length === 1 ? "ticket" : "tickets"} for this museum
             </p>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Latitude">
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={museum.lat}
-                  onChange={(e) => update("lat", Number(e.target.value))}
-                  className={inputClass}
-                  placeholder="e.g. 48.860611"
-                />
-              </Field>
-              <Field label="Longitude">
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={museum.lng}
-                  onChange={(e) => update("lng", Number(e.target.value))}
-                  className={inputClass}
-                  placeholder="e.g. 2.337644"
-                />
-              </Field>
-            </div>
-            {Number.isFinite(museum.lat) && Number.isFinite(museum.lng) && !(museum.lat === 0 && museum.lng === 0) && (
-              <a
-                href={`https://www.google.com/maps?q=${museum.lat},${museum.lng}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-block text-xs font-medium text-canal-blue hover:underline"
-              >
-                Preview this pin on Google Maps →
-              </a>
-            )}
+            <p className="mt-0.5 text-xs text-stone-500">Edit price, description, includes, image, and booking link per ticket.</p>
           </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Address & getting there</p>
-            <Field label="Location heading">
-              <input value={museum.practicalAddressHeading} onChange={(e) => update("practicalAddressHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Address">
-              <textarea rows={2} value={museum.practicalAddress} onChange={(e) => update("practicalAddress", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Getting there / transit">
-              <input value={museum.practicalGettingThere} onChange={(e) => update("practicalGettingThere", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Nearby Attractions section</p>
-            <Field label="Section heading override (optional)" hint={`Leave blank to auto-generate "Other Attractions in ${museum.city || "{City}"}"`}>
-              <input value={museum.nearbyHeadingOverride} onChange={(e) => update("nearbyHeadingOverride", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- HIGHLIGHTS TAB ---------------- */}
-      {activeTab === "highlights" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">"What You'll See" section</p>
-            <Field label="Eyebrow">
-              <input value={museum.highlightsEyebrow} onChange={(e) => update("highlightsEyebrow", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Section heading (H2)">
-              <input value={museum.highlightsHeading} onChange={(e) => update("highlightsHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Subheading">
-              <textarea rows={2} value={museum.highlightsSubheading} onChange={(e) => update("highlightsSubheading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Highlight cards">
-              <RepeatableList<HighlightCard>
-                items={museum.highlights}
-                onChange={(highlights) => update("highlights", highlights)}
-                newItem={() => ({ icon: "✨", title: "New Highlight", body: "" })}
-                addLabel="+ Add highlight"
-                renderItem={(card, upd) => (
-                  <div className="grid gap-2 sm:grid-cols-[4rem_1fr]">
-                    <input value={card.icon} onChange={(e) => upd({ ...card, icon: e.target.value })} placeholder="🖼️" className={inputClass} />
-                    <div className="space-y-2">
-                      <input value={card.title} onChange={(e) => upd({ ...card, title: e.target.value })} placeholder="Title" className={inputClass} />
-                      <textarea rows={2} value={card.body} onChange={(e) => upd({ ...card, body: e.target.value })} placeholder="Body text" className={inputClass} />
-                    </div>
-                  </div>
-                )}
-              />
-            </Field>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">About section</p>
-            <Field label="About heading">
-              <input value={museum.aboutHeading} onChange={(e) => update("aboutHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="About body">
-              <RichTextEditor value={museum.aboutBody} onChange={(html) => update("aboutBody", html)} />
-            </Field>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- PRACTICAL INFO TAB ---------------- */}
-      {activeTab === "practical" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <Field label="Opening hours heading">
-              <input value={museum.practicalHoursHeading} onChange={(e) => update("practicalHoursHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Opening hours">
-              <RepeatableList<HoursRow>
-                items={museum.practicalHours}
-                onChange={(practicalHours) => update("practicalHours", practicalHours)}
-                newItem={() => ({ range: "", time: "" })}
-                addLabel="+ Add row"
-                renderItem={(row, upd) => (
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <input value={row.range} onChange={(e) => upd({ ...row, range: e.target.value })} placeholder="e.g. Tuesday – Sunday" className={inputClass} />
-                    <input value={row.time} onChange={(e) => upd({ ...row, time: e.target.value })} placeholder="e.g. 9:00 AM – 6:00 PM" className={inputClass} />
-                  </div>
-                )}
-              />
-            </Field>
-            <Field label="Small note under the hours table" hint="e.g. closed dates, last-entry times, seasonal changes.">
-              <input value={museum.practicalHoursNote} onChange={(e) => update("practicalHoursNote", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <Field label="“Best time to visit” heading">
-              <input value={museum.practicalBestTimeHeading} onChange={(e) => update("practicalBestTimeHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="“Best time to visit” text">
-              <RichTextEditor value={museum.practicalBestTimeBody} onChange={(html) => update("practicalBestTimeBody", html)} minHeight="5rem" />
-            </Field>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- TICKETS & FAQ TAB ---------------- */}
-      {activeTab === "tickets" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Tour grid section copy</p>
-            <p className="text-xs text-stone-500">
-              The tour cards themselves (price, description, GetYourGuide link) are managed separately —{" "}
-              {isNew ? "save this museum first, then " : ""}
-              {!isNew && (
-                <Link href={`/admin/museums/${museum.id}/tours`} className="font-medium text-canal-blue hover:underline">
-                  manage Tours & Tickets →
-                </Link>
-              )}
-              {isNew && "manage Tours & Tickets"}. This covers only the heading above them.
-            </p>
-            <Field label="Eyebrow">
-              <input value={museum.toursEyebrow} onChange={(e) => update("toursEyebrow", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Heading (H2)">
-              <input value={museum.toursHeading} onChange={(e) => update("toursHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Subheading">
-              <textarea rows={2} value={museum.toursSubheading} onChange={(e) => update("toursSubheading", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Price comparison table copy</p>
-            <Field label="Eyebrow">
-              <input value={museum.priceEyebrow} onChange={(e) => update("priceEyebrow", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Heading (H2)">
-              <input value={museum.priceHeading} onChange={(e) => update("priceHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Subheading">
-              <RichTextEditor value={museum.priceSubheading} onChange={(html) => update("priceSubheading", html)} minHeight="4rem" />
-            </Field>
-            <Field label="Small note under the table">
-              <textarea rows={2} value={museum.priceNote} onChange={(e) => update("priceNote", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">FAQ section</p>
-            <p className="text-xs text-stone-500">
-              The questions and answers are managed separately —{" "}
-              {!isNew ? (
-                <Link href={`/admin/museums/${museum.id}/faqs`} className="font-medium text-canal-blue hover:underline">
-                  manage FAQs →
-                </Link>
-              ) : (
-                "save this museum first, then manage FAQs"
-              )}
-              . This covers only the heading above them.
-            </p>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Eyebrow">
-                <input value={museum.faqEyebrow} onChange={(e) => update("faqEyebrow", e.target.value)} className={inputClass} />
-              </Field>
-              <Field label="Heading (H2)">
-                <input value={museum.faqHeading} onChange={(e) => update("faqHeading", e.target.value)} className={inputClass} />
-              </Field>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Bottom CTA banner</p>
-            <Field label="Heading">
-              <input value={museum.ctaHeading} onChange={(e) => update("ctaHeading", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Subtext">
-              <input value={museum.ctaSubtext} onChange={(e) => update("ctaSubtext", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Button text">
-              <input value={museum.ctaButtonText} onChange={(e) => update("ctaButtonText", e.target.value)} className={inputClass} />
-            </Field>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- SEO TAB ---------------- */}
-      {activeTab === "seo" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Search & Preview</p>
-            <Field label="SEO title" hint="Shown as the blue link text in Google, and the browser tab. Leave blank to use the museum name.">
-              <input value={museum.metaTitle} onChange={(e) => update("metaTitle", e.target.value)} className={inputClass} />
-              <CharCounter length={museum.metaTitle.length} min={40} max={60} />
-            </Field>
-            <Field label="Meta description" hint="The gray snippet under the title in Google search results.">
-              <textarea rows={3} value={museum.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} className={inputClass} />
-              <CharCounter length={museum.metaDescription.length} min={120} max={158} />
-            </Field>
-            <Field label="URL / slug">
-              <input value={`/${museum.slug}`} disabled className={`${inputClass} bg-stone-100 text-stone-500`} />
-            </Field>
-            <Field label="Canonical URL (optional)" hint="Leave blank to auto-generate.">
-              <input value={museum.canonicalUrl} onChange={(e) => update("canonicalUrl", e.target.value)} className={inputClass} placeholder={`Leave blank to auto-generate: /${museum.slug}`} />
-            </Field>
-            <SeoPreview title={museum.metaTitle || museum.name} description={museum.metaDescription || museum.heroSubheading.replace(/<[^>]+>/g, "")} path={`/${museum.slug}`} />
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Focus keyword</p>
-            <Field label="Focus keyword">
-              <input value={museum.focusKeyword} onChange={(e) => update("focusKeyword", e.target.value)} className={inputClass} placeholder="e.g. Louvre Museum tickets" />
-            </Field>
-            {focusChecklist && (
-              <ul className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
-                {focusChecklist.map((item) => (
-                  <li key={item.label} className={`flex items-center gap-2 ${item.pass ? "text-green-700" : "text-amber-700"}`}>
-                    <span>{item.pass ? "✓" : "!"}</span>
-                    {item.label}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {!isNew && (
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
-              <div>
-                <p className="text-sm font-semibold text-stone-900">Search Engine Indexing &amp; Link Following</p>
-                <p className="mt-0.5 text-xs text-stone-500">
-                  Currently{" "}
-                  <span className={museum.noIndex ? "font-medium text-amber-700" : "font-medium text-green-700"}>
-                    {museum.noIndex ? "noindex" : "index"}
-                  </span>
-                  {", "}
-                  <span className={museum.noFollow ? "font-medium text-amber-700" : "font-medium text-green-700"}>
-                    {museum.noFollow ? "nofollow" : "follow"}
-                  </span>
-                  . Managed from one place for every page on the site.
-                </p>
-              </div>
-              <Link href="/admin/indexing" className="shrink-0 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50">
-                Manage in Indexing →
-              </Link>
-            </div>
+          {isNew ? (
+            <span className="shrink-0 text-xs text-stone-400">Save this museum first</span>
+          ) : (
+            <Link
+              href={`/admin/museums/${museum.id}/tours`}
+              className="shrink-0 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50"
+            >
+              Manage Tickets →
+            </Link>
           )}
         </div>
-      )}
 
-      {/* ---------------- SOCIAL MEDIA TAB ---------------- */}
-      {activeTab === "social" && (
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 space-y-5">
-            <p className="font-semibold text-stone-900">Open Graph &amp; Twitter/X Preview</p>
-            <p className="text-xs text-stone-500">Leave blank to fall back to the hero's own title/description/image.</p>
-            <Field label="Social title (optional)">
-              <input value={museum.ogTitle} onChange={(e) => update("ogTitle", e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Social description (optional)">
-              <textarea rows={2} value={museum.ogDescription} onChange={(e) => update("ogDescription", e.target.value)} className={inputClass} />
-            </Field>
-            <ImageUploadField label="Social share image (optional)" value={museum.ogImage} onChange={(url) => update("ogImage", url)} aspectRatio={1.91 / 1} />
-          </div>
+        <Field label="Eyebrow">
+          <input value={museum.toursEyebrow} onChange={(e) => update("toursEyebrow", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Heading (H2)">
+          <input value={museum.toursHeading} onChange={(e) => update("toursHeading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Subheading">
+          <textarea rows={2} value={museum.toursSubheading} onChange={(e) => update("toursSubheading", e.target.value)} className={inputClass} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- HIGHLIGHTS & ABOUT ---------------- */}
+      <SectionCard
+        id="sec-highlights"
+        title="Highlights & About"
+        description="The 'What You'll See' section and the About block that follows it."
+        open={!!openSections["sec-highlights"]}
+        onToggle={() => toggleSection("sec-highlights")}
+      >
+        <Field label="Eyebrow">
+          <input value={museum.highlightsEyebrow} onChange={(e) => update("highlightsEyebrow", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Section heading (H2)">
+          <input value={museum.highlightsHeading} onChange={(e) => update("highlightsHeading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Subheading">
+          <textarea rows={2} value={museum.highlightsSubheading} onChange={(e) => update("highlightsSubheading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Highlight cards">
+          <RepeatableList<HighlightCard>
+            items={museum.highlights}
+            onChange={(highlights) => update("highlights", highlights)}
+            newItem={() => ({ icon: "✨", title: "New Highlight", body: "" })}
+            addLabel="+ Add highlight"
+            renderItem={(card, upd) => (
+              <div className="grid gap-2 sm:grid-cols-[4rem_1fr]">
+                <input value={card.icon} onChange={(e) => upd({ ...card, icon: e.target.value })} placeholder="🖼️" className={inputClass} />
+                <div className="space-y-2">
+                  <input value={card.title} onChange={(e) => upd({ ...card, title: e.target.value })} placeholder="Title" className={inputClass} />
+                  <textarea rows={2} value={card.body} onChange={(e) => upd({ ...card, body: e.target.value })} placeholder="Body text" className={inputClass} />
+                </div>
+              </div>
+            )}
+          />
+        </Field>
+        <div className="border-t border-stone-100 pt-5">
+          <Field label="About heading">
+            <input value={museum.aboutHeading} onChange={(e) => update("aboutHeading", e.target.value)} className={inputClass} />
+          </Field>
         </div>
-      )}
+        <Field label="About body">
+          <RichTextEditor value={museum.aboutBody} onChange={(html) => update("aboutBody", html)} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- PRACTICAL INFO ---------------- */}
+      <SectionCard
+        id="sec-practical"
+        title="Practical Info"
+        description="Hours, best time to visit, address, and the coordinates used for the Nearby Attractions feature."
+        open={!!openSections["sec-practical"]}
+        onToggle={() => toggleSection("sec-practical")}
+      >
+        <Field label="Opening hours heading">
+          <input value={museum.practicalHoursHeading} onChange={(e) => update("practicalHoursHeading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Opening hours">
+          <RepeatableList<HoursRow>
+            items={museum.practicalHours}
+            onChange={(practicalHours) => update("practicalHours", practicalHours)}
+            newItem={() => ({ range: "", time: "" })}
+            addLabel="+ Add row"
+            renderItem={(row, upd) => (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input value={row.range} onChange={(e) => upd({ ...row, range: e.target.value })} placeholder="e.g. Tuesday – Sunday" className={inputClass} />
+                <input value={row.time} onChange={(e) => upd({ ...row, time: e.target.value })} placeholder="e.g. 9:00 AM – 6:00 PM" className={inputClass} />
+              </div>
+            )}
+          />
+        </Field>
+        <Field label="Small note under the hours table" hint="e.g. closed dates, last-entry times, seasonal changes.">
+          <input value={museum.practicalHoursNote} onChange={(e) => update("practicalHoursNote", e.target.value)} className={inputClass} />
+        </Field>
+
+        <div className="border-t border-stone-100 pt-5">
+          <Field label="“Best time to visit” heading">
+            <input value={museum.practicalBestTimeHeading} onChange={(e) => update("practicalBestTimeHeading", e.target.value)} className={inputClass} />
+          </Field>
+        </div>
+        <Field label="“Best time to visit” text">
+          <RichTextEditor value={museum.practicalBestTimeBody} onChange={(html) => update("practicalBestTimeBody", html)} minHeight="5rem" />
+        </Field>
+
+        <div className="border-t border-stone-100 pt-5">
+          <Field label="Address heading">
+            <input value={museum.practicalAddressHeading} onChange={(e) => update("practicalAddressHeading", e.target.value)} className={inputClass} />
+          </Field>
+        </div>
+        <Field label="Address">
+          <textarea rows={2} value={museum.practicalAddress} onChange={(e) => update("practicalAddress", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Getting there / transit">
+          <input value={museum.practicalGettingThere} onChange={(e) => update("practicalGettingThere", e.target.value)} className={inputClass} />
+        </Field>
+
+        <div className="border-t border-stone-100 pt-5">
+          <p className="mb-2 text-xs text-stone-500">
+            Real lat/lng is required so the Nearby Attractions feature can find genuinely nearby places by walking
+            (≤3km) and driving (≤10km) distance. Get exact coordinates from Google Maps: right-click the pin → click
+            the coordinates to copy them.
+          </p>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Latitude">
+              <input
+                type="number"
+                step="any"
+                required
+                value={museum.lat}
+                onChange={(e) => update("lat", Number(e.target.value))}
+                className={inputClass}
+                placeholder="e.g. 48.860611"
+              />
+            </Field>
+            <Field label="Longitude">
+              <input
+                type="number"
+                step="any"
+                required
+                value={museum.lng}
+                onChange={(e) => update("lng", Number(e.target.value))}
+                className={inputClass}
+                placeholder="e.g. 2.337644"
+              />
+            </Field>
+          </div>
+          {Number.isFinite(museum.lat) && Number.isFinite(museum.lng) && !(museum.lat === 0 && museum.lng === 0) && (
+            <a
+              href={`https://www.google.com/maps?q=${museum.lat},${museum.lng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-xs font-medium text-canal-blue hover:underline"
+            >
+              Preview this pin on Google Maps →
+            </a>
+          )}
+        </div>
+      </SectionCard>
+
+      {/* ---------------- PRICE COMPARISON TABLE ---------------- */}
+      <SectionCard
+        id="sec-price"
+        title="Price Comparison Table"
+        description="The copy above the ticket comparison table. Rows come from the tours themselves."
+        open={!!openSections["sec-price"]}
+        onToggle={() => toggleSection("sec-price")}
+      >
+        <Field label="Eyebrow">
+          <input value={museum.priceEyebrow} onChange={(e) => update("priceEyebrow", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Heading (H2)">
+          <input value={museum.priceHeading} onChange={(e) => update("priceHeading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Subheading">
+          <RichTextEditor value={museum.priceSubheading} onChange={(html) => update("priceSubheading", html)} minHeight="4rem" />
+        </Field>
+        <Field label="Small note under the table">
+          <textarea rows={2} value={museum.priceNote} onChange={(e) => update("priceNote", e.target.value)} className={inputClass} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- NEARBY ATTRACTIONS ---------------- */}
+      <SectionCard
+        id="sec-nearby"
+        title="Nearby Attractions"
+        description="'Other Attractions' pulls from this site's own museums in the same city; 'Nearby Attractions' pulls live from OpenStreetMap using the coordinates above — neither list is editable by hand."
+        open={!!openSections["sec-nearby"]}
+        onToggle={() => toggleSection("sec-nearby")}
+      >
+        <Field label="Section heading override (optional)" hint={`Leave blank to auto-generate "Other Attractions in ${museum.city || "{City}"}"`}>
+          <input value={museum.nearbyHeadingOverride} onChange={(e) => update("nearbyHeadingOverride", e.target.value)} className={inputClass} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- FAQ SECTION ---------------- */}
+      <SectionCard
+        id="sec-faq"
+        title="FAQ Section"
+        description="The heading above the FAQ list. The questions and answers themselves are managed separately."
+        open={!!openSections["sec-faq"]}
+        onToggle={() => toggleSection("sec-faq")}
+      >
+        <p className="text-xs text-stone-500">
+          {!isNew ? (
+            <Link href={`/admin/museums/${museum.id}/faqs`} className="font-medium text-canal-blue hover:underline">
+              Manage FAQs →
+            </Link>
+          ) : (
+            "Save this museum first, then manage FAQs."
+          )}
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Eyebrow">
+            <input value={museum.faqEyebrow} onChange={(e) => update("faqEyebrow", e.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Heading (H2)">
+            <input value={museum.faqHeading} onChange={(e) => update("faqHeading", e.target.value)} className={inputClass} />
+          </Field>
+        </div>
+      </SectionCard>
+
+      {/* ---------------- BOTTOM CTA BANNER ---------------- */}
+      <SectionCard
+        id="sec-cta"
+        title="Bottom CTA Banner"
+        description="The final call-to-action banner at the end of the page."
+        open={!!openSections["sec-cta"]}
+        onToggle={() => toggleSection("sec-cta")}
+      >
+        <Field label="Heading">
+          <input value={museum.ctaHeading} onChange={(e) => update("ctaHeading", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Subtext">
+          <input value={museum.ctaSubtext} onChange={(e) => update("ctaSubtext", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Button text">
+          <input value={museum.ctaButtonText} onChange={(e) => update("ctaButtonText", e.target.value)} className={inputClass} />
+        </Field>
+      </SectionCard>
+
+      {/* ---------------- SEO ---------------- */}
+      <SectionCard
+        id="sec-seo"
+        title="SEO"
+        description="Controls exactly what Google shows for this museum's page."
+        open={!!openSections["sec-seo"]}
+        onToggle={() => toggleSection("sec-seo")}
+      >
+        <Field label="SEO title" hint="Shown as the blue link text in Google, and the browser tab. Leave blank to use the museum name.">
+          <input value={museum.metaTitle} onChange={(e) => update("metaTitle", e.target.value)} className={inputClass} />
+          <CharCounter length={museum.metaTitle.length} min={40} max={60} />
+        </Field>
+        <Field label="Meta description" hint="The gray snippet under the title in Google search results.">
+          <textarea rows={3} value={museum.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} className={inputClass} />
+          <CharCounter length={museum.metaDescription.length} min={120} max={158} />
+        </Field>
+        <Field label="URL / slug">
+          <input value={`/${museum.slug}`} disabled className={`${inputClass} bg-stone-100 text-stone-500`} />
+        </Field>
+        <Field label="Canonical URL (optional)" hint="Leave blank to auto-generate.">
+          <input value={museum.canonicalUrl} onChange={(e) => update("canonicalUrl", e.target.value)} className={inputClass} placeholder={`Leave blank to auto-generate: /${museum.slug}`} />
+        </Field>
+        <SeoPreview title={museum.metaTitle || museum.name} description={museum.metaDescription || museum.heroSubheading.replace(/<[^>]+>/g, "")} path={`/${museum.slug}`} />
+
+        <div className="border-t border-stone-100 pt-5">
+          <Field label="Focus keyword">
+            <input value={museum.focusKeyword} onChange={(e) => update("focusKeyword", e.target.value)} className={inputClass} placeholder="e.g. Louvre Museum tickets" />
+          </Field>
+        </div>
+        {focusChecklist && (
+          <ul className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm">
+            {focusChecklist.map((item) => (
+              <li key={item.label} className={`flex items-center gap-2 ${item.pass ? "text-green-700" : "text-amber-700"}`}>
+                <span>{item.pass ? "✓" : "!"}</span>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!isNew && (
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
+            <div>
+              <p className="text-sm font-semibold text-stone-900">Search Engine Indexing &amp; Link Following</p>
+              <p className="mt-0.5 text-xs text-stone-500">
+                Currently{" "}
+                <span className={museum.noIndex ? "font-medium text-amber-700" : "font-medium text-green-700"}>
+                  {museum.noIndex ? "noindex" : "index"}
+                </span>
+                {", "}
+                <span className={museum.noFollow ? "font-medium text-amber-700" : "font-medium text-green-700"}>
+                  {museum.noFollow ? "nofollow" : "follow"}
+                </span>
+                . Managed from one place for every page on the site.
+              </p>
+            </div>
+            <Link href="/admin/indexing" className="shrink-0 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50">
+              Manage in Indexing →
+            </Link>
+          </div>
+        )}
+      </SectionCard>
+
+      {/* ---------------- SOCIAL MEDIA ---------------- */}
+      <SectionCard
+        id="sec-social"
+        title="Social Media"
+        description="Open Graph & Twitter/X preview — leave blank to fall back to the hero's own title/description/image."
+        open={!!openSections["sec-social"]}
+        onToggle={() => toggleSection("sec-social")}
+      >
+        <Field label="Social title (optional)">
+          <input value={museum.ogTitle} onChange={(e) => update("ogTitle", e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Social description (optional)">
+          <textarea rows={2} value={museum.ogDescription} onChange={(e) => update("ogDescription", e.target.value)} className={inputClass} />
+        </Field>
+        <ImageUploadField label="Social share image (optional)" value={museum.ogImage} onChange={(url) => update("ogImage", url)} aspectRatio={1.91 / 1} />
+      </SectionCard>
 
       <SaveBar
         saving={saving}
         disabled={!isNew && !dirty}
         label={isNew ? "Create Museum" : "Save Changes"}
         onCancel={handleCancel}
-        note={isNew ? "Tours and FAQs can be added once the museum is created." : "Changes save across all tabs at once."}
+        note={isNew ? "Tours and FAQs can be added once the museum is created." : "Changes save across every section at once."}
       />
     </form>
   );

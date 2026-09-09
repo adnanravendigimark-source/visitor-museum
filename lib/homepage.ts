@@ -49,6 +49,26 @@ export interface GridSection {
   subheading: string;
 }
 
+export interface BlogTeaserSection {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  viewAllText: string;
+  readArticleText: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface FaqSection {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  items: FaqItem[];
+}
+
 export interface CtaBannerSection {
   heading: string;
   subtext: string;
@@ -68,6 +88,8 @@ export interface NotFoundSection {
 export interface HomepageSections {
   grid: GridSection;
   highlights: HighlightsSection;
+  blogTeaser: BlogTeaserSection;
+  faq: FaqSection;
   ctaBanner: CtaBannerSection;
   notFound: NotFoundSection;
 }
@@ -120,15 +142,17 @@ export interface HomepageContent {
   ogImage: string;
 }
 
+// Ticket links for the top 4 Featured museums are now built live in
+// Header.tsx from the Museums admin (never stored here) — DEFAULT_HEADER's
+// navLinks only covers the handful of non-museum pages shown alongside
+// them, so this list never needs to "keep up" with which museums exist.
 export const DEFAULT_HEADER: HeaderContent = {
   logoImage: "",
   logoAlt: "Visit Museums",
   bookNowText: "Explore Museums",
   navLinks: [
-    { label: "Home", href: "/" },
     { label: "About Us", href: "/about" },
     { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
   ],
   ctaText: "Explore Museums",
   ctaHref: "/#museums",
@@ -200,6 +224,40 @@ export const DEFAULT_SECTIONS: HomepageSections = {
       { icon: "📰", title: "Latest News", body: "Updates & exhibitions" },
       { icon: "🗝️", title: "Insider Tips", body: "Make the most of your visit" },
       { icon: "🧳", title: "Travel Inspiration", body: "Discover new places" },
+    ],
+  },
+  blogTeaser: {
+    eyebrow: "TRAVEL GUIDES",
+    heading: "Popular Articles & Guides",
+    subheading: "Tips and travel insights to help you plan the best museum visits worldwide.",
+    viewAllText: "View All Articles",
+    readArticleText: "Read More",
+  },
+  faq: {
+    eyebrow: "GOT QUESTIONS?",
+    heading: "Frequently Asked Questions",
+    subheading: "Everything you need to know before booking your museum tickets with us.",
+    items: [
+      {
+        question: "Is Visit Museums an official ticket seller?",
+        answer:
+          "<p>We're an independent guide that compares skip-the-line tickets and guided tours from verified, authorized providers for museums and attractions worldwide — we don't print or issue tickets ourselves.</p>",
+      },
+      {
+        question: "Are the tickets shown on Visit Museums genuine and valid?",
+        answer:
+          "<p>Yes. Every ticket and tour listed links out to a trusted, authorized provider, so you always book directly with them and receive an official confirmation.</p>",
+      },
+      {
+        question: "Can I cancel or get a refund on my booking?",
+        answer:
+          "<p>Cancellation and refund policies are set by the ticket provider, not by Visit Museums. Check the terms shown on the provider's booking page before you confirm.</p>",
+      },
+      {
+        question: "Do I need to print my ticket, or is mobile OK?",
+        answer:
+          "<p>Most providers accept a ticket shown on your phone, but this varies by museum. Check the specific ticket's details on the provider's page for entry requirements.</p>",
+      },
     ],
   },
   ctaBanner: {
@@ -288,6 +346,8 @@ function rowToHomepage(row: any): HomepageContent {
     sections: {
       grid: { ...DEFAULT_SECTIONS.grid, ...sectionsRaw.grid },
       highlights: { ...DEFAULT_SECTIONS.highlights, ...sectionsRaw.highlights },
+      blogTeaser: { ...DEFAULT_SECTIONS.blogTeaser, ...sectionsRaw.blogTeaser },
+      faq: { ...DEFAULT_SECTIONS.faq, ...sectionsRaw.faq },
       ctaBanner: { ...DEFAULT_SECTIONS.ctaBanner, ...sectionsRaw.ctaBanner },
       notFound: { ...DEFAULT_SECTIONS.notFound, ...sectionsRaw.notFound },
     },

@@ -83,7 +83,7 @@ export default function BlogSidebar({
       {/* Popular Articles */}
       {popular.length > 0 && (
         <div className="rounded-2xl border border-[#E8ECEF] bg-white p-5 shadow-sm">
-          <p className="font-serif text-xs font-bold uppercase tracking-wider text-[#2A302F]">
+          <p className="font-blog-display text-xs font-bold uppercase tracking-wider text-[#2A302F]">
             {relatedHeading}
           </p>
           <div className="mt-4 space-y-3.5">
@@ -128,7 +128,7 @@ export default function BlogSidebar({
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/15 shadow-sm">
           <TicketIcon className="h-5 w-5" />
         </div>
-        <p className="mt-3.5 font-serif text-base font-bold text-white">
+        <p className="font-blog-display mt-3.5 text-base font-bold text-white">
           {promoHeading}
         </p>
         <p className="mt-1.5 text-xs leading-relaxed text-[#CBD5E1]">
@@ -144,7 +144,7 @@ export default function BlogSidebar({
 
       {/* Newsletter Card */}
       <div className="rounded-2xl border border-[#E8ECEF] bg-white p-5 shadow-sm">
-        <p className="font-serif text-xs font-bold uppercase tracking-wider text-[#112338]">
+        <p className="font-blog-display text-xs font-bold uppercase tracking-wider text-[#112338]">
           NEWSLETTER
         </p>
         <p className="mt-2 text-xs text-[#556476] leading-relaxed">

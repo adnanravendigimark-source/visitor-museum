@@ -2,134 +2,162 @@
   {
     "id": "louvre-faq-1",
     "museumId": "louvre-museum",
-    "question": "Do I need to book Louvre tickets in advance?",
-    "answer": "Yes. The Louvre requires a timed-entry reservation for every visitor, including those with free admission. Tickets — especially for weekends and school holidays — regularly sell out days in advance, so booking ahead is strongly recommended.",
-    "category": "Tickets & Booking"
+    "question": "What are the Louvre Museum's opening hours?",
+    "answer": "The Louvre Museum is typically open from 9 a.m. to 6 p.m. on most days, except on Tuesdays when it is closed. It's also open late until 9:45 p.m. on Wednesdays and Fridays.",
+    "category": "Visitor Info"
   },
   {
     "id": "louvre-faq-2",
     "museumId": "louvre-museum",
-    "question": "How much does it cost to visit the Louvre?",
-    "answer": "Since January 2026, the Louvre uses two-tier pricing: a lower rate for residents of the European Economic Area (EU plus Iceland, Liechtenstein, and Norway), and a higher rate for non-EEA visitors. Children under 18 and EU/EEA residents aged 18–25 enter free with valid ID, though a booking fee may still apply on third-party tickets.",
+    "question": "Are there any free admission days or times?",
+    "answer": "Admission is free for individuals under 18 and EU residents under 26. Additionally, the museum offers free admission on the first Friday of each month from 6 p.m. to 9:45 p.m. (except July and August).",
     "category": "Tickets & Booking"
   },
   {
     "id": "louvre-faq-3",
     "museumId": "louvre-museum",
-    "question": "Is the Louvre free on any days?",
-    "answer": "Yes. Entry is free for all visitors on the first Friday of the month after 6:00 PM (except August, when the museum closes earlier that day), and on the first Sunday of the month from October to March. A free timed-entry reservation is still required on these dates.",
-    "category": "Tickets & Booking"
+    "question": "How long does it take to visit the Louvre?",
+    "answer": "The time needed to visit the Louvre varies based on individual interests. Many visitors spend at least half a day (3–4 hours) exploring the major highlights, while art lovers could spend full days.",
+    "category": "Visitor Info"
   },
   {
     "id": "louvre-faq-4",
     "museumId": "louvre-museum",
-    "question": "How long should I plan for a Louvre visit?",
-    "answer": "Most first-time visitors spend 2–4 hours seeing the museum's highlights, such as the Mona Lisa, the Venus de Milo, and the Winged Victory of Samothrace. Seeing the entire museum in depth would take multiple full days, so it's worth planning a route in advance.",
-    "category": "Visiting Tips"
+    "question": "Is it necessary to buy tickets in advance?",
+    "answer": "Yes. Due to high visitor demand, the Louvre mandates online timed reservations. Purchasing in advance is essential to avoid being turned away at the door.",
+    "category": "Tickets & Booking"
   },
   {
     "id": "louvre-faq-5",
     "museumId": "louvre-museum",
-    "question": "What is the closest metro station to the Louvre?",
-    "answer": "Palais-Royal–Musée du Louvre, served by Métro lines 1 and 7, sits directly beneath the museum and is the most convenient stop.",
-    "category": "Getting There"
+    "question": "What are the must-see attractions in the Louvre?",
+    "answer": "Some of the must-see attractions include the Mona Lisa, Venus de Milo, Winged Victory of Samothrace, Egyptian antiquities, and Napoleon III's Apartments.",
+    "category": "Visitor Info"
   },
   {
     "id": "duomo-faq-1",
     "museumId": "duomo-florence",
     "question": "Which ticket includes access to climb Brunelleschi's Dome?",
-    "answer": "Only the <strong>Brunelleschi Pass</strong> (or a dedicated guided Dome tour) includes access to climb the 463 steps of Brunelleschi's Dome. The <em>Giotto Pass</em> includes the Bell Tower, Baptistery, Museum, and Crypt, but not the Dome. To climb the Dome, you must select a Brunelleschi Pass or a guided Dome tour with a mandatory timed reservation.",
+    "answer": "Only the Brunelleschi Pass (or a dedicated guided Dome tour) includes access to climb the 463 steps of Brunelleschi's Dome. The Giotto Pass includes the Bell Tower, Baptistery, Museum, and Crypt, but not the Dome.",
     "category": "Tickets & Passes"
   },
   {
     "id": "duomo-faq-2",
     "museumId": "duomo-florence",
     "question": "How many steps is the Dome climb, and is there an elevator?",
-    "answer": "There are <strong>463 stone steps</strong> to climb Brunelleschi's Dome, and there is <strong>no elevator</strong>. The ascent winds through narrow 15th-century corridors, tight spiral staircases, and catwalks below the Last Judgment ceiling frescoes.",
+    "answer": "There are 463 stone steps to climb Brunelleschi's Dome, and there is no elevator. The climb offers close-up views of Vasari's Last Judgment frescoes and 360° views from the top lantern.",
     "category": "Dome Climb Access"
   },
   {
     "id": "duomo-faq-3",
     "museumId": "duomo-florence",
-    "question": "Why do I need to book my Dome Climb time slot in advance?",
-    "answer": "Due to safety regulations and the narrow physical constraints of the double dome shell, only a limited number of visitors are permitted to ascend every 45 minutes. During peak season, <strong>Dome Climb time slots sell out 2–4 weeks in advance</strong>.",
-    "category": "Booking & Reservations"
+    "question": "What is the dress code for visiting Florence Cathedral?",
+    "answer": "Florence Cathedral is an active consecrated Catholic church. Shoulders and knees must be fully covered for both men and women. Hats and sunglasses must be removed inside.",
+    "category": "Visitor Rules"
   },
   {
     "id": "duomo-faq-4",
     "museumId": "duomo-florence",
-    "question": "What is the dress code for visiting Florence Cathedral?",
-    "answer": "Florence Cathedral is an active consecrated Catholic church with a strict dress code. <strong>Shoulders and knees must be fully covered</strong> for both men and women. Hats and sunglasses must be removed inside.",
-    "category": "Visitor Rules"
-  },
-  {
-    "id": "duomo-faq-5",
-    "museumId": "duomo-florence",
     "question": "How long is my Florence Duomo Pass valid for?",
-    "answer": "All official Duomo passes are <strong>valid for 3 consecutive calendar days (72 hours)</strong> from the moment you scan your barcode at your first monument. Your Dome Climb must take place at your exact reserved time slot, but other monuments can be visited any time during the 3-day window.",
+    "answer": "All official Duomo passes are valid for 3 consecutive calendar days (72 hours) from the moment you scan your barcode at your first monument.",
     "category": "Tickets & Passes"
-  },
-  {
-    "id": "duomo-faq-6",
-    "museumId": "duomo-florence",
-    "question": "Can I enter the Florence Cathedral for free?",
-    "answer": "Admission to the main Cathedral nave floor is technically free, but the free public queue routinely takes 1.5 to 2.5 hours. Free entry only allows you to view the empty main nave — it does not include the Dome climb, Bell Tower, Baptistery, Museum, or Crypt.",
-    "category": "Visitor Information"
   },
   {
     "id": "uffizi-faq-1",
     "museumId": "uffizi-gallery",
     "question": "Do I need to book Uffizi Gallery tickets in advance?",
-    "answer": "It's strongly recommended. The Uffizi limits the number of visitors admitted per time slot, and tickets — especially for mornings and weekends — can sell out several days ahead in high season.",
+    "answer": "It is strongly recommended. The Uffizi limits visitor capacity per time slot, and tickets regularly sell out days in advance during high season.",
     "category": "Tickets & Booking"
   },
   {
     "id": "uffizi-faq-2",
     "museumId": "uffizi-gallery",
-    "question": "How much does an Uffizi ticket cost?",
-    "answer": "A standard adult ticket costs around €25 bought on the day at the museum, or slightly more when booked online in advance including a booking fee. A discounted afternoon rate applies for visits starting at 4:00 PM or later. Under-18s enter free year-round.",
-    "category": "Tickets & Booking"
+    "question": "How far is the Uffizi Gallery from the Duomo?",
+    "answer": "About a 5-minute walk. The Uffizi is situated between Piazza della Signoria and the Arno river, making it very easy to combine with a Duomo visit.",
+    "category": "Getting There"
   },
   {
     "id": "uffizi-faq-3",
     "museumId": "uffizi-gallery",
-    "question": "Is the Uffizi free on any day?",
-    "answer": "Entry is free for everyone on the first Sunday of each month, but online booking isn't available on that day and queues are typically very long.",
-    "category": "Tickets & Booking"
-  },
-  {
-    "id": "uffizi-faq-4",
-    "museumId": "uffizi-gallery",
-    "question": "How far is the Uffizi Gallery from the Duomo?",
-    "answer": "About a 5-minute walk. The Uffizi sits between Palazzo Vecchio and the Arno river, making it easy to combine with a Duomo visit on the same day.",
-    "category": "Getting There"
+    "question": "What are the most famous paintings in the Uffizi?",
+    "answer": "The most celebrated works include Sandro Botticelli's The Birth of Venus and Primavera, Leonardo da Vinci's Annunciation, Michelangelo's Doni Tondo, and Titian's Venus of Urbino.",
+    "category": "Visitor Info"
   },
   {
     "id": "lindt-faq-1",
     "museumId": "lindt-home-of-chocolate",
     "question": "Do I need to book Lindt Home of Chocolate tickets in advance?",
-    "answer": "Booking online in advance is recommended, particularly for weekends and Swiss school holidays, since the museum can reach capacity on its busiest days.",
+    "answer": "Booking online in advance is recommended, particularly for weekends and Swiss school holidays, as time slots often sell out.",
     "category": "Tickets & Booking"
   },
   {
     "id": "lindt-faq-2",
     "museumId": "lindt-home-of-chocolate",
-    "question": "How do I get to the Lindt Home of Chocolate from Zurich?",
-    "answer": "Take the S8 S-Bahn train from Zurich Hauptbahnhof to Kilchberg station, then follow the signposted short walk to the museum. In summer, a scenic option is the Lake Zurich boat to Kilchberg.",
-    "category": "Getting There"
+    "question": "Is chocolate tasting included with the ticket?",
+    "answer": "Yes! Your ticket includes unlimited tastings at interactive chocolate fountain stations and liquid chocolate dispensaries throughout the exhibition.",
+    "category": "Visitor Info"
   },
   {
     "id": "lindt-faq-3",
     "museumId": "lindt-home-of-chocolate",
-    "question": "Is chocolate included with my ticket?",
-    "answer": "Yes — the visit includes chocolate tasting stations throughout the exhibition. Additional pralines and treats can be purchased in the on-site shop, the largest Lindt boutique in the world.",
-    "category": "Visitor Information"
+    "question": "How do I reach the museum from Zurich city center?",
+    "answer": "Take S-Bahn train S8 or S24 from Zurich HB to Kilchberg station, followed by a short 10-minute walk. You can also take bus 165 directly from Bürkliplatz.",
+    "category": "Getting There"
   },
   {
-    "id": "lindt-faq-4",
-    "museumId": "lindt-home-of-chocolate",
-    "question": "How long does a visit take?",
-    "answer": "Most visitors spend around 1.5 to 2 hours exploring the seven interactive \"chocolate worlds,\" the fountain, and the shop.",
-    "category": "Visiting Tips"
+    "id": "van-gogh-faq-1",
+    "museumId": "van-gogh-museum",
+    "question": "What are the Van Gogh Museum's opening hours?",
+    "answer": "The museum is open daily from 9 a.m. to 6 p.m. On selected Fridays, it stays open late until 9 p.m.",
+    "category": "Visitor Info"
+  },
+  {
+    "id": "van-gogh-faq-2",
+    "museumId": "van-gogh-museum",
+    "question": "Can I buy Van Gogh Museum tickets at the door?",
+    "answer": "No. The Van Gogh Museum in Amsterdam operates on a strict 100% online timed-ticket policy. Tickets must be purchased in advance.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "van-gogh-faq-3",
+    "museumId": "van-gogh-museum",
+    "question": "What's included in a standard ticket?",
+    "answer": "A standard ticket grants full access to the permanent collection (featuring Sunflowers, The Bedroom, Almond Blossoms, and self-portraits) as well as any temporary exhibitions.",
+    "category": "Tickets & Booking"
+  },
+  {
+    "id": "rijksmuseum-faq-1",
+    "museumId": "rijksmuseum",
+    "question": "How long does a visit to the Rijksmuseum take?",
+    "answer": "Most visitors spend between 2 and 3 hours exploring the Gallery of Honour, Rembrandt's The Night Watch, Vermeer's works, and the Cuypers Library.",
+    "category": "Visitor Info"
+  },
+  {
+    "id": "rijksmuseum-faq-2",
+    "museumId": "rijksmuseum",
+    "question": "Is photography allowed inside the Rijksmuseum?",
+    "answer": "Yes, non-flash photography without tripods or selfie sticks is permitted throughout the permanent collections.",
+    "category": "Visitor Rules"
+  },
+  {
+    "id": "vasa-faq-1",
+    "museumId": "vasa-museum",
+    "question": "What is the Vasa Museum and why is it unique?",
+    "answer": "The Vasa Museum houses the world's only intact 17th-century warship, the Vasa, which sank on its maiden voyage in 1628 and was salvaged almost completely intact in 1961.",
+    "category": "Visitor Info"
+  },
+  {
+    "id": "accademia-faq-1",
+    "museumId": "accademia-gallery",
+    "question": "How long should I spend at the Accademia Gallery?",
+    "answer": "The Accademia Gallery is a compact museum. Most visitors spend 1 to 1.5 hours marveling at Michelangelo's David and the Hall of the Prisoners.",
+    "category": "Visitor Info"
+  },
+  {
+    "id": "atomium-faq-1",
+    "museumId": "brussels-atomium",
+    "question": "What is included with the Atomium ticket?",
+    "answer": "The standard ticket gives access to the panoramic top sphere, the permanent Expo 58 exhibition, light shows inside the escalators, and the nearby Design Museum Brussels.",
+    "category": "Tickets & Booking"
   }
 ]

@@ -18,6 +18,7 @@ import type {
   FooterLink,
   HeroFeature,
   HighlightCard,
+  FaqItem,
 } from "@/lib/homepage";
 
 const inputClass =
@@ -42,6 +43,8 @@ const CONTENT_SECTIONS = [
   { id: "sec-hero", label: "Hero" },
   { id: "sec-grid", label: "Museums Grid" },
   { id: "sec-highlights", label: "Why Book With Us" },
+  { id: "sec-blogteaser", label: "Blog Teaser" },
+  { id: "sec-faq", label: "Homepage FAQ" },
   { id: "sec-ctabanner", label: "Bottom CTA Banner" },
   { id: "sec-404", label: "404 Page" },
   { id: "sec-footer", label: "Footer" },
@@ -186,6 +189,22 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
     setSaved(false);
   }
 
+  function updateBlogTeaser(patch: Partial<HomepageContent["sections"]["blogTeaser"]>) {
+    setContent((c) => ({
+      ...c,
+      sections: { ...c.sections, blogTeaser: { ...c.sections.blogTeaser, ...patch } },
+    }));
+    setSaved(false);
+  }
+
+  function updateFaq(patch: Partial<HomepageContent["sections"]["faq"]>) {
+    setContent((c) => ({
+      ...c,
+      sections: { ...c.sections, faq: { ...c.sections.faq, ...patch } },
+    }));
+    setSaved(false);
+  }
+
   function updateCtaBanner(patch: Partial<HomepageContent["sections"]["ctaBanner"]>) {
     setContent((c) => ({
       ...c,
@@ -297,7 +316,14 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
             open={!!openSections["sec-navbar"]}
             onToggle={() => toggleSection("sec-navbar")}
           >
-            <Field label="Nav links">
+            <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-900">
+              The first 4 ticket links shown in the header aren't listed here — they're generated
+              automatically from whichever museums are marked <strong>Featured</strong> in{" "}
+              <Link href="/admin/museums" className="underline">Museums &amp; Attractions</Link>, in the
+              same order as that list. Feature, un-feature, or reorder museums there and the header
+              updates on its own.
+            </div>
+            <Field label="Other nav links (shown after the 4 museum links)" hint="Contact isn't shown in the header nav by design — it's still reachable from the footer and every page.">
               <RepeatableList<NavLink>
                 items={content.header.navLinks}
                 onChange={(navLinks) => updateHeader({ navLinks })}
@@ -411,6 +437,68 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
                       <input value={card.title} onChange={(e) => upd({ ...card, title: e.target.value })} placeholder="Title" className={inputClass} />
                       <textarea rows={2} value={card.body} onChange={(e) => upd({ ...card, body: e.target.value })} placeholder="Body text" className={inputClass} />
                     </div>
+                  </div>
+                )}
+              />
+            </Field>
+          </SectionCard>
+
+          <SectionCard
+            id="sec-blogteaser"
+            title="Blog Teaser section"
+            description="The 'Popular Articles & Guides' section showing your 3 latest blog posts on the homepage."
+            open={!!openSections["sec-blogteaser"]}
+            onToggle={() => toggleSection("sec-blogteaser")}
+          >
+            <Field label="Eyebrow">
+              <input value={content.sections.blogTeaser.eyebrow} onChange={(e) => updateBlogTeaser({ eyebrow: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Section heading (H2)">
+              <input value={content.sections.blogTeaser.heading} onChange={(e) => updateBlogTeaser({ heading: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Subheading">
+              <textarea rows={2} value={content.sections.blogTeaser.subheading} onChange={(e) => updateBlogTeaser({ subheading: e.target.value })} className={inputClass} />
+            </Field>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label={'"View all" button text'}>
+                <input value={content.sections.blogTeaser.viewAllText} onChange={(e) => updateBlogTeaser({ viewAllText: e.target.value })} className={inputClass} />
+              </Field>
+              <Field label="Per-article link text">
+                <input value={content.sections.blogTeaser.readArticleText} onChange={(e) => updateBlogTeaser({ readArticleText: e.target.value })} className={inputClass} />
+              </Field>
+            </div>
+            <p className={hintClass}>
+              Only shows once you have at least one published blog post — manage posts from{" "}
+              <Link href="/admin/posts" className="underline">Posts</Link>.
+            </p>
+          </SectionCard>
+
+          <SectionCard
+            id="sec-faq"
+            title="Homepage FAQ"
+            description="General trust & booking questions shown near the bottom of the homepage — separate from each museum's own FAQ."
+            open={!!openSections["sec-faq"]}
+            onToggle={() => toggleSection("sec-faq")}
+          >
+            <Field label="Eyebrow">
+              <input value={content.sections.faq.eyebrow} onChange={(e) => updateFaq({ eyebrow: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Section heading (H2)">
+              <input value={content.sections.faq.heading} onChange={(e) => updateFaq({ heading: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Subheading">
+              <textarea rows={2} value={content.sections.faq.subheading} onChange={(e) => updateFaq({ subheading: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Questions" hint="Hidden entirely if this list is empty.">
+              <RepeatableList<FaqItem>
+                items={content.sections.faq.items}
+                onChange={(items) => updateFaq({ items })}
+                newItem={() => ({ question: "New question?", answer: "" })}
+                addLabel="+ Add question"
+                renderItem={(item, upd) => (
+                  <div className="space-y-2">
+                    <input value={item.question} onChange={(e) => upd({ ...item, question: e.target.value })} placeholder="Question" className={inputClass} />
+                    <RichTextEditor value={item.answer} onChange={(html) => upd({ ...item, answer: html })} minHeight="3rem" />
                   </div>
                 )}
               />

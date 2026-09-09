@@ -374,13 +374,17 @@ export async function setMuseumIndexing(id: string, noIndex: boolean, noFollow: 
 export interface TourRecord {
   id: string;
   museumId: string;
+  // `badge` is a legacy field: older imported tours have their promotional
+  // ribbon text (e.g. "Bestseller") sitting here instead of in `ribbon`,
+  // from before the admin form existed. It's never directly editable —
+  // the admin form pre-fills `ribbon` from it on load and it's simply
+  // carried along unchanged after that, so it never gets lost, but every
+  // edit lands on `ribbon` going forward.
   badge?: string;
   ribbon?: string;
   title: string;
   description: string;
   includes: string[];
-  highlights?: string[];
-  excludes?: string[];
   duration?: string;
   rating: number;
   reviews: number;
@@ -395,7 +399,6 @@ export interface TourRecord {
   bestFor?: string;
   priceTableColumn1?: string;
   priceTableFeature?: string;
-  category?: string;
 }
 
 export interface Tour extends TourRecord {
@@ -411,8 +414,6 @@ function rowToTour(row: any): TourRecord {
     title: row.title,
     description: row.description,
     includes: parseJsonArray(row.includes),
-    highlights: parseJsonArray(row.highlights),
-    excludes: parseJsonArray(row.excludes),
     duration: row.duration || undefined,
     rating: Number(row.rating),
     reviews: Number(row.reviews),
@@ -427,7 +428,6 @@ function rowToTour(row: any): TourRecord {
     bestFor: row.best_for || undefined,
     priceTableColumn1: row.price_table_column1 || undefined,
     priceTableFeature: row.price_table_feature || undefined,
-    category: row.category || undefined,
   };
 }
 
@@ -439,9 +439,12 @@ function seedToTourRecord(seed: any): TourRecord {
     ribbon: seed.ribbon,
     title: seed.title,
     description: seed.description,
-    includes: seed.includes || [],
-    highlights: seed.highlights || [],
-    excludes: seed.excludes || [],
+    // Older seed rows carry a duplicate `highlights` array with slightly
+    // different wording than `includes` — `includes` is what's actually
+    // editable in the admin, so it's always the source of truth here.
+    // Only fall back to `highlights` for any legacy row that somehow has
+    // no `includes` of its own, so nothing already-live ever goes blank.
+    includes: seed.includes && seed.includes.length > 0 ? seed.includes : seed.highlights || [],
     duration: seed.duration,
     rating: Number(seed.rating),
     reviews: Number(seed.reviews),
@@ -456,7 +459,6 @@ function seedToTourRecord(seed: any): TourRecord {
     bestFor: seed.bestFor,
     priceTableColumn1: seed.priceTableColumn1,
     priceTableFeature: seed.priceTableFeature,
-    category: seed.category,
   };
 }
 
@@ -514,16 +516,16 @@ export async function insertTour(museumId: string, t: TourRecord): Promise<void>
   const [{ count }] = await sql`SELECT count(*)::int AS count FROM museum_tours WHERE museum_id = ${museumId}`;
   await sql`
     INSERT INTO museum_tours (
-      id, museum_id, badge, ribbon, title, description, includes, highlights, excludes,
+      id, museum_id, badge, ribbon, title, description, includes,
       duration, rating, reviews, price, original_price, image, image_alt, href_path,
-      href_extra, featured, best_for, price_table_column1, price_table_feature, category, sort_order
+      href_extra, featured, best_for, price_table_column1, price_table_feature, sort_order
     ) VALUES (
       ${t.id}, ${museumId}, ${t.badge || "self-guided"}, ${t.ribbon || null}, ${t.title}, ${t.description},
-      ${JSON.stringify(t.includes || [])}::jsonb, ${JSON.stringify(t.highlights || [])}::jsonb, ${JSON.stringify(t.excludes || [])}::jsonb,
+      ${JSON.stringify(t.includes || [])}::jsonb,
       ${t.duration || null}, ${t.rating}, ${t.reviews}, ${t.price}, ${t.originalPrice ?? null},
       ${t.image}, ${t.imageAlt}, ${t.hrefPath || t.href || ""}, ${t.hrefExtra || null},
       ${!!t.featured}, ${t.bestFor || ""}, ${t.priceTableColumn1 || ""}, ${t.priceTableFeature || ""},
-      ${t.category || ""}, ${count as number}
+      ${count as number}
     )
   `;
 }
@@ -536,8 +538,6 @@ export async function updateTourRecord(id: string, t: TourRecord): Promise<void>
       title = ${t.title},
       description = ${t.description},
       includes = ${JSON.stringify(t.includes || [])}::jsonb,
-      highlights = ${JSON.stringify(t.highlights || [])}::jsonb,
-      excludes = ${JSON.stringify(t.excludes || [])}::jsonb,
       duration = ${t.duration || null},
       rating = ${t.rating},
       reviews = ${t.reviews},
@@ -550,8 +550,7 @@ export async function updateTourRecord(id: string, t: TourRecord): Promise<void>
       featured = ${!!t.featured},
       best_for = ${t.bestFor || ""},
       price_table_column1 = ${t.priceTableColumn1 || ""},
-      price_table_feature = ${t.priceTableFeature || ""},
-      category = ${t.category || ""}
+      price_table_feature = ${t.priceTableFeature || ""}
     WHERE id = ${id}
   `;
 }
