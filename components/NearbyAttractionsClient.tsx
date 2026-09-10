@@ -127,10 +127,11 @@ export default function NearbyAttractionsClient({ currentMuseumName, places }: N
         </div>
 
         {/* Cards Grid — matches the same card language as the ticket cards
-            and the Other Attractions section (image block on top, centered
-            content below). OpenStreetMap doesn't supply photos for these
-            real-world points of interest, so the "image" is a colored
-            icon tile instead of a fake photo — never distance/time text. */}
+            elsewhere on the page (image block on top, centered content
+            below). Most of these real-world points of interest DO get a
+            genuine photo (see lib/nearbyPlaces.ts's getPlaceImage), but a
+            colored icon tile is the fallback when none is found — never a
+            fake photo, and never distance/time text. */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((place) => (
             <a

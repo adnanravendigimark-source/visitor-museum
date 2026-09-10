@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ImageUploadField from "./ImageUploadField";
+import NearbyPlacesPanel from "./NearbyPlacesPanel";
 import RichTextEditor from "./RichTextEditor";
 import RepeatableList from "./RepeatableList";
 import SeoPreview from "./SeoPreview";
@@ -134,6 +135,28 @@ export default function MuseumForm({
 
   function update<K extends keyof Museum>(key: K, value: Museum[K]) {
     setMuseum((m) => ({ ...m, [key]: value }));
+    setDirty(true);
+  }
+
+  // "Re-check now" (NearbyPlacesPanel) already persists straight to the
+  // database itself — it isn't a form field the Save button needs to write.
+  // Updating local state without marking the form dirty keeps the displayed
+  // list in sync with what was just resolved, without implying there's now
+  // an unsaved change, or risking it being reverted by "Discard changes".
+  function handleNearbyPlacesRecheck(places: Museum["nearbyPlaces"], resolvedAt: string) {
+    setMuseum((m) => ({ ...m, nearbyPlaces: places, nearbyPlacesResolvedAt: resolvedAt }));
+  }
+
+  // Editing a single place's photo IS a normal form field edit, unlike the
+  // recheck above — it only takes effect once the admin clicks Save, same
+  // as every other field, and is written to nearby_places_json then (see
+  // updateMuseum). Only the matching place's imageUrl changes; its name,
+  // category, mode, and every other place are left exactly as they were.
+  function handleNearbyPlaceImageChange(placeId: string, url: string) {
+    setMuseum((m) => ({
+      ...m,
+      nearbyPlaces: m.nearbyPlaces.map((p) => (p.id === placeId ? { ...p, imageUrl: url || undefined } : p)),
+    }));
     setDirty(true);
   }
 
@@ -548,13 +571,29 @@ export default function MuseumForm({
       <SectionCard
         id="sec-nearby"
         title="Nearby Attractions"
-        description="'Other Attractions' pulls from this site's own museums in the same city; 'Nearby Attractions' pulls live from OpenStreetMap using the coordinates above — neither list is editable by hand."
+        description="Resolved from OpenStreetMap using the coordinates above and stored — name, category, and mode are fully automatic and can't be edited by hand, but you can set a custom photo per place below. Recalculated when this museum is created, when its coordinates change, or with 'Re-check now' — never on every page view — and a custom photo survives all of those as long as the place is still found."
         open={!!openSections["sec-nearby"]}
         onToggle={() => toggleSection("sec-nearby")}
       >
-        <Field label="Section heading override (optional)" hint={`Leave blank to auto-generate "Other Attractions in ${museum.city || "{City}"}"`}>
-          <input value={museum.nearbyHeadingOverride} onChange={(e) => update("nearbyHeadingOverride", e.target.value)} className={inputClass} />
-        </Field>
+        {isNew ? (
+          <p className="rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500">
+            Save this museum first — its Nearby Attractions list resolves automatically once it has real coordinates
+            on file.
+          </p>
+        ) : (
+          <div>
+            <label className={labelClass}>Nearby Attractions</label>
+            <div className="mt-1">
+              <NearbyPlacesPanel
+                museumId={museum.id}
+                places={museum.nearbyPlaces || []}
+                resolvedAt={museum.nearbyPlacesResolvedAt || ""}
+                onImageChange={handleNearbyPlaceImageChange}
+                onRecheckComplete={handleNearbyPlacesRecheck}
+              />
+            </div>
+          </div>
+        )}
       </SectionCard>
 
       {/* ---------------- FAQ SECTION ---------------- */}

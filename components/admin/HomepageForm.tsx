@@ -443,6 +443,43 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
                 )}
               />
             </Field>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <ImageUploadField
+                  label="Background photo (tilted right)"
+                  value={content.sections.highlights.polaroidImage1}
+                  onChange={(url) => updateHighlights({ polaroidImage1: url })}
+                  aspectRatio={3 / 4}
+                />
+                <input
+                  value={content.sections.highlights.polaroidImage1Alt}
+                  onChange={(e) => updateHighlights({ polaroidImage1Alt: e.target.value })}
+                  placeholder="Alt text"
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-2">
+                <ImageUploadField
+                  label="Foreground photo (tilted left)"
+                  value={content.sections.highlights.polaroidImage2}
+                  onChange={(url) => updateHighlights({ polaroidImage2: url })}
+                  aspectRatio={4 / 5}
+                />
+                <input
+                  value={content.sections.highlights.polaroidImage2Alt}
+                  onChange={(e) => updateHighlights({ polaroidImage2Alt: e.target.value })}
+                  placeholder="Alt text"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+            <Field label="Caption under the foreground photo">
+              <input
+                value={content.sections.highlights.polaroidCaption}
+                onChange={(e) => updateHighlights({ polaroidCaption: e.target.value })}
+                className={inputClass}
+              />
+            </Field>
           </SectionCard>
 
           <SectionCard

@@ -2,43 +2,47 @@ import { haversineDistanceKm, isValidCoordinate } from "./geo";
 import { getRoutingInfo } from "./routing";
 
 // Real "what's physically near this museum" lookup — genuinely nearby
-// points of interest pulled live from OpenStreetMap's Overpass API, keyed
-// off the museum's own lat/lng. Nothing here is hardcoded or randomized:
-// if every mirror genuinely has nothing tagged nearby, the section simply
-// shows fewer cards (or none), rather than padding with unrelated data.
+// points of interest pulled from OpenStreetMap's Overpass API, keyed off
+// the museum's own lat/lng. Nothing here is hardcoded, randomized, or
+// editable by hand: if there's genuinely nothing tagged nearby, a museum
+// just has fewer (or no) Nearby Attractions cards.
 //
-// Overpass is free and keyless (same "no billing account required"
-// philosophy as the OSRM routing already used on this site). The free
-// public mirrors are individually flaky — one can hang for 10s+ on a
-// given request while another responds instantly, and it varies minute to
-// minute, not by city — so instead of trusting a single endpoint this
-// rotates through several, moving on immediately from one that errors,
-// times out, or (like some regional mirrors) simply has no data for a
-// given area, and stopping at the first one that returns real results.
-// OVERPASS_API_URL can still override/prepend a self-hosted mirror.
+// IMPORTANT — this file is a RESOLVER, not a per-request data source.
+// resolveNearbyPlaces() below is only ever called from a deliberate admin
+// action (creating a museum, changing its coordinates, or an explicit
+// "re-check" in the admin) — see resolveAndPersistNearbyPlaces() in
+// lib/museums.ts. The result is stored on the museum row (nearby_places_json)
+// and both the admin and the public page just read that stored value —
+// neither one calls Overpass, OSRM, or any image API on every page load or
+// API request. This is deliberate: those free public services were being
+// hit on every visit, which was slow, and — because a handful of Overpass
+// mirrors were raced against each other and could each return a slightly
+// different result — made the visible list flicker between requests.
+// Resolving once and persisting removes both problems: the list a museum
+// shows is exactly what it showed the last time someone (a save, a
+// coordinate change, or a manual re-check) resolved it, on both admin and
+// public pages, until one of those things happens again.
 const OVERPASS_USER_AGENT = "VisitMuseums/1.0 (+https://visit-museums.com; nearby-attractions feature)";
 
-interface MirrorAttempt {
-  url: string;
-  radiusM: number;
-  timeoutMs: number;
-}
+// One canonical radius, reused for every mirror. The old version varied the
+// radius per mirror so "whichever mirror answers first" could return a
+// meaningfully different search area — that was one of the two sources of
+// randomness this resolver exists to eliminate (the other being running
+// mirrors as a race instead of a fixed sequence — see resolveCandidates).
+const SEARCH_RADIUS_M = 6000;
+const MIRROR_TIMEOUT_MS = 6000;
 
-function buildAttempts(): MirrorAttempt[] {
+function buildMirrorList(): string[] {
   const custom = process.env.OVERPASS_API_URL?.replace(/\/+$/, "");
-  const attempts: MirrorAttempt[] = [];
-  // These are now raced in parallel (see raceFirstNonEmpty below), not
-  // tried one at a time, so the timeouts here only bound the worst case,
-  // not the sum of every mirror's wait — kept short so a slow/dead mirror
-  // can't hold up the page even a little.
-  if (custom) attempts.push({ url: custom, radiusM: 4000, timeoutMs: 6000 });
-  attempts.push(
-    { url: "https://overpass-api.de/api/interpreter", radiusM: 3000, timeoutMs: 5000 },
-    { url: "https://overpass.kumi.systems/api/interpreter", radiusM: 3000, timeoutMs: 5000 },
-    { url: "https://overpass-api.de/api/interpreter", radiusM: 6000, timeoutMs: 6000 },
-    { url: "https://overpass.osm.ch/api/interpreter", radiusM: 8000, timeoutMs: 5000 }
+  const mirrors: string[] = [];
+  if (custom) mirrors.push(custom);
+  // Fixed order, always the same — this list is never shuffled or raced.
+  mirrors.push(
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter"
   );
-  return attempts;
+  return mirrors;
 }
 
 const WALK_RADIUS_KM = 3;
@@ -110,46 +114,39 @@ function tagCategory(tags: Record<string, string>): { key: string; label: string
 
 async function fetchOverpassOnce(url: string, query: string, timeoutMs: number): Promise<Response | null> {
   try {
-    // GET with the query as a `data` param, not POST with a body. Next.js's
-    // fetch Data Cache never caches POST requests (regardless of any
-    // `next.revalidate` option passed to them), so the previous POST-based
-    // version was silently re-running the full multi-mirror Overpass lookup
-    // — including any slow/timed-out mirrors along the way — on every
-    // single museum page load, which was the single biggest contributor to
-    // "the website is very slow". Overpass's /interpreter endpoint accepts
-    // the exact same query via GET, which Next DOES cache, so real nearby
-    // places for a given museum are now only fetched from Overpass once per
-    // revalidate window instead of on every request.
+    // GET with the query as a `data` param (not POST) so this is a normal
+    // cacheable request. Since resolution now only happens on a deliberate
+    // admin action rather than every page load, this cache is mostly just a
+    // courtesy to the free public mirrors if the same museum gets resolved
+    // twice in quick succession (e.g. a retry).
     const getUrl = `${url}?data=${encodeURIComponent(query)}`;
     return await fetch(getUrl, {
       headers: { "User-Agent": OVERPASS_USER_AGENT },
       signal: AbortSignal.timeout(timeoutMs),
-      // Real-world POIs near a fixed museum don't change often — cache for
-      // a day so we're a good citizen of these free public instances.
-      next: { revalidate: 60 * 60 * 24 },
+      next: { revalidate: 60 * 60 },
     });
   } catch {
     return null;
   }
 }
 
-async function tryAttempt(lat: number, lng: number, attempt: MirrorAttempt): Promise<RawElement[]> {
-  const query = buildQuery(lat, lng, attempt.radiusM);
-  let res = await fetchOverpassOnce(attempt.url, query, attempt.timeoutMs);
+async function tryMirror(lat: number, lng: number, url: string): Promise<{ elements: RawElement[]; ok: boolean }> {
+  const query = buildQuery(lat, lng, SEARCH_RADIUS_M);
+  let res = await fetchOverpassOnce(url, query, MIRROR_TIMEOUT_MS);
 
   // A single short retry rides out a transient 429 from a mirror that's
-  // otherwise responsive, without burning the whole time budget on it.
+  // otherwise responsive, without burning much extra time on it.
   if (res && res.status === 429) {
     await new Promise((r) => setTimeout(r, 1200));
-    res = await fetchOverpassOnce(attempt.url, query, attempt.timeoutMs);
+    res = await fetchOverpassOnce(url, query, MIRROR_TIMEOUT_MS);
   }
 
-  if (!res || !res.ok) return [];
+  if (!res || !res.ok) return { elements: [], ok: false };
   try {
     const data = await res.json();
-    return Array.isArray(data?.elements) ? data.elements : [];
+    return { elements: Array.isArray(data?.elements) ? data.elements : [], ok: true };
   } catch {
-    return [];
+    return { elements: [], ok: false };
   }
 }
 
@@ -174,9 +171,12 @@ function toCandidates(elements: RawElement[], current: { lat: number; lng: numbe
         straightLineKm,
         category: category.label,
         icon: category.icon,
-        // OSM itself never carries photos, but a real place is often
-        // cross-referenced to Wikipedia/Wikidata — used below to pull a
-        // genuine photo when one exists, rather than faking one.
+        // A real place is often tagged with a direct photo, a Wikimedia
+        // Commons reference, or a Wikipedia/Wikidata cross-reference — used
+        // below, in that order of specificity, to pull a genuine photo
+        // rather than faking one. See getPlaceImage.
+        image: el.tags?.image,
+        wikimediaCommons: el.tags?.wikimedia_commons,
         wikipedia: el.tags?.wikipedia,
         wikidata: el.tags?.wikidata,
       };
@@ -189,72 +189,50 @@ function toCandidates(elements: RawElement[], current: { lat: number; lng: numbe
     .sort((a, b) => a.straightLineKm - b.straightLineKm);
 }
 
-/**
- * Real nearby tourist attractions around `current`'s coordinates, pulled
- * live from OpenStreetMap — not this site's own museum list, and never
- * padded with unrelated or hardcoded entries. Classified as walk/drive
- * using the same real routed-distance logic as the rest of the site.
- */
-export async function getNearbyPlaces(current: {
-  lat: number;
-  lng: number;
-  name: string;
-}): Promise<NearbyPlace[]> {
-  if (!isValidCoordinate(current.lat, current.lng)) return [];
+// Tries each mirror in the SAME fixed order every time — never raced, never
+// shuffled — and stops at the first one that returns real candidates. If a
+// mirror answers successfully but with zero results (which, in testing,
+// some mirrors do even for genuinely POI-dense areas — likely a stale or
+// partial regional extract) this keeps trying the rest before accepting
+// "nothing found" as the final answer, rather than trusting the first
+// technically-OK-but-empty response. Because this always walks the mirrors
+// in the same order against the same single radius, the SAME museum
+// resolved twice in a row (with no real-world OSM changes in between) gets
+// the SAME result — the nondeterminism the old per-request version had is
+// gone. Any change now only ever comes from OSM's real data changing, or
+// from this being re-run later.
+async function resolveCandidates(
+  current: { lat: number; lng: number; name: string }
+): Promise<{ candidates: ReturnType<typeof toCandidates>; anyMirrorSucceeded: boolean }> {
+  const mirrors = buildMirrorList();
+  let anyMirrorSucceeded = false;
 
-  // Mirrors are raced in parallel, not tried one at a time. Each attempt is
-  // already bounded by its own timeout, but running them sequentially meant
-  // a museum page could pay the SUM of every slow/timed-out mirror's wait
-  // (multiple mirrors x 8-10s each) before ever reaching a working one —
-  // this was the single biggest cause of "the website is very slow". Firing
-  // them all at once and taking the first attempt that actually returns
-  // real candidates caps the wait at roughly the slowest mirror instead.
-  const candidates = await raceFirstNonEmpty(current);
-  const trimmed = candidates.slice(0, MAX_ROUTING_CANDIDATES);
-  return getRoutedResults(current, trimmed);
-}
+  for (const url of mirrors) {
+    const { elements, ok } = await tryMirror(current.lat, current.lng, url);
+    if (ok) anyMirrorSucceeded = true;
+    const candidates = toCandidates(elements, current);
+    if (candidates.length > 0) return { candidates, anyMirrorSucceeded };
+  }
 
-async function raceFirstNonEmpty(current: { lat: number; lng: number; name: string }): Promise<ReturnType<typeof toCandidates>> {
-  const attempts = buildAttempts();
-  if (!attempts.length) return [];
-
-  return new Promise((resolve) => {
-    let remaining = attempts.length;
-    let settled = false;
-    for (const attempt of attempts) {
-      tryAttempt(current.lat, current.lng, attempt)
-        .then((elements) => toCandidates(elements, current))
-        .catch(() => [] as ReturnType<typeof toCandidates>)
-        .then((found) => {
-          remaining -= 1;
-          if (settled) return;
-          if (found.length > 0) {
-            settled = true;
-            resolve(found);
-          } else if (remaining === 0) {
-            settled = true;
-            resolve([]);
-          }
-        });
-    }
-  });
+  return { candidates: [], anyMirrorSucceeded };
 }
 
 async function getRoutedResults(
   current: { lat: number; lng: number; name: string },
   candidatesIn: ReturnType<typeof toCandidates>
 ): Promise<NearbyPlace[]> {
-  let candidates = candidatesIn;
+  const candidates = candidatesIn.slice(0, MAX_ROUTING_CANDIDATES);
   if (!candidates.length) return [];
 
-  // Photo lookups only need each candidate's wikipedia/wikidata tags, which
-  // are already known before routing runs — kicking these off now, in
-  // parallel with the routing calls below, instead of waiting for routing
-  // to pick the top 3 first, removes a whole sequential network round trip
-  // from the page's critical path. A handful of these lookups end up
-  // unused (for candidates that don't make the final top 3), which is a
-  // fair trade for cutting real page-load latency.
-  const imagePromises = new Map(candidates.map((c) => [c.id, getWikiImage(c.wikipedia, c.wikidata)]));
+  // Photo lookups only need each candidate's tags, already known before
+  // routing runs — kicking these off now, in parallel with the routing
+  // calls below, avoids a second sequential network round trip. A handful
+  // of these end up unused (for candidates that don't make the final top
+  // 3), which is a fair trade since this whole resolution only happens
+  // occasionally now, not on every page load.
+  const imagePromises = new Map(
+    candidates.map((c) => [c.id, getPlaceImage({ image: c.image, wikimediaCommons: c.wikimediaCommons, wikipedia: c.wikipedia, wikidata: c.wikidata })])
+  );
 
   const routed = await Promise.all(
     candidates.map(async (c): Promise<(NearbyPlace & { distanceKm: number }) | null> => {
@@ -294,21 +272,79 @@ async function getRoutedResults(
 }
 
 /**
- * A genuine photo for a real place, sourced from Wikipedia/Wikidata when
- * the OSM element is cross-referenced to one — free and keyless, same as
- * every other API this feature uses. Returns undefined (never a fake or
- * placeholder photo) when neither tag is present or nothing is found, and
- * the card falls back to its icon tile.
+ * Resolves the real nearby tourist attractions around `current`'s
+ * coordinates, pulled from OpenStreetMap — never this site's own museum
+ * list, and never padded with unrelated or hardcoded entries. Classified as
+ * walk/drive using the same real routed-distance logic as the rest of the
+ * site, with a genuine photo per place when one exists.
+ *
+ * Call this ONLY from a deliberate resolve point (new museum, changed
+ * coordinates, or an explicit admin re-check — see
+ * resolveAndPersistNearbyPlaces in lib/museums.ts) and persist the result.
+ * Never call this on a page render or from a per-request API route — that
+ * was the previous design, and it's exactly what made the list slow to
+ * load and inconsistent between requests.
  */
-async function getWikiImage(wikipedia?: string, wikidata?: string): Promise<string | undefined> {
-  if (wikipedia) {
-    const [lang, ...titleParts] = wikipedia.split(":");
+export async function resolveNearbyPlaces(current: { lat: number; lng: number; name: string }): Promise<NearbyPlace[]> {
+  if (!isValidCoordinate(current.lat, current.lng)) return [];
+
+  const { candidates } = await resolveCandidates(current);
+  return getRoutedResults(current, candidates);
+}
+
+/**
+ * A genuine photo for a real place, preferring the most specific source
+ * available: a direct `image` tag on the OSM element itself, then a
+ * `wikimedia_commons` reference, then the place's Wikipedia article photo,
+ * then its Wikidata P18 claim. All four are free/keyless. Returns undefined
+ * (never a fake or placeholder photo) when nothing is found — the card
+ * falls back to its icon tile.
+ */
+async function getPlaceImage(tags: { image?: string; wikimediaCommons?: string; wikipedia?: string; wikidata?: string }): Promise<string | undefined> {
+  const fromCommonsFilename = (filename: string) =>
+    `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename.replace(/^File:/i, ""))}?width=500`;
+
+  // 1. A direct `image` tag — either already a full URL, or a bare Commons
+  // filename/File: reference. This is the most specific source: it's a
+  // photo someone attached to this exact OSM feature, not just its general
+  // Wikipedia topic.
+  if (tags.image) {
+    const value = tags.image.trim();
+    if (/^https?:\/\//i.test(value)) return value;
+    if (/^(File:)?[^:]+\.(jpg|jpeg|png|gif|svg|webp)$/i.test(value)) return fromCommonsFilename(value);
+  }
+
+  // 2. `wikimedia_commons` — either a File: (use directly) or a Category:
+  // (ask Commons for the category's first image file).
+  if (tags.wikimediaCommons) {
+    const value = tags.wikimediaCommons.trim();
+    if (/^File:/i.test(value)) return fromCommonsFilename(value);
+    if (/^Category:/i.test(value)) {
+      try {
+        const res = await fetch(
+          `https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&cmtitle=${encodeURIComponent(value)}&cmtype=file&cmlimit=1&format=json&origin=*`,
+          { headers: { "User-Agent": OVERPASS_USER_AGENT }, signal: AbortSignal.timeout(5000) }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const title = data?.query?.categorymembers?.[0]?.title;
+          if (title) return fromCommonsFilename(title);
+        }
+      } catch {
+        // fall through to the wikipedia/wikidata attempts below
+      }
+    }
+  }
+
+  // 3. The place's own Wikipedia article lead photo.
+  if (tags.wikipedia) {
+    const [lang, ...titleParts] = tags.wikipedia.split(":");
     const title = titleParts.join(":").trim();
     if (lang && title) {
       try {
         const res = await fetch(
           `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
-          { headers: { "User-Agent": OVERPASS_USER_AGENT }, signal: AbortSignal.timeout(5000), next: { revalidate: 60 * 60 * 24 * 7 } }
+          { headers: { "User-Agent": OVERPASS_USER_AGENT }, signal: AbortSignal.timeout(5000) }
         );
         if (res.ok) {
           const data = await res.json();
@@ -321,19 +357,17 @@ async function getWikiImage(wikipedia?: string, wikidata?: string): Promise<stri
     }
   }
 
-  if (wikidata) {
+  // 4. Wikidata's P18 ("image") claim.
+  if (tags.wikidata) {
     try {
-      const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${wikidata}.json`, {
+      const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${tags.wikidata}.json`, {
         headers: { "User-Agent": OVERPASS_USER_AGENT },
         signal: AbortSignal.timeout(5000),
-        next: { revalidate: 60 * 60 * 24 * 7 },
       });
       if (res.ok) {
         const data = await res.json();
-        const filename = data?.entities?.[wikidata]?.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
-        if (filename) {
-          return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=500`;
-        }
+        const filename = data?.entities?.[tags.wikidata]?.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
+        if (filename) return fromCommonsFilename(filename);
       }
     } catch {
       // no photo available — the card uses its icon tile instead

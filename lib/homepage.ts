@@ -42,6 +42,14 @@ export interface HighlightsSection {
   heading: string;
   subheading: string;
   cards: HighlightCard[];
+  // The two tilted "polaroid" photos in this section (CulturalJourneyBanner.tsx)
+  // and the italic caption under the front one — previously hardcoded image
+  // paths with no admin control at all.
+  polaroidImage1: string;
+  polaroidImage1Alt: string;
+  polaroidImage2: string;
+  polaroidImage2Alt: string;
+  polaroidCaption: string;
 }
 
 export interface GridSection {
@@ -227,6 +235,11 @@ export const DEFAULT_SECTIONS: HomepageSections = {
       { icon: "🗝️", title: "Insider Tips", body: "Make the most of your visit" },
       { icon: "🧳", title: "Travel Inspiration", body: "Discover new places" },
     ],
+    polaroidImage1: "/images/gallery-corridor.jpg",
+    polaroidImage1Alt: "Grand museum corridor",
+    polaroidImage2: "/images/david-sculpture.jpg",
+    polaroidImage2Alt: "Michelangelo David sculpture",
+    polaroidCaption: "Art inspires",
   },
   blogTeaser: {
     eyebrow: "TRAVEL GUIDES",

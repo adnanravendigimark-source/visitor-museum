@@ -47,6 +47,8 @@ const blank: Museum = {
   ctaSubtext: "",
   ctaButtonText: "Compare Tickets & Tours",
   nearbyHeadingOverride: "",
+  nearbyPlaces: [],
+  nearbyPlacesResolvedAt: "",
   metaTitle: "",
   metaDescription: "",
   focusKeyword: "",

@@ -14,6 +14,11 @@ export default async function CulturalJourneyBanner() {
     "Get the latest museum news, travel tips, exhibition highlights and insider guides — all in one place.";
   const buttonText = cta?.buttonText || "Explore Articles →";
   const buttonHref = cta?.buttonHref || "/blog";
+  const polaroidImage1 = s?.polaroidImage1 || "/images/gallery-corridor.jpg";
+  const polaroidImage1Alt = s?.polaroidImage1Alt || "Grand museum corridor";
+  const polaroidImage2 = s?.polaroidImage2 || "/images/david-sculpture.jpg";
+  const polaroidImage2Alt = s?.polaroidImage2Alt || "Michelangelo David sculpture";
+  const polaroidCaption = s?.polaroidCaption || "Art inspires";
 
   const cards =
     s?.cards && s.cards.length >= 4
@@ -37,8 +42,8 @@ export default async function CulturalJourneyBanner() {
                 <div className="absolute right-0 top-4 w-44 sm:w-48 aspect-[3/4] rounded-2xl bg-white p-2.5 shadow-xl border border-gray-100 rotate-6 transition-transform hover:rotate-3 duration-300">
                   <div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200">
                     <SafeImage
-                      src="/images/gallery-corridor.jpg"
-                      alt="Grand museum corridor"
+                      src={polaroidImage1}
+                      alt={polaroidImage1Alt}
                       fill
                       sizes="200px"
                       className="object-cover"
@@ -50,8 +55,8 @@ export default async function CulturalJourneyBanner() {
                 <div className="absolute left-0 bottom-2 w-48 sm:w-52 rounded-2xl bg-white p-3 shadow-2xl border border-gray-100 -rotate-6 transition-transform hover:rotate-0 duration-300 z-10">
                   <div className="relative aspect-[4/5] w-full rounded-xl overflow-hidden bg-gray-200">
                     <SafeImage
-                      src="/images/david-sculpture.jpg"
-                      alt="Michelangelo David sculpture"
+                      src={polaroidImage2}
+                      alt={polaroidImage2Alt}
                       fill
                       sizes="220px"
                       className="object-cover"
@@ -59,7 +64,7 @@ export default async function CulturalJourneyBanner() {
                   </div>
                   <div className="pt-2 text-center">
                     <p className="font-serif italic text-xs sm:text-[13px] text-[#2D903A] font-medium tracking-wide">
-                      Art inspires
+                      {polaroidCaption}
                     </p>
                   </div>
                 </div>

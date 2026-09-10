@@ -11,7 +11,6 @@ import MuseumTourGrid from "@/components/MuseumTourGrid";
 import MuseumHighlights from "@/components/MuseumHighlights";
 import MuseumPracticalInfo from "@/components/MuseumPracticalInfo";
 import MuseumPriceComparison from "@/components/MuseumPriceComparison";
-import OtherAttractionsInCity from "@/components/OtherAttractionsInCity";
 import NearbyAttractions from "@/components/NearbyAttractions";
 import MuseumFaqSection from "@/components/MuseumFaqSection";
 import CtaBanner from "@/components/CtaBanner";
@@ -185,7 +184,6 @@ export default async function SlugPage({ params }: { params: { slug: string } })
           <MuseumHighlights museum={museum} />
           <MuseumPracticalInfo museum={museum} />
           <MuseumPriceComparison museum={museum} />
-          <OtherAttractionsInCity museum={museum} />
           <NearbyAttractions museum={museum} />
           <MuseumFaqSection museum={museum} />
           <CtaBanner

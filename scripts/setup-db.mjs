@@ -121,6 +121,8 @@ async function createTables() {
       cta_subtext TEXT NOT NULL DEFAULT '',
       cta_button_text TEXT NOT NULL DEFAULT '',
       nearby_heading_override TEXT NOT NULL DEFAULT '',
+      nearby_places_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      nearby_places_resolved_at TIMESTAMPTZ,
       rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7,
       reviews_count TEXT NOT NULL DEFAULT '10.2k',
       meta_title TEXT NOT NULL DEFAULT '',
@@ -143,9 +145,22 @@ async function createTables() {
   // run every time regardless (a no-op once the columns are already there).
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7`;
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS reviews_count TEXT NOT NULL DEFAULT '10.2k'`;
+  // SUPERSEDED — a short-lived per-place ({osmId: imageUrl}) admin photo
+  // override for Nearby Attractions. Removed: admin can no longer edit any
+  // part of Nearby Attractions by hand (see nearby_places_json below). Left
+  // as a harmless no-op ADD COLUMN (matches this file's never-DROP
+  // migration policy) rather than deleting the column and any data in it.
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_image_overrides JSONB NOT NULL DEFAULT '{}'::jsonb`;
+  // The persisted, resolved Nearby Attractions list for this museum — see
+  // lib/museums.ts's resolveAndPersistNearbyPlaces and Museum.nearbyPlaces
+  // comment. Resolved once (on create, on a coordinate change, or an
+  // explicit admin re-check), never recomputed on a page load or API GET,
+  // so the admin and the public page always read the exact same list.
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_places_json JSONB NOT NULL DEFAULT '[]'::jsonb`;
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_places_resolved_at TIMESTAMPTZ`;
 
   // A real lat/lng on every row is what makes the Nearby Attractions
-  // feature possible at all — see lib/nearby.ts. Indexing them isn't
+  // feature possible at all — see lib/nearbyPlaces.ts. Indexing them isn't
   // strictly required at this table size, but costs nothing.
   await sql`CREATE INDEX IF NOT EXISTS museums_lat_lng_idx ON museums (lat, lng)`;
 

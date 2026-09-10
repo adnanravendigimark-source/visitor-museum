@@ -1,9 +1,15 @@
 import type { Museum } from "@/lib/museums";
-import { getNearbyPlaces } from "@/lib/nearbyPlaces";
 import NearbyAttractionsClient from "./NearbyAttractionsClient";
 
-export default async function NearbyAttractions({ museum }: { museum: Museum }) {
-  const places = await getNearbyPlaces({ lat: museum.lat, lng: museum.lng, name: museum.name });
+// Nearby Attractions is resolved once (on museum creation, a coordinate
+// change, or an admin "Re-check now") and persisted on the museum row —
+// see lib/museums.ts's Museum.nearbyPlaces comment and
+// resolveAndPersistNearbyPlaces. This component just renders whatever's
+// stored there; it never calls OpenStreetMap/Wikipedia itself, so the list
+// is identical on every page load and identical to what the admin sees,
+// instead of being re-discovered (and potentially changing) on every visit.
+export default function NearbyAttractions({ museum }: { museum: Museum }) {
+  const places = museum.nearbyPlaces || [];
 
   // Genuinely nothing tagged nearby on OpenStreetMap within range — stay
   // hidden rather than making something up.

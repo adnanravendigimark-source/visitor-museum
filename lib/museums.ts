@@ -3,6 +3,7 @@ import { sql } from "./db";
 import museumsSeed from "@/data/museums.json";
 import museumToursSeed from "@/data/museum-tours.json";
 import museumFaqsSeed from "@/data/museum-faqs.json";
+import { resolveNearbyPlaces, type NearbyPlace } from "./nearbyPlaces";
 
 export const PARTNER_ID = process.env.GYG_PARTNER_ID || "VISITMUSEUMS";
 
@@ -101,6 +102,24 @@ export interface Museum {
   ctaSubtext: string;
   ctaButtonText: string;
   nearbyHeadingOverride: string;
+  // Nearby Attractions is discovered from OpenStreetMap/Wikipedia/Wikidata
+  // — name, category, and mode are never editable by hand. The one
+  // exception is each place's `imageUrl`, which the admin form lets the
+  // admin overwrite directly on this array (see MuseumForm.tsx's
+  // NearbyPlacesPanel) and which is saved the normal way, with everything
+  // else on the record. What IS different from most fields here is that
+  // the array itself (which places exist at all) is resolved once — not
+  // read live on every request — and persisted; see
+  // resolveAndPersistNearbyPlaces/mergeNearbyPlaceImages below and their
+  // callers in the museums API routes. Both the admin and the public page
+  // just read this stored value, so they always show the exact same list,
+  // and a re-resolution preserves any photo already set on a place that's
+  // still found rather than discarding it.
+  nearbyPlaces: NearbyPlace[];
+  // ISO timestamp of the last successful resolution, "" if never resolved
+  // yet (e.g. the very first save failed to reach every OSM mirror). Shown
+  // in admin as a "last checked" hint next to the manual re-check action.
+  nearbyPlacesResolvedAt: string;
   rating?: number;
   reviewsCount?: string;
 
@@ -165,6 +184,8 @@ function seedToMuseum(seed: any): Museum {
     ctaSubtext: seed.ctaSubtext || "",
     ctaButtonText: seed.ctaButtonText || "Compare Tickets & Tours",
     nearbyHeadingOverride: seed.nearbyHeadingOverride || "",
+    nearbyPlaces: Array.isArray(seed.nearbyPlaces) ? seed.nearbyPlaces : [],
+    nearbyPlacesResolvedAt: seed.nearbyPlacesResolvedAt || "",
     rating: seed.rating !== undefined ? Number(seed.rating) : 4.7,
     reviewsCount: seed.reviewsCount || "10.2k",
     metaTitle: seed.metaTitle || seed.name,
@@ -228,6 +249,13 @@ function rowToMuseum(row: any): Museum {
     ctaSubtext: row.cta_subtext || "",
     ctaButtonText: row.cta_button_text || "Compare Tickets & Tours",
     nearbyHeadingOverride: row.nearby_heading_override || "",
+    nearbyPlaces: parseJsonObject<NearbyPlace[]>(row.nearby_places_json, []),
+    nearbyPlacesResolvedAt:
+      row.nearby_places_resolved_at instanceof Date
+        ? row.nearby_places_resolved_at.toISOString()
+        : row.nearby_places_resolved_at
+        ? String(row.nearby_places_resolved_at)
+        : "",
     rating: row.rating !== null && row.rating !== undefined ? Number(row.rating) : 4.7,
     reviewsCount: row.reviews_count || "10.2k",
     metaTitle: row.meta_title || row.name,
@@ -306,6 +334,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       price_eyebrow, price_heading, price_subheading, price_note,
       faq_eyebrow, faq_heading,
       cta_heading, cta_subtext, cta_button_text, nearby_heading_override,
+      nearby_places_json, nearby_places_resolved_at,
       rating, reviews_count,
       meta_title, meta_description, focus_keyword, canonical_url,
       no_index, no_follow, og_title, og_description, og_image
@@ -321,6 +350,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       ${m.priceEyebrow}, ${m.priceHeading}, ${m.priceSubheading}, ${m.priceNote},
       ${m.faqEyebrow}, ${m.faqHeading},
       ${m.ctaHeading}, ${m.ctaSubtext}, ${m.ctaButtonText}, ${m.nearbyHeadingOverride},
+      ${JSON.stringify(m.nearbyPlaces || [])}::jsonb, ${m.nearbyPlacesResolvedAt || null},
       ${m.rating ?? 4.7}, ${m.reviewsCount || "10.2k"},
       ${m.metaTitle}, ${m.metaDescription}, ${m.focusKeyword}, ${m.canonicalUrl || ""},
       ${!!m.noIndex}, ${!!m.noFollow}, ${m.ogTitle || ""}, ${m.ogDescription || ""}, ${m.ogImage || ""}
@@ -351,6 +381,8 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
       faq_eyebrow = ${m.faqEyebrow}, faq_heading = ${m.faqHeading},
       cta_heading = ${m.ctaHeading}, cta_subtext = ${m.ctaSubtext}, cta_button_text = ${m.ctaButtonText},
       nearby_heading_override = ${m.nearbyHeadingOverride},
+      nearby_places_json = ${JSON.stringify(m.nearbyPlaces || [])}::jsonb,
+      nearby_places_resolved_at = ${m.nearbyPlacesResolvedAt || null},
       rating = ${m.rating ?? 4.7}, reviews_count = ${m.reviewsCount || "10.2k"},
       meta_title = ${m.metaTitle}, meta_description = ${m.metaDescription}, focus_keyword = ${m.focusKeyword},
       canonical_url = ${m.canonicalUrl || ""},
@@ -359,6 +391,50 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
       updated_at = now()
     WHERE id = ${id}
   `;
+}
+
+// Carries forward each place's photo (auto-detected OR admin-picked) when
+// that same place — matched by its stable OSM id — is found again in a
+// fresh resolution. Only a genuinely new id gets the freshly auto-detected
+// photo. Used any time Nearby Attractions gets re-resolved (creation is the
+// one exception — there's no previous list yet, so this is a no-op then),
+// so a chosen photo survives a "Re-check now" or a coordinate tweak instead
+// of a full re-resolution silently discarding it.
+export function mergeNearbyPlaceImages(fresh: NearbyPlace[], previousPlaces: NearbyPlace[]): NearbyPlace[] {
+  if (!previousPlaces.length) return fresh;
+  const previousById = new Map(previousPlaces.map((p) => [p.id, p]));
+  return fresh.map((p) => {
+    const prev = previousById.get(p.id);
+    return prev?.imageUrl ? { ...p, imageUrl: prev.imageUrl } : p;
+  });
+}
+
+// The one place Nearby Attractions actually gets (re)computed. Called from
+// the museums API routes at exactly three points: right before a new
+// museum's INSERT, right before an UPDATE when lat/lng changed, and from
+// the dedicated admin "Re-check now" route — never from a page render.
+// Resolves live from OpenStreetMap (see lib/nearbyPlaces.ts) and writes the
+// result straight to the row, so it's immediately the same value both the
+// admin and the public page will read from then on. See
+// mergeNearbyPlaceImages for how `previousPlaces` protects any photo the
+// admin has already picked.
+export async function resolveAndPersistNearbyPlaces(
+  id: string,
+  lat: number,
+  lng: number,
+  name: string,
+  previousPlaces: NearbyPlace[] = []
+): Promise<{ places: NearbyPlace[]; resolvedAt: string }> {
+  const fresh = await resolveNearbyPlaces({ lat, lng, name });
+  const places = mergeNearbyPlaceImages(fresh, previousPlaces);
+  const resolvedAt = new Date().toISOString();
+  await sql`
+    UPDATE museums SET
+      nearby_places_json = ${JSON.stringify(places)}::jsonb,
+      nearby_places_resolved_at = ${resolvedAt}
+    WHERE id = ${id}
+  `;
+  return { places, resolvedAt };
 }
 
 export async function deleteMuseum(id: string): Promise<void> {
