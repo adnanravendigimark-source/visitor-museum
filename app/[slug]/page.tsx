@@ -182,8 +182,10 @@ export default async function SlugPage({ params }: { params: { slug: string } })
       <>
         <Header />
         <main>
-          <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: museum.name, path: `/${museum.slug}` }]} />
-          <MuseumHero museum={museum} />
+          <MuseumHero
+            museum={museum}
+            breadcrumbItems={[{ name: "Home", path: "/" }, { name: museum.name, path: `/${museum.slug}` }]}
+          />
           <MuseumTourGrid museum={museum} bookNowText={bookNowText} />
           <MuseumHighlights museum={museum} />
           <MuseumPracticalInfo museum={museum} />

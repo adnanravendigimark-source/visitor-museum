@@ -20,6 +20,7 @@ const blank: Museum = {
   heroSubheading: "",
   heroImage: "",
   heroImageAlt: "",
+  heroTrustBadge: "Authorized Ticket Partner",
   highlightsEyebrow: "What You'll See",
   highlightsHeading: "",
   highlightsSubheading: "",

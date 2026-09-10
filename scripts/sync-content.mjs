@@ -36,7 +36,7 @@ async function main() {
   console.log("Updating homepage table with target design values...");
   const headerJson = {
     brandName: "Visit Museums",
-    brandSubtitle: "Official Tickets & Guided Tours",
+    brandSubtitle: "Verified Tickets & Guided Tours",
     navLinks: [
       { label: "Home", href: "/" },
       { label: "About Us", href: "/about" },

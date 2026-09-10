@@ -254,14 +254,14 @@ export const DEFAULT_SECTIONS: HomepageSections = {
     subheading: "Everything you need to know before booking your museum tickets with us.",
     items: [
       {
-        question: "Is Visit Museums an official ticket seller?",
+        question: "Is Visit Museums the museum's ticket seller?",
         answer:
-          "<p>We're an independent guide that compares skip-the-line tickets and guided tours from verified, authorized providers for museums and attractions worldwide — we don't print or issue tickets ourselves.</p>",
+          "<p>No — we're an independent affiliate guide, not the museum or an official ticket seller. We compare skip-the-line tickets and guided tours from verified, authorized providers for museums and attractions worldwide and link you through to book directly with them; we don't print or issue tickets ourselves.</p>",
       },
       {
         question: "Are the tickets shown on Visit Museums genuine and valid?",
         answer:
-          "<p>Yes. Every ticket and tour listed links out to a trusted, authorized provider, so you always book directly with them and receive an official confirmation.</p>",
+          "<p>Yes. Every ticket and tour listed links out to a trusted, authorized provider, so you always book directly with them and receive a confirmed booking straight from them.</p>",
       },
       {
         question: "Can I cancel or get a refund on my booking?",

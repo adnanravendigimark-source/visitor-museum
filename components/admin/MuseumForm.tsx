@@ -309,7 +309,7 @@ export default function MuseumForm({
           </Field>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Rating" hint="Shown as the ★ rating on the homepage museums grid card (0–5).">
+          <Field label="Rating" hint="Shown as the ★ rating in this museum's own page hero, just under the subheading (0–5).">
             <input
               type="number"
               step="0.1"
@@ -320,7 +320,7 @@ export default function MuseumForm({
               className={inputClass}
             />
           </Field>
-          <Field label="Review count" hint='Free text, e.g. "10.2k" or "1,204" — shown next to the rating.'>
+          <Field label="Review count" hint='Free text, e.g. "10.2k" or "1,204" — shown next to the rating in the hero.'>
             <input value={museum.reviewsCount ?? ""} onChange={(e) => update("reviewsCount", e.target.value)} className={inputClass} placeholder="e.g. 10.2k" />
           </Field>
         </div>
@@ -367,6 +367,17 @@ export default function MuseumForm({
         <ImageUploadField label="Hero photo" value={museum.heroImage} onChange={(url) => update("heroImage", url)} aspectRatio={16 / 9} />
         <Field label="Hero photo alt text">
           <input value={museum.heroImageAlt} onChange={(e) => update("heroImageAlt", e.target.value)} className={inputClass} />
+        </Field>
+        <Field
+          label="Trust badge (next to the rating in the hero)"
+          hint={`Shown next to the ★ rating. Keep this honest — Visit Museums is an independent affiliate guide, not the museum's official ticket seller, so avoid the word "Official" here.`}
+        >
+          <input
+            value={museum.heroTrustBadge}
+            onChange={(e) => update("heroTrustBadge", e.target.value)}
+            className={inputClass}
+            placeholder="e.g. Authorized Ticket Partner"
+          />
         </Field>
       </SectionCard>
 

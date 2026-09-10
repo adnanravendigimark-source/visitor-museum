@@ -2,7 +2,7 @@ import { getHomepageContent } from "@/lib/homepage";
 import FaqAccordion from "./FaqAccordion";
 
 // Site-wide FAQ near the bottom of the homepage — general trust/booking
-// questions ("Is this an official seller?", "Can I get a refund?"), distinct
+// questions ("Is this the museum's ticket seller?", "Can I get a refund?"), distinct
 // from MuseumFaqSection.tsx which shows per-museum questions on each
 // museum's own page. Content is entirely admin-owned (Homepage -> "Homepage
 // FAQ" -> content.sections.faq), matching how the reference single-attraction

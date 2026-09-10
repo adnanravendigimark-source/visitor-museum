@@ -75,6 +75,13 @@ export interface Museum {
   heroSubheading: string;
   heroImage: string;
   heroImageAlt: string;
+  // Small trust label next to the rating in the hero (see MuseumHero.tsx),
+  // e.g. "Authorized Ticket Partner" — never "Official", since Visit
+  // Museums is an independent affiliate guide, not the museum's official
+  // ticket seller (see lib/about.ts and the homepage FAQ). Editable per
+  // museum, same as every other piece of hero copy here, rather than a
+  // fixed string baked into the component.
+  heroTrustBadge: string;
   highlightsEyebrow: string;
   highlightsHeading: string;
   highlightsSubheading: string;
@@ -157,6 +164,7 @@ function seedToMuseum(seed: any): Museum {
     heroSubheading: seed.heroSubheading || "",
     heroImage: seed.heroImage || "",
     heroImageAlt: seed.heroImageAlt || "",
+    heroTrustBadge: seed.heroTrustBadge || "Authorized Ticket Partner",
     highlightsEyebrow: seed.highlightsEyebrow || "What You'll See",
     highlightsHeading: seed.highlightsHeading || "",
     highlightsSubheading: seed.highlightsSubheading || "",
@@ -222,6 +230,7 @@ function rowToMuseum(row: any): Museum {
     heroSubheading: row.hero_subheading || "",
     heroImage: row.hero_image || "",
     heroImageAlt: row.hero_image_alt || "",
+    heroTrustBadge: row.hero_trust_badge || "Authorized Ticket Partner",
     highlightsEyebrow: row.highlights_eyebrow || "What You'll See",
     highlightsHeading: row.highlights_heading || "",
     highlightsSubheading: row.highlights_subheading || "",
@@ -325,7 +334,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
     INSERT INTO museums (
       id, slug, name, city, country, currency_symbol, lat, lng, sort_order, featured,
       card_image, card_image_alt, card_tagline,
-      hero_badge, hero_heading, hero_subheading, hero_image, hero_image_alt,
+      hero_badge, hero_heading, hero_subheading, hero_image, hero_image_alt, hero_trust_badge,
       highlights_eyebrow, highlights_heading, highlights_subheading, highlights,
       about_heading, about_body, tours_eyebrow, tours_heading, tours_subheading,
       practical_hours_heading, practical_hours, practical_hours_note,
@@ -341,7 +350,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
     ) VALUES (
       ${m.id}, ${m.slug}, ${m.name}, ${m.city}, ${m.country}, ${m.currencySymbol || "€"}, ${m.lat}, ${m.lng}, ${count as number}, ${!!m.featured},
       ${m.cardImage}, ${m.cardImageAlt}, ${m.cardTagline},
-      ${m.heroBadge}, ${m.heroHeading}, ${m.heroSubheading}, ${m.heroImage}, ${m.heroImageAlt},
+      ${m.heroBadge}, ${m.heroHeading}, ${m.heroSubheading}, ${m.heroImage}, ${m.heroImageAlt}, ${m.heroTrustBadge || "Authorized Ticket Partner"},
       ${m.highlightsEyebrow}, ${m.highlightsHeading}, ${m.highlightsSubheading}, ${JSON.stringify(m.highlights || [])}::jsonb,
       ${m.aboutHeading}, ${m.aboutBody}, ${m.toursEyebrow}, ${m.toursHeading}, ${m.toursSubheading},
       ${m.practicalHoursHeading}, ${JSON.stringify(m.practicalHours || [])}::jsonb, ${m.practicalHoursNote},
@@ -366,7 +375,7 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
       lat = ${m.lat}, lng = ${m.lng}, featured = ${!!m.featured},
       card_image = ${m.cardImage}, card_image_alt = ${m.cardImageAlt}, card_tagline = ${m.cardTagline},
       hero_badge = ${m.heroBadge}, hero_heading = ${m.heroHeading}, hero_subheading = ${m.heroSubheading},
-      hero_image = ${m.heroImage}, hero_image_alt = ${m.heroImageAlt},
+      hero_image = ${m.heroImage}, hero_image_alt = ${m.heroImageAlt}, hero_trust_badge = ${m.heroTrustBadge || "Authorized Ticket Partner"},
       highlights_eyebrow = ${m.highlightsEyebrow}, highlights_heading = ${m.highlightsHeading},
       highlights_subheading = ${m.highlightsSubheading}, highlights = ${JSON.stringify(m.highlights || [])}::jsonb,
       about_heading = ${m.aboutHeading}, about_body = ${m.aboutBody},

@@ -376,7 +376,7 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
                 <input value={content.heroCtaPrimaryHref} onChange={(e) => update("heroCtaPrimaryHref", e.target.value)} className={inputClass} />
               </Field>
             </div>
-            <Field label="Feature strip (the row of trust points below the hero text — e.g. Official Tickets, Skip The Line, Nearby Attractions, 24/7 Support)">
+            <Field label="Feature strip (the row of trust points below the hero text — e.g. Verified Tickets, Skip The Line, Nearby Attractions, 24/7 Support)">
               <RepeatableList<HeroFeature>
                 items={content.heroFeatures}
                 onChange={(heroFeatures) => update("heroFeatures", heroFeatures)}

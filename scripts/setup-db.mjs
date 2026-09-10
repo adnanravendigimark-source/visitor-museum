@@ -94,6 +94,7 @@ async function createTables() {
       hero_subheading TEXT NOT NULL DEFAULT '',
       hero_image TEXT NOT NULL DEFAULT '',
       hero_image_alt TEXT NOT NULL DEFAULT '',
+      hero_trust_badge TEXT NOT NULL DEFAULT 'Authorized Ticket Partner',
       highlights_eyebrow TEXT NOT NULL DEFAULT '',
       highlights_heading TEXT NOT NULL DEFAULT '',
       highlights_subheading TEXT NOT NULL DEFAULT '',
@@ -158,6 +159,10 @@ async function createTables() {
   // so the admin and the public page always read the exact same list.
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_places_json JSONB NOT NULL DEFAULT '[]'::jsonb`;
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_places_resolved_at TIMESTAMPTZ`;
+  // Small trust label shown next to the rating in the museum page's hero
+  // (see components/MuseumHero.tsx) — editable per museum instead of a
+  // fixed string, same as every other piece of hero copy on this table.
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS hero_trust_badge TEXT NOT NULL DEFAULT 'Authorized Ticket Partner'`;
 
   // A real lat/lng on every row is what makes the Nearby Attractions
   // feature possible at all — see lib/nearbyPlaces.ts. Indexing them isn't

@@ -26,7 +26,7 @@ const DEFAULT_ABOUT: AboutPageContent = {
   heroImageAlt: "Visitors admiring artwork inside a grand museum gallery",
   content: `<h2>Why We Created Visit Museums</h2>
 <p>Visiting the world's great museums and cultural attractions is a bucket-list dream for millions of travelers, but the ticket booking process can be confusing. Between timed-entry caps, multiple pass tiers, and long queues at the door, finding the right ticket shouldn't be difficult.</p>
-<p>Visit Museums is an independent travel portal dedicated to providing clear, transparent comparisons of official skip-the-line tickets, guided tours, and combo passes for museums and attractions across Europe and beyond, in partnership with verified providers.</p>
+<p>Visit Museums is an independent travel portal dedicated to providing clear, transparent comparisons of skip-the-line tickets, guided tours, and combo passes for museums and attractions across Europe and beyond, in partnership with verified, authorized providers.</p>
 <h2>How We Curate Tickets & Tours</h2>
 <p>Every ticket and guided experience featured on our site meets rigorous quality, reliability, and security standards.</p>
 <ul>
