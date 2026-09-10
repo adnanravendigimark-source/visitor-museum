@@ -14,6 +14,7 @@ export default function MuseumHero({ museum }: { museum: Museum }) {
             alt={museum.heroImageAlt || museum.name}
             fill
             priority
+            quality={75}
             sizes="100vw"
             className="object-cover opacity-50 brightness-75"
           />

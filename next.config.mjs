@@ -25,6 +25,11 @@ const nextConfig = {
     // uncached request and was the direct cause of the slow image loads
     // reported here — skip it in dev and serve the source file as-is.
     unoptimized: process.env.NODE_ENV === "development",
+    // Once an optimized/resized image is generated in production, keep
+    // serving that cached copy for a full day instead of Next's much
+    // shorter default — museum/tour/blog photos rarely change minute to
+    // minute, so this avoids needlessly re-running Sharp on repeat visits.
+    minimumCacheTTL: 60 * 60 * 24,
   },
 };
 

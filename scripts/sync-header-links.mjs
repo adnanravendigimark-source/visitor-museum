@@ -1,3 +1,13 @@
+// ⚠️ SUPERSEDED — do not run this anymore.
+//
+// This script strips museum links OUT of the header's saved nav links, back
+// to when Header.tsx auto-generated them from "Featured" museums. That's no
+// longer how the header works: museum ticket links are now plain, editable
+// entries in header_json.navLinks (see scripts/seed-header-museum-links.mjs
+// instead). Running this script today would delete those entries.
+//
+// Kept only for history. Original comment below.
+//
 // One-time cleanup for the header's saved nav links.
 //
 // The header's 4 museum ticket links used to be a manually-curated list

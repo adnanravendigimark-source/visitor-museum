@@ -11,7 +11,15 @@ import { getHomepageContent } from "@/lib/homepage";
 // site in this family (amsterdam-boat-tours, arno-boat-cruise, pena-palace).
 export default async function BlogSection() {
   const [allPosts, { sections }] = await Promise.all([getPosts(), getHomepageContent()]);
-  const posts = allPosts.filter((p) => !p.noIndex).slice(0, 3);
+  // The 3 most recent posts (getPosts() is already sorted newest-first) —
+  // same selection every other post listing on the site uses (/blog,
+  // /category/[category], related posts). noIndex only controls whether a
+  // post's own page gets a robots "noindex" meta tag; it was never meant to
+  // hide a real, published post from showing up in teasers/listings, and no
+  // other listing in the codebase treats it that way. Filtering on it here
+  // was the reason this section could silently disappear from the homepage
+  // entirely whenever every post happened to be marked noIndex.
+  const posts = allPosts.slice(0, 3);
   const s = sections.blogTeaser;
 
   if (posts.length === 0) return null;

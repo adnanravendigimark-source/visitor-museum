@@ -56,7 +56,7 @@ function Field({
   children,
 }: {
   label: string;
-  hint?: string;
+  hint?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -316,14 +316,16 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
             open={!!openSections["sec-navbar"]}
             onToggle={() => toggleSection("sec-navbar")}
           >
-            <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-900">
-              The first 4 ticket links shown in the header aren't listed here — they're generated
-              automatically from whichever museums are marked <strong>Featured</strong> in{" "}
-              <Link href="/admin/museums" className="underline">Museums &amp; Attractions</Link>, in the
-              same order as that list. Feature, un-feature, or reorder museums there and the header
-              updates on its own.
-            </div>
-            <Field label="Other nav links (shown after the 4 museum links)" hint="Contact isn't shown in the header nav by design — it's still reachable from the footer and every page.">
+            <Field
+              label="Nav links"
+              hint={
+                <>
+                  Shown in this order, right after the logo — every entry here appears in the
+                  header, no exceptions. Point one at a museum page (e.g.{" "}
+                  <code>/louvre-museum-tickets-tour</code>) same as any other link.
+                </>
+              }
+            >
               <RepeatableList<NavLink>
                 items={content.header.navLinks}
                 onChange={(navLinks) => updateHeader({ navLinks })}
@@ -374,7 +376,7 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
                 <input value={content.heroCtaPrimaryHref} onChange={(e) => update("heroCtaPrimaryHref", e.target.value)} className={inputClass} />
               </Field>
             </div>
-            <Field label="Feature strip (the floating card of 4 items below the hero text)">
+            <Field label="Feature strip (the row of trust points below the hero text — e.g. Official Tickets, Skip The Line, Nearby Attractions, 24/7 Support)">
               <RepeatableList<HeroFeature>
                 items={content.heroFeatures}
                 onChange={(heroFeatures) => update("heroFeatures", heroFeatures)}

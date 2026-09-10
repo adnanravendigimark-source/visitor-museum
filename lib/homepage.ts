@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { sql } from "./db";
 
 /* ------------------------------------------------------------------ */
@@ -142,10 +143,11 @@ export interface HomepageContent {
   ogImage: string;
 }
 
-// Ticket links for the top 4 Featured museums are now built live in
-// Header.tsx from the Museums admin (never stored here) — DEFAULT_HEADER's
-// navLinks only covers the handful of non-museum pages shown alongside
-// them, so this list never needs to "keep up" with which museums exist.
+// navLinks is the FULL header nav list, in order — museum ticket links and
+// everything else (About Us, Blog, ...) are all just plain entries here,
+// edited in Homepage admin -> Navbar -> "Nav links". DEFAULT_HEADER only
+// covers the non-museum pages, since a brand-new install has no museums
+// yet to link to.
 export const DEFAULT_HEADER: HeaderContent = {
   logoImage: "",
   logoAlt: "Visit Museums",
@@ -366,7 +368,12 @@ function rowToHomepage(row: any): HomepageContent {
   };
 }
 
-export async function getHomepageContent(): Promise<HomepageContent> {
+// cache()-wrapped: getHomepageContent() is independently called from five
+// separate components (CtaBanner, SiteFaqSection, CulturalJourneyBanner,
+// not-found, and the homepage itself) — any single page render that mounts
+// more than one of these now shares a single query instead of re-fetching
+// per component.
+async function getHomepageContentImpl(): Promise<HomepageContent> {
   try {
     const rows = await sql`SELECT * FROM homepage WHERE id = 1 LIMIT 1`;
     return rows.length ? rowToHomepage(rows[0]) : DEFAULT_HOMEPAGE_CONTENT;
@@ -374,8 +381,9 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     return DEFAULT_HOMEPAGE_CONTENT;
   }
 }
+export const getHomepageContent = cache(getHomepageContentImpl);
 
-export async function getSiteChrome(): Promise<{ header: HeaderContent; footer: FooterContent; theme: ThemeColors }> {
+async function getSiteChromeImpl(): Promise<{ header: HeaderContent; footer: FooterContent; theme: ThemeColors }> {
   try {
     const rows = await sql`SELECT header_json, footer_json, theme_json FROM homepage WHERE id = 1 LIMIT 1`;
     if (!rows.length) return { header: DEFAULT_HEADER, footer: DEFAULT_FOOTER, theme: DEFAULT_THEME };
@@ -389,6 +397,7 @@ export async function getSiteChrome(): Promise<{ header: HeaderContent; footer: 
     return { header: DEFAULT_HEADER, footer: DEFAULT_FOOTER, theme: DEFAULT_THEME };
   }
 }
+export const getSiteChrome = cache(getSiteChromeImpl);
 
 export async function saveHomepageCopy(data: {
   heroBadge: string;

@@ -17,7 +17,7 @@ import MuseumFaqSection from "@/components/MuseumFaqSection";
 import CtaBanner from "@/components/CtaBanner";
 import SafeImage from "@/components/SafeImage";
 import { CalendarIcon, ClockPayIcon, TicketIcon } from "@/components/icons";
-import { getMuseumBySlug, getToursByMuseum, getFaqsByMuseum } from "@/lib/museums";
+import { getMuseumBySlug, getToursByMuseum } from "@/lib/museums";
 import { getPost, getPosts } from "@/lib/posts";
 import { extractTableOfContents } from "@/lib/tableOfContents";
 import { getRedirectTarget } from "@/lib/redirects";
@@ -116,10 +116,13 @@ export default async function SlugPage({ params }: { params: { slug: string } })
   const museum = await getMuseumBySlug(params.slug);
 
   if (museum) {
-    const [{ header }, tours, faqs] = await Promise.all([
+    // faqs is intentionally not fetched here — MuseumFaqSection fetches it
+    // itself, and thanks to getFaqsByMuseum's cache() wrapper that's a free
+    // cache hit rather than a second query if anything else on this page
+    // ever needs it too.
+    const [{ header }, tours] = await Promise.all([
       getHomepageContent(),
       getToursByMuseum(museum.id),
-      getFaqsByMuseum(museum.id),
     ]);
     const bookNowText = header.bookNowText || "Book Now";
 

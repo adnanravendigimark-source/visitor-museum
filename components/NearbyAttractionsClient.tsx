@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { NearbyPlace } from "@/lib/nearbyPlaces";
 
 interface NearbyAttractionsClientProps {
@@ -9,6 +10,51 @@ interface NearbyAttractionsClientProps {
 }
 
 const BOOKING_URL = "https://www.headout.com/r/visit-museumsrecommends-PMrId/";
+
+// A real Wikipedia/Wikidata photo when one exists for the place, falling
+// back to the icon tile (never a fake or unrelated stock photo) when there
+// isn't one, or if the photo URL fails to load.
+function PlaceMedia({ place }: { place: NearbyPlace }) {
+  const [failed, setFailed] = useState(false);
+
+  if (place.imageUrl && !failed) {
+    return (
+      <div className="relative aspect-[3/2] overflow-hidden bg-gray-100">
+        <Image
+          src={place.imageUrl}
+          alt={place.name}
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          quality={70}
+          className="object-cover transition duration-500 group-hover:scale-105"
+          onError={() => setFailed(true)}
+        />
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#184E3A] shadow-sm">
+          {place.mode === "walk" ? "🚶 On Foot" : "🚕 By Car"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex aspect-[3/2] items-center justify-center overflow-hidden bg-gradient-to-br from-[#F0F6F2] via-[#E4F0E8] to-[#D2E5DA]">
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(24,78,58,0.12) 1.5px, transparent 1.5px)",
+          backgroundSize: "16px 16px",
+        }}
+        aria-hidden="true"
+      />
+      <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-105">
+        <span className="text-4xl leading-none">{place.icon}</span>
+      </div>
+      <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#184E3A] shadow-sm">
+        {place.mode === "walk" ? "🚶 On Foot" : "🚕 By Car"}
+      </span>
+    </div>
+  );
+}
 
 export default function NearbyAttractionsClient({ currentMuseumName, places }: NearbyAttractionsClientProps) {
   const [activeFilter, setActiveFilter] = useState<"all" | "walk" | "drive">("all");
@@ -94,27 +140,7 @@ export default function NearbyAttractionsClient({ currentMuseumName, places }: N
               rel="noopener noreferrer"
               className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
             >
-              {/* Icon block standing in for a photo — OpenStreetMap doesn't
-                  supply photos for these real-world points of interest, so
-                  a textured badge treatment is used instead of a fake photo
-                  or a plain emoji floating on flat color. */}
-              <div className="relative flex aspect-[3/2] items-center justify-center overflow-hidden bg-gradient-to-br from-[#F0F6F2] via-[#E4F0E8] to-[#D2E5DA]">
-                <div
-                  className="absolute inset-0 opacity-40"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(circle, rgba(24,78,58,0.12) 1.5px, transparent 1.5px)",
-                    backgroundSize: "16px 16px",
-                  }}
-                  aria-hidden="true"
-                />
-                <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-105">
-                  <span className="text-4xl leading-none">{place.icon}</span>
-                </div>
-                <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#184E3A] shadow-sm">
-                  {place.mode === "walk" ? "🚶 On Foot" : "🚕 By Car"}
-                </span>
-              </div>
+              <PlaceMedia place={place} />
 
               {/* Content */}
               <div className="flex flex-1 flex-col p-6 text-center">

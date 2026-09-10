@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { sql } from "./db";
 import museumsSeed from "@/data/museums.json";
 import museumToursSeed from "@/data/museum-tours.json";
@@ -243,7 +244,15 @@ function rowToMuseum(row: any): Museum {
   };
 }
 
-export async function getMuseums(): Promise<Museum[]> {
+// Wrapped in React's cache() so that within a single server-render pass,
+// every component that calls one of these with the same arguments (e.g.
+// the page itself, plus MuseumTourGrid, MuseumPriceComparison, and
+// MuseumFaqSection all asking for the same museum/tours/faqs) shares one
+// DB round-trip instead of each re-querying independently. This is purely
+// a request-scoped memoization — it does not persist across requests or
+// hide genuinely fresh writes, and admin mutations still read live data on
+// their own next request.
+async function getMuseumsImpl(): Promise<Museum[]> {
   try {
     const rows = await sql`SELECT * FROM museums ORDER BY sort_order ASC, name ASC`;
     if (rows.length) return rows.map(rowToMuseum);
@@ -252,8 +261,9 @@ export async function getMuseums(): Promise<Museum[]> {
     return (museumsSeed as any[]).map(seedToMuseum);
   }
 }
+export const getMuseums = cache(getMuseumsImpl);
 
-export async function getMuseumBySlug(slug: string): Promise<Museum | null> {
+async function getMuseumBySlugImpl(slug: string): Promise<Museum | null> {
   try {
     const rows = await sql`SELECT * FROM museums WHERE slug = ${slug} LIMIT 1`;
     if (rows.length) return rowToMuseum(rows[0]);
@@ -263,8 +273,9 @@ export async function getMuseumBySlug(slug: string): Promise<Museum | null> {
   const seed = (museumsSeed as any[]).find((m) => m.slug === slug);
   return seed ? seedToMuseum(seed) : null;
 }
+export const getMuseumBySlug = cache(getMuseumBySlugImpl);
 
-export async function getMuseumById(id: string): Promise<Museum | null> {
+async function getMuseumByIdImpl(id: string): Promise<Museum | null> {
   try {
     const rows = await sql`SELECT * FROM museums WHERE id = ${id} LIMIT 1`;
     if (rows.length) return rowToMuseum(rows[0]);
@@ -274,6 +285,7 @@ export async function getMuseumById(id: string): Promise<Museum | null> {
   const seed = (museumsSeed as any[]).find((m) => m.id === id);
   return seed ? seedToMuseum(seed) : null;
 }
+export const getMuseumById = cache(getMuseumByIdImpl);
 
 // Single-row insert — appended at the end of the current sort order. This
 // mirrors the reference repos' lesson (see lib/data.ts's insertTour comment):
@@ -467,7 +479,7 @@ export function transformTour(t: TourRecord): Tour {
   return { ...t, href };
 }
 
-export async function getToursRawByMuseum(museumId: string): Promise<TourRecord[]> {
+async function getToursRawByMuseumImpl(museumId: string): Promise<TourRecord[]> {
   try {
     const rows = await sql`SELECT * FROM museum_tours WHERE museum_id = ${museumId} ORDER BY sort_order ASC, id ASC`;
     if (rows.length) return rows.map(rowToTour);
@@ -476,11 +488,13 @@ export async function getToursRawByMuseum(museumId: string): Promise<TourRecord[
   }
   return (museumToursSeed as any[]).filter((t) => t.museumId === museumId).map(seedToTourRecord);
 }
+export const getToursRawByMuseum = cache(getToursRawByMuseumImpl);
 
-export async function getToursByMuseum(museumId: string): Promise<Tour[]> {
+async function getToursByMuseumImpl(museumId: string): Promise<Tour[]> {
   const records = await getToursRawByMuseum(museumId);
   return records.map(transformTour);
 }
+export const getToursByMuseum = cache(getToursByMuseumImpl);
 
 // Flattened list of every tour across every museum, each labeled with its
 // museum's name — used by the admin Blog Post editor's "recommended tour"
@@ -570,7 +584,7 @@ export interface FAQ {
   category?: string;
 }
 
-export async function getFaqsByMuseum(museumId: string): Promise<FAQ[]> {
+async function getFaqsByMuseumImpl(museumId: string): Promise<FAQ[]> {
   try {
     const rows = await sql`SELECT id, question, answer, category FROM museum_faqs WHERE museum_id = ${museumId} ORDER BY sort_order ASC, id ASC`;
     if (rows.length) {
@@ -591,6 +605,7 @@ export async function getFaqsByMuseum(museumId: string): Promise<FAQ[]> {
     category: f.category,
   }));
 }
+export const getFaqsByMuseum = cache(getFaqsByMuseumImpl);
 
 export async function saveFaqsForMuseum(museumId: string, faqs: FAQ[]): Promise<void> {
   for (let i = 0; i < faqs.length; i++) {

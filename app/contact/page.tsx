@@ -68,17 +68,23 @@ export default async function ContactPage() {
               {contact.reasonsHeading}
             </h2>
           )}
-          <div className={`grid gap-5 sm:grid-cols-3 ${contact.reasonsHeading ? "mt-6" : "mt-10"}`}>
+          <div className={`grid gap-6 sm:grid-cols-3 ${contact.reasonsHeading ? "mt-7" : "mt-10"}`}>
             {contact.reasons.map(({ icon, title, body }) => {
               const Icon = getIconComponent(icon);
               return (
-                <div key={title} className="rounded-2xl border border-[#E8ECEF] bg-white p-5.5 shadow-sm text-center sm:text-left transition hover:shadow-md hover:border-[#CBD5E1]">
-                  <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#FAF8F5] border border-[#ECE8DE] text-[#112338] sm:mx-0">
+                <div
+                  key={title}
+                  className="group relative overflow-hidden rounded-3xl border border-[#E8ECEF] bg-white p-6 text-center shadow-[0_1px_2px_rgba(17,35,56,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-[#B85D3E]/30 hover:shadow-[0_16px_32px_-12px_rgba(17,35,56,0.18)] sm:text-left"
+                >
+                  {/* Soft accent glow, top-right — purely decorative, appears on hover */}
+                  <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#B85D3E]/[0.06] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                  <span className="relative mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0B1B2B] text-white shadow-[0_6px_16px_-4px_rgba(11,27,43,0.35)] transition-transform duration-300 group-hover:scale-105 sm:mx-0">
                     <Icon className="h-5 w-5" />
                   </span>
-                  <p className="mt-4 text-sm font-bold text-[#112338]">{title}</p>
+                  <p className="relative mt-5 text-sm font-bold tracking-tight text-[#112338]">{title}</p>
                   <div
-                    className="rich-content mt-1.5 text-xs text-[#556476] leading-relaxed"
+                    className="rich-content relative mt-2 text-xs leading-relaxed text-[#556476]"
                     dangerouslySetInnerHTML={{ __html: body }}
                   />
                 </div>

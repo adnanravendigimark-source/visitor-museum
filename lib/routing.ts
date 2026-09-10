@@ -31,7 +31,12 @@ async function fetchOsrmRoute(
 ): Promise<{ distanceKm: number; durationMinutes: number } | null> {
   try {
     const url = `${OSRM_BASE_URL}/route/v1/${profile}/${fromLng},${fromLat};${toLng},${toLat}?overview=false`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    // A routed distance between two fixed points doesn't change day to day
+    // (roads don't move), and this route being uncached meant every single
+    // museum page load re-hit the public OSRM demo server for every nearby
+    // candidate — a real, measurable slowdown. Cache it for a day, same as
+    // the Overpass lookups this feeds into.
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000), next: { revalidate: 60 * 60 * 24 } });
     if (!res.ok) return null;
     const data = await res.json();
     const route = data?.routes?.[0];

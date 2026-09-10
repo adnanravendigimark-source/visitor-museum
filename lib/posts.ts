@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { sql } from "./db";
 import postsSeed from "@/data/posts.json";
 
@@ -156,7 +157,10 @@ function rowToPost(row: any): Post {
   };
 }
 
-export async function getPosts(): Promise<Post[]> {
+// cache()-wrapped, same reasoning as lib/museums.ts: a single request often
+// calls getPost()/getPosts() from more than one place (page + generateMetadata,
+// or multiple listing components), and this dedupes those into one query.
+async function getPostsImpl(): Promise<Post[]> {
   try {
     const rows = await sql`SELECT * FROM posts ORDER BY date DESC, slug ASC`;
     return rows.map(rowToPost);
@@ -167,8 +171,9 @@ export async function getPosts(): Promise<Post[]> {
     return (postsSeed as any[]).map(seedToPost);
   }
 }
+export const getPosts = cache(getPostsImpl);
 
-export async function getPost(slug: string): Promise<Post | null> {
+async function getPostImpl(slug: string): Promise<Post | null> {
   // Matches lib/museums.ts's getMuseumBySlug(): falls through to the seed
   // file per-slug whenever the DB doesn't have this post, not just when the
   // DB is unreachable — otherwise a post that exists in data/posts.json but
@@ -184,6 +189,7 @@ export async function getPost(slug: string): Promise<Post | null> {
   const seed = (postsSeed as any[]).find((p) => p.slug === slug);
   return seed ? seedToPost(seed) : null;
 }
+export const getPost = cache(getPostImpl);
 
 export async function savePost(post: Post): Promise<void> {
   // `content` is a JSONB column (holds either the old ContentBlock[] shape
