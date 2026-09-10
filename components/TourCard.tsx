@@ -35,6 +35,16 @@ export default function TourCard({
   // already live goes blank, but any admin edit always wins.
   const ribbonText = tour.ribbon || tour.badge;
 
+  // The admin's Description field has always claimed "shown on the tour
+  // card (clamped to 2 lines)" — but this component never actually
+  // rendered it, so an admin editing it saw no effect on the live card at
+  // all (it only fed the invisible Product JSON-LD description). Fixed
+  // below by actually rendering it, clamped to 2 lines, matching what the
+  // admin hint has always said. Guarded against a description that's
+  // present but empty HTML (e.g. "<p></p>"), which would otherwise render
+  // as a blank gap.
+  const hasDescription = tour.description && tour.description.replace(/<[^>]+>/g, "").trim().length > 0;
+
   return (
     <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Image */}
@@ -62,6 +72,13 @@ export default function TourCard({
         <h3 className="min-h-[3.25rem] text-lg font-bold leading-snug text-[#2A302F] line-clamp-2">
           {tour.title}
         </h3>
+
+        {hasDescription && (
+          <div
+            className="rich-content mt-1 line-clamp-2 min-h-[2.5rem] text-sm text-[#54595F] [&>p]:m-0 [&>p]:line-clamp-2"
+            dangerouslySetInnerHTML={{ __html: tour.description }}
+          />
+        )}
 
         {highlights.length > 0 && (
           <div className="mt-3.5 space-y-1.5">
