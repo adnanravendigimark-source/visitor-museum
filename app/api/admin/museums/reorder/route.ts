@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { reorderMuseums } from "@/lib/museums";
 import { dbErrorMessage } from "@/lib/db";
 
@@ -14,5 +15,8 @@ export async function PUT(req: Request) {
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });
   }
+  // The homepage grid's order is now statically cached — bust it so a
+  // drag-reorder shows up immediately.
+  revalidatePath("/");
   return NextResponse.json({ ok: true });
 }

@@ -11,7 +11,9 @@ import { getHomepageContent } from "@/lib/homepage";
 import { getMuseums } from "@/lib/museums";
 import { resolveRobots, resolveCanonical, resolveOg, stripHtml } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Statically rendered and cached — invalidated on demand by revalidatePath
+// in the Homepage/Museums admin save routes, not re-rendered per request.
+// See the comment on app/layout.tsx's removed force-dynamic export.
 
 export async function generateMetadata(): Promise<Metadata> {
   const homepage = await getHomepageContent();

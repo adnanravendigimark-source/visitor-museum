@@ -4,7 +4,9 @@ import Footer from "@/components/Footer";
 import { getPrivacyPolicy } from "@/lib/legal";
 import { resolveRobots, resolveCanonical, resolveOg } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Statically rendered and cached — invalidated on demand by revalidatePath
+// in the Privacy admin save route. See app/layout.tsx's removed
+// force-dynamic export for why.
 
 export async function generateMetadata(): Promise<Metadata> {
   const policy = await getPrivacyPolicy();

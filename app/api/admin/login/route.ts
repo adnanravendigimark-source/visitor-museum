@@ -12,6 +12,28 @@ import { DB_ERROR_MESSAGE } from "@/lib/db";
 // them in production even though the code is correct.
 export const dynamic = "force-dynamic";
 
+// Best-effort login rate limiting, per IP. This is an in-memory Map, so it
+// only protects within a single warm serverless instance — it resets on
+// cold start and isn't shared across instances — so it's not a substitute
+// for the Turnstile captcha above (which is the real bot defense here).
+// But it's free, adds no new infra, and still meaningfully slows down a
+// simple scripted credential-stuffing attempt hitting one warm instance,
+// so it's worth having as one more layer.
+const LOGIN_WINDOW_MS = 5 * 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 10;
+const loginAttempts = new Map<string, { count: number; windowStart: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now - entry.windowStart > LOGIN_WINDOW_MS) {
+    loginAttempts.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > LOGIN_MAX_ATTEMPTS;
+}
+
 // Verifies a Turnstile token with Cloudflare's siteverify endpoint. Returns
 // true if TURNSTILE_SECRET_KEY isn't set at all (captcha not configured —
 // don't lock everyone out), false for any actual failure/error so a bad or
@@ -64,6 +86,14 @@ export async function POST(req: Request) {
   // so only pass the first (the real client IP).
   const forwardedFor = req.headers.get("x-forwarded-for");
   const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : null;
+
+  if (ip && isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please wait a few minutes and try again." },
+      { status: 429 }
+    );
+  }
+
   const captchaOk = await verifyCaptcha(captchaToken, ip);
   if (!captchaOk) {
     return NextResponse.json(

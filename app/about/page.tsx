@@ -6,7 +6,9 @@ import SafeImage from "@/components/SafeImage";
 import { getAboutPage } from "@/lib/about";
 import { resolveRobots, resolveCanonical, resolveOg } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Statically rendered and cached — invalidated on demand by revalidatePath
+// in the About admin save route. See app/layout.tsx's removed
+// force-dynamic export for why.
 
 export async function generateMetadata(): Promise<Metadata> {
   const about = await getAboutPage();

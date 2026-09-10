@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getMuseums, insertMuseum, type Museum } from "@/lib/museums";
 import { resolveNearbyPlaces } from "@/lib/nearbyPlaces";
 import { dbErrorMessage } from "@/lib/db";
@@ -49,5 +50,10 @@ export async function POST(req: Request) {
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });
   }
+  // The homepage grid and this museum's own (now statically cached) page
+  // both need to pick up the new museum immediately.
+  revalidatePath("/");
+  revalidatePath(`/${body.slug}`);
+  revalidatePath("/sitemap.xml");
   return NextResponse.json({ ok: true, id: body.id });
 }

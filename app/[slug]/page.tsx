@@ -30,7 +30,11 @@ import {
 } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+// Statically rendered per slug and cached (new slugs render on first visit,
+// then get served from cache — Next's standard dynamicParams behavior for
+// a segment with no generateStaticParams). Invalidated on demand by
+// revalidatePath in the museum/post save routes. See the comment on
+// app/layout.tsx's removed force-dynamic export.
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const museum = await getMuseumBySlug(params.slug);

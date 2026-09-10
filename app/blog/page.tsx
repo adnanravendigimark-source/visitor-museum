@@ -9,7 +9,11 @@ import { getBlogSeoSettings } from "@/lib/settings";
 import { getHomepageContent } from "@/lib/homepage";
 import { resolveRobots, resolveCanonical, resolveOg } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// No explicit `dynamic` export needed: this page reads the `searchParams`
+// prop (the `?q=` search box), which Next already treats as a per-request
+// dynamic API on its own — forcing the whole page dynamic via the export
+// on top of that bought nothing. Without a search query it still benefits
+// from being cacheable.
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getBlogSeoSettings();

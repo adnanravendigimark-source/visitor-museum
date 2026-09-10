@@ -7,7 +7,9 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { getPosts, categorySlug, getCategoriesFromPosts } from "@/lib/posts";
 import { resolveRobots, resolveCanonical } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Statically rendered per category and cached — invalidated on demand by
+// revalidatePath in the Posts admin save routes. See app/layout.tsx's
+// removed force-dynamic export for why.
 
 export async function generateMetadata({
   params,

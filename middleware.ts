@@ -33,8 +33,21 @@ export async function middleware(req: NextRequest) {
   const isAdminArea = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
 
   if (!isAdminPage && !isAdminApi) {
-    const res = withNoCache(NextResponse.next());
-    return isAdminArea ? withNoIndex(res) : res;
+    // Public site (pages AND every static asset under /images — this
+    // matcher isn't scoped to just pages): no Cache-Control override here
+    // any more. This used to force `no-store` on EVERY public response,
+    // which meant nothing was ever cached by the browser or by Vercel's
+    // CDN — every page nav and every image re-fetched from the origin on
+    // every single request, the single biggest cause of the site feeling
+    // slow. Freshness after an admin edit is already handled by each admin
+    // save route calling revalidatePath() (see app/api/admin/*/route.ts),
+    // which busts the cache the moment content actually changes — this
+    // blanket no-store was pure cost with no freshness benefit on top of
+    // that. /admin/login and /api/admin/login still fall into this branch
+    // (excluded from isAdminPage/isAdminApi above) and still get
+    // X-Robots-Tag via isAdminArea below; the login form has no
+    // personalized server data in its cached shell to leak.
+    return isAdminArea ? withNoIndex(NextResponse.next()) : NextResponse.next();
   }
 
   const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -75,5 +88,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Also skip /images (static files in /public/images — museum/blog card
+  // photos etc.) so those requests bypass this function entirely instead
+  // of paying its cost (and, previously, getting a no-store header) on
+  // every single asset load.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|images/).*)"],
 };

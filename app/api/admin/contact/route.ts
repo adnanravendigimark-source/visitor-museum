@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getContactPage, saveContactPage, type ContactPageContent } from "@/lib/contact";
 import { dbErrorMessage } from "@/lib/db";
 
@@ -24,6 +25,10 @@ export async function PUT(req: Request) {
       ...body,
       reasons: Array.isArray(body.reasons) ? body.reasons : [],
     });
+    // /contact is now statically cached (see app/contact/page.tsx) — bust
+    // it so this edit shows up immediately.
+    revalidatePath("/contact");
+    revalidatePath("/sitemap.xml");
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });

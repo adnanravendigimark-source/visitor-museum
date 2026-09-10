@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getAboutPage, saveAboutPage, type AboutPageContent } from "@/lib/about";
 import { dbErrorMessage } from "@/lib/db";
 
@@ -21,6 +22,11 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Hero heading is required." }, { status: 400 });
     }
     await saveAboutPage(body);
+    // /about is now statically cached (see app/about/page.tsx) — bust it
+    // so this edit shows up immediately instead of waiting on the next
+    // build/deploy.
+    revalidatePath("/about");
+    revalidatePath("/sitemap.xml");
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });

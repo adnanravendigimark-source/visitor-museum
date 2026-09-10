@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getPrivacyPolicy, savePrivacyPolicy } from "@/lib/legal";
 import { dbErrorMessage } from "@/lib/db";
 
@@ -50,5 +51,9 @@ export async function PUT(req: Request) {
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });
   }
+  // /privacy-policy is now statically cached (see app/privacy-policy/page.tsx)
+  // — bust it so this edit shows up immediately.
+  revalidatePath("/privacy-policy");
+  revalidatePath("/sitemap.xml");
   return NextResponse.json({ ok: true });
 }

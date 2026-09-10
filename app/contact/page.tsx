@@ -6,7 +6,9 @@ import { getContactPage } from "@/lib/contact";
 import { getIconComponent } from "@/lib/iconMap";
 import { resolveRobots, resolveCanonical, resolveOg } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Statically rendered and cached — invalidated on demand by revalidatePath
+// in the Contact admin save route. See app/layout.tsx's removed
+// force-dynamic export for why.
 
 export async function generateMetadata(): Promise<Metadata> {
   const contact = await getContactPage();

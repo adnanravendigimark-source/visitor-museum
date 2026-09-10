@@ -1,7 +1,41 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/session";
 import { getIndexingOverview, setIndexing, type IndexingPageType } from "@/lib/indexing";
+import { getMuseumById } from "@/lib/museums";
+import { getPost } from "@/lib/posts";
 import { dbErrorMessage } from "@/lib/db";
+
+// Maps an indexing change to the one public path it affects, now that
+// these pages are statically cached rather than force-dynamic — without
+// this, a noindex/nofollow toggle wouldn't show up until the next
+// unrelated edit or deploy.
+async function revalidateForIndexingChange(type: IndexingPageType, slug?: string) {
+  switch (type) {
+    case "homepage":
+      return revalidatePath("/");
+    case "about":
+      return revalidatePath("/about");
+    case "contact":
+      return revalidatePath("/contact");
+    case "privacy":
+      return revalidatePath("/privacy-policy");
+    case "blog":
+      return revalidatePath("/blog");
+    case "museum": {
+      if (!slug) return;
+      const museum = await getMuseumById(slug);
+      if (museum) revalidatePath(`/${museum.slug}`);
+      return;
+    }
+    case "post": {
+      if (!slug) return;
+      const post = await getPost(slug);
+      if (post) revalidatePath(`/${post.slug}`);
+      return;
+    }
+  }
+}
 
 // Force this route to always run as a live serverless function rather than
 // get statically optimized at build time — see the identical comment on
@@ -62,6 +96,8 @@ export async function PUT(req: Request) {
 
   try {
     await setIndexing(type, noIndex, noFollow, slug);
+    await revalidateForIndexingChange(type, slug);
+    revalidatePath("/sitemap.xml");
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });
