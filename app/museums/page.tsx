@@ -38,8 +38,8 @@ export default async function MuseumsPage() {
           {/* Background panoramic photo with soft readability scrim */}
           <div className="absolute inset-0 z-0">
             <SafeImage
-              src="/images/hero-louvre.jpg"
-              alt="Louvre Museum in Paris at sunset"
+              src="/images/museums-hero.jpg"
+              alt="World-class classical art museum gallery with sculptures and master paintings"
               fill
               priority
               quality={90}

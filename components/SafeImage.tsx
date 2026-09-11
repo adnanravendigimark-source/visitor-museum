@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image, { ImageProps } from "next/image";
 
 const FALLBACK_IMAGE =
-  "/images/hero-louvre.jpg";
+  "/images/museums-hero.jpg";
 
 export default function SafeImage({
   src,

@@ -147,7 +147,7 @@ const MUSEUM_DEFAULTS: Record<
     duration: "2–3 hours",
     featuresList: ["Audio guide", "Skip-the-line"],
     startingPrice: 22,
-    cardImage: "/images/hero-louvre.jpg",
+    cardImage: "/images/louvre-card.jpg",
   },
   "vatican-museums": {
     category: "Art Museums",

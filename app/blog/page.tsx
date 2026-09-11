@@ -64,8 +64,8 @@ export default async function BlogIndexPage({
         <section className="relative overflow-hidden bg-[#0B1B2B] text-white">
           <div className="absolute inset-0">
             <SafeImage
-              src={heroImage || "/images/hero-louvre.jpg"}
-              alt={heroImageAlt || "Museum interior"}
+              src="/images/blog-hero.jpg"
+              alt="Museum travel guides and cultural archive"
               fill
               priority
               sizes="100vw"
