@@ -12,6 +12,12 @@ import SaveBar from "./SaveBar";
 import { useToast } from "./Toast";
 import type { Museum, HighlightCard, HoursRow, TourRecord } from "@/lib/museums";
 
+// Same 4 tags (and same string values) as MuseumsCatalogExplorer.tsx's
+// `popularFeatureOptions` on the public /museums catalog page — its
+// "Popular" filter checkboxes match against a museum's `featuresList`
+// exactly, so these have to stay in sync with that list.
+const FEATURE_TAG_OPTIONS = ["Skip-the-line", "Guided tour", "Audio guide", "Family Friendly"];
+
 const inputClass =
   "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-canal-blue focus:outline-none focus:ring-1 focus:ring-canal-blue";
 const labelClass = "mb-1 block text-sm font-medium text-stone-700";
@@ -377,6 +383,31 @@ export default function MuseumForm({
             />
           </Field>
         </div>
+        <Field
+          label="Popular Features"
+          hint="Feature tags this museum matches on the catalog page's 'Popular' filter checkboxes."
+        >
+          <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
+            {FEATURE_TAG_OPTIONS.map((opt) => {
+              const checked = (museum.featuresList || []).includes(opt);
+              return (
+                <label key={opt} className="flex items-center gap-2 text-sm text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => {
+                      const current = museum.featuresList || [];
+                      const next = e.target.checked ? [...current, opt] : current.filter((f) => f !== opt);
+                      update("featuresList", next);
+                    }}
+                    className="h-4 w-4 rounded border-stone-300 text-canal-blue focus:ring-canal-blue"
+                  />
+                  {opt}
+                </label>
+              );
+            })}
+          </div>
+        </Field>
       </SectionCard>
 
       {/* ---------------- HERO ---------------- */}
