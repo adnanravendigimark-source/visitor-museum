@@ -24,7 +24,7 @@ export default async function PopularCountries() {
 
   const curated = section.items.length > 0;
 
-  const cards = curated
+  const cards = (curated
     ? section.items
         .filter((item) => item.country)
         .map((item) => {
@@ -40,7 +40,8 @@ export default async function PopularCountries() {
           };
         })
         .filter((c): c is NonNullable<typeof c> => c !== null)
-    : getPopularCountries(museums, 6).map((c) => ({ ...c, caption: "" }));
+    : getPopularCountries(museums, 4).map((c) => ({ ...c, caption: "" }))
+  ).slice(0, 4);
 
   // Fewer than 2 countries in fully-automatic mode wouldn't say anything
   // useful as a grid — skip the section entirely rather than show one
@@ -77,7 +78,7 @@ export default async function PopularCountries() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4 lg:grid-cols-4">
           {cards.map((c) => (
             <Link
               key={c.country}
@@ -88,11 +89,11 @@ export default async function PopularCountries() {
                 src={c.image}
                 alt={c.imageAlt}
                 fill
-                sizes="(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw"
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 25vw, 50vw"
                 className="object-cover transition duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-              <div className="relative z-10 p-3.5 sm:p-4">
+              <div className="relative z-10 p-4 sm:p-5">
                 <p className="font-serif text-base font-bold leading-tight text-white sm:text-lg">
                   {c.country}
                 </p>

@@ -474,7 +474,7 @@ export default function HomepageForm({
               label="Featured countries"
               hint={
                 <>
-                  Leave empty to auto-show the top 6 countries by museum count (recomputed live —
+                  Leave empty to auto-show the top 4 countries by museum count (recomputed live —
                   nothing to maintain). Add countries here to hand-pick exactly which ones appear and
                   in what order instead. Photo and caption are both optional — leave either blank to
                   fall back to that country's own featured museum's photo, and to an auto &ldquo;X

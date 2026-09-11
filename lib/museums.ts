@@ -597,7 +597,7 @@ function computeCountryStats(country: string, list: Museum[]): PopularCountry {
 // alphabetically). Each card's photo is borrowed from that country's own
 // "Featured" museum (or its first museum, by sort order, if none are
 // marked Featured), so a real photo always ships with zero admin work.
-export function getPopularCountries(museums: Museum[], limit = 6): PopularCountry[] {
+export function getPopularCountries(museums: Museum[], limit = 4): PopularCountry[] {
   const byCountry = new Map<string, Museum[]>();
   for (const m of museums) {
     if (!m.country) continue;
