@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ImageUploadField from "./ImageUploadField";
 import RichTextEditor from "./RichTextEditor";
 import SaveBar from "./SaveBar";
+import CityAutocomplete, { type CitySelection } from "./CityAutocomplete";
 import { useToast } from "./Toast";
 import type { TourRecord } from "@/lib/museums";
 
@@ -197,6 +198,30 @@ export default function MuseumTourForm({
         </Field>
         <Field label="Link extra params (optional)">
           <input value={tour.hrefExtra || ""} onChange={(e) => update("hrefExtra", e.target.value)} className={inputClass} placeholder="&placement=content-top" />
+        </Field>
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field
+          label="City"
+          hint="Search any city worldwide — picking one fills in Country automatically. Defaults to this museum's own city, but a combo ticket (e.g. a day trip covering two cities) can be tagged differently."
+        >
+          <CityAutocomplete
+            initialQuery={tour.city ? `${tour.city}, ${tour.country || ""}`.replace(/, $/, "") : ""}
+            onSelect={(selection: CitySelection) => {
+              update("city", selection.city);
+              update("country", selection.country);
+            }}
+            placeholder="Search for a city…"
+          />
+        </Field>
+        <Field label="Country" hint="Filled in automatically when a city is picked — not directly editable.">
+          <input
+            readOnly
+            value={tour.country || ""}
+            className={`${inputClass} bg-stone-100 text-stone-500`}
+            placeholder="Pick a city first"
+          />
         </Field>
       </div>
 

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getMuseums } from "@/lib/museums";
 import { getSession } from "@/lib/session";
 import MuseumsReorderList from "@/components/admin/MuseumsReorderList";
-import RecheckAllNearbyButton from "@/components/admin/RecheckAllNearbyButton";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,6 @@ export default async function AdminMuseumsPage() {
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <RecheckAllNearbyButton museumIds={museums.map((m) => m.id)} />
           <Link
             href="/admin/museums/new"
             className="rounded-lg bg-canal-orange px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-canal-orange/90"

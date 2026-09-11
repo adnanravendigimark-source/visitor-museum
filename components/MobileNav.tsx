@@ -4,15 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { NavLink } from "@/lib/homepage";
+import HeaderSearch, { type MuseumSearchEntry } from "./HeaderSearch";
 
 export default function MobileNav({
   links,
   ctaText,
   ctaHref,
+  museums = [],
 }: {
   links?: NavLink[];
   ctaText?: string;
   ctaHref?: string;
+  museums?: MuseumSearchEntry[];
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -58,6 +61,11 @@ export default function MobileNav({
 
       {open && (
         <div className="absolute inset-x-0 top-20 z-50 border-b border-gray-200 bg-[#F2F2F2] p-6 shadow-xl animate-in slide-in-from-top-2">
+          {museums.length > 0 && (
+            <div className="mb-4">
+              <HeaderSearch museums={museums} defaultOpen />
+            </div>
+          )}
           <nav className="flex flex-col gap-3">
             {navLinks.map((link) => {
               const isActive = checkIsActive(link.href);

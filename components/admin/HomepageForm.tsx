@@ -19,6 +19,7 @@ import type {
   HeroFeature,
   HighlightCard,
   FaqItem,
+  PopularCountryItem,
 } from "@/lib/homepage";
 
 const inputClass =
@@ -42,6 +43,7 @@ const CONTENT_SECTIONS = [
   { id: "sec-navbar", label: "Navbar" },
   { id: "sec-hero", label: "Hero" },
   { id: "sec-grid", label: "Museums Grid" },
+  { id: "sec-popular-countries", label: "Popular Countries" },
   { id: "sec-highlights", label: "Why Book With Us" },
   { id: "sec-blogteaser", label: "Blog Teaser" },
   { id: "sec-faq", label: "Homepage FAQ" },
@@ -123,7 +125,16 @@ function SectionCard({
   );
 }
 
-export default function HomepageForm({ initial }: { initial: HomepageContent }) {
+export default function HomepageForm({
+  initial,
+  availableCountries = [],
+}: {
+  initial: HomepageContent;
+  // Every country that has at least one museum — used to populate the
+  // Popular Countries section's country picker (see lib/museums.ts's
+  // getCountryCityMap). Empty on a brand-new install with no museums yet.
+  availableCountries?: string[];
+}) {
   const router = useRouter();
   const { showToast } = useToast();
   const [content, setContent] = useState<HomepageContent>(initial);
@@ -178,6 +189,14 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
 
   function updateGrid(patch: Partial<HomepageContent["sections"]["grid"]>) {
     setContent((c) => ({ ...c, sections: { ...c.sections, grid: { ...c.sections.grid, ...patch } } }));
+    setSaved(false);
+  }
+
+  function updatePopularCountries(patch: Partial<HomepageContent["sections"]["popularCountries"]>) {
+    setContent((c) => ({
+      ...c,
+      sections: { ...c.sections, popularCountries: { ...c.sections.popularCountries, ...patch } },
+    }));
     setSaved(false);
   }
 
@@ -395,7 +414,7 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
           <SectionCard
             id="sec-grid"
             title="Museums Grid section"
-            description="The eyebrow + heading + intro text directly above the grid of museum & attraction cards. The cards themselves come from the Museums admin section."
+            description="The eyebrow + heading + intro text directly above the grid of museum & attraction cards. The grid itself shows up to 3 museums (whichever are marked 'Featured', in their sort order) with a 'View All Museums' link to the full /museums page — the cards' own content comes from the Museums admin section."
             open={!!openSections["sec-grid"]}
             onToggle={() => toggleSection("sec-grid")}
           >
@@ -407,6 +426,113 @@ export default function HomepageForm({ initial }: { initial: HomepageContent }) 
             </Field>
             <Field label="Subheading">
               <textarea rows={2} value={content.sections.grid.subheading} onChange={(e) => updateGrid({ subheading: e.target.value })} className={inputClass} />
+            </Field>
+          </SectionCard>
+
+          <SectionCard
+            id="sec-popular-countries"
+            title="Popular Countries section"
+            description="A row of destination cards ('Where to Go') below the museums grid, linking to /museums pre-filtered by country."
+            open={!!openSections["sec-popular-countries"]}
+            onToggle={() => toggleSection("sec-popular-countries")}
+          >
+            <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
+              <input
+                type="checkbox"
+                checked={content.sections.popularCountries.enabled}
+                onChange={(e) => updatePopularCountries({ enabled: e.target.checked })}
+                className="h-4 w-4 rounded border-stone-300 text-canal-blue focus:ring-canal-blue"
+              />
+              Show this section on the homepage
+            </label>
+            <Field label="Eyebrow">
+              <input value={content.sections.popularCountries.eyebrow} onChange={(e) => updatePopularCountries({ eyebrow: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Section heading (H2)">
+              <input value={content.sections.popularCountries.heading} onChange={(e) => updatePopularCountries({ heading: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Subheading">
+              <textarea rows={2} value={content.sections.popularCountries.subheading} onChange={(e) => updatePopularCountries({ subheading: e.target.value })} className={inputClass} />
+            </Field>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label={'"View all" button text'}>
+                <input value={content.sections.popularCountries.viewAllText} onChange={(e) => updatePopularCountries({ viewAllText: e.target.value })} className={inputClass} />
+              </Field>
+              <Field label={'"View all" button link'}>
+                <input value={content.sections.popularCountries.viewAllHref} onChange={(e) => updatePopularCountries({ viewAllHref: e.target.value })} className={inputClass} />
+              </Field>
+            </div>
+
+            {availableCountries.length === 0 && (
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                No museums have a country set yet, so there's nothing to pick below — add museums (or
+                set their country) first in Museums &amp; Attractions.
+              </p>
+            )}
+
+            <Field
+              label="Featured countries"
+              hint={
+                <>
+                  Leave empty to auto-show the top 6 countries by museum count (recomputed live —
+                  nothing to maintain). Add countries here to hand-pick exactly which ones appear and
+                  in what order instead. Photo and caption are both optional — leave either blank to
+                  fall back to that country's own featured museum's photo, and to an auto &ldquo;X
+                  museums · Y cities&rdquo; caption.
+                </>
+              }
+            >
+              <RepeatableList<PopularCountryItem>
+                items={content.sections.popularCountries.items}
+                onChange={(items) => updatePopularCountries({ items })}
+                newItem={() => ({ country: availableCountries[0] || "", image: "", imageAlt: "", tagline: "" })}
+                addLabel="+ Add country"
+                emptyLabel="No countries added — the homepage will show the top 6 automatically."
+                renderItem={(item, upd) => (
+                  <div className="space-y-3">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-stone-600">Country</label>
+                        <select
+                          value={item.country}
+                          onChange={(e) => upd({ ...item, country: e.target.value })}
+                          className={inputClass}
+                        >
+                          <option value="">— Select a country —</option>
+                          {availableCountries.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-stone-600">Caption (optional)</label>
+                        <input
+                          value={item.tagline}
+                          onChange={(e) => upd({ ...item, tagline: e.target.value })}
+                          placeholder="e.g. Home of the Louvre"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <ImageUploadField
+                        label="Photo (optional)"
+                        value={item.image}
+                        onChange={(url) => upd({ ...item, image: url })}
+                        aspectRatio={3 / 4}
+                      />
+                      <input
+                        value={item.imageAlt}
+                        onChange={(e) => upd({ ...item, imageAlt: e.target.value })}
+                        placeholder="Alt text"
+                        className={`${inputClass} mt-2`}
+                      />
+                    </div>
+                  </div>
+                )}
+              />
             </Field>
           </SectionCard>
 

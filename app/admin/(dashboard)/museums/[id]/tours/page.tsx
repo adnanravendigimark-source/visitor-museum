@@ -46,6 +46,11 @@ export default async function MuseumToursPage({ params }: { params: { id: string
                 {museum.currencySymbol}
                 {tour.price} · {tour.ribbon || tour.badge} · id: {tour.id}
               </p>
+              {(tour.city || tour.country) && (
+                <p className="mt-0.5 text-xs text-stone-400">
+                  📍 {[tour.city, tour.country].filter(Boolean).join(", ")}
+                </p>
+              )}
             </div>
             <Link href={`/admin/museums/${museum.id}/tours/${tour.id}`} className="shrink-0 text-sm font-medium text-canal-blue hover:underline">
               Edit

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getMuseums, insertMuseum, type Museum } from "@/lib/museums";
-import { resolveNearbyPlaces } from "@/lib/nearbyPlaces";
 import { dbErrorMessage } from "@/lib/db";
-import { isValidCoordinate } from "@/lib/geo";
 
 // Force this route to always run as a live serverless function rather than
 // get statically optimized at build time — see the identical comment on
@@ -28,31 +26,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "A museum with this URL slug already exists." }, { status: 400 });
   }
 
-  // Resolve Nearby Attractions once, right now, from the coordinates this
-  // museum is being created with — never on a later page load. Best-effort:
-  // if every OSM mirror is briefly unreachable this shouldn't block creating
-  // the museum, it just leaves the list empty until the admin uses "Re-check
-  // now" (see the museum's own nearby-places route) or edits the
-  // coordinates, which re-triggers this same resolution.
-  let nearbyPlaces: Museum["nearbyPlaces"] = [];
-  let nearbyPlacesResolvedAt = "";
-  if (isValidCoordinate(body.lat, body.lng)) {
-    try {
-      nearbyPlaces = await resolveNearbyPlaces({ lat: body.lat, lng: body.lng, name: body.name });
-      nearbyPlacesResolvedAt = new Date().toISOString();
-    } catch {
-      // leave nearbyPlaces empty — see comment above
-    }
-  }
-
   try {
-    await insertMuseum({ ...body, nearbyPlaces, nearbyPlacesResolvedAt });
+    await insertMuseum(body);
   } catch (err) {
     return NextResponse.json({ error: dbErrorMessage(err) }, { status: 500 });
   }
-  // The homepage grid and this museum's own (now statically cached) page
-  // both need to pick up the new museum immediately.
+  // The homepage grid, the full /museums listing, and this museum's own
+  // (now statically cached) page all need to pick up the new museum
+  // immediately.
   revalidatePath("/");
+  revalidatePath("/museums");
   revalidatePath(`/${body.slug}`);
   revalidatePath("/sitemap.xml");
   return NextResponse.json({ ok: true, id: body.id });

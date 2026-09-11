@@ -146,17 +146,17 @@ async function createTables() {
   // run every time regardless (a no-op once the columns are already there).
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7`;
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS reviews_count TEXT NOT NULL DEFAULT '10.2k'`;
-  // SUPERSEDED — a short-lived per-place ({osmId: imageUrl}) admin photo
-  // override for Nearby Attractions. Removed: admin can no longer edit any
-  // part of Nearby Attractions by hand (see nearby_places_json below). Left
-  // as a harmless no-op ADD COLUMN (matches this file's never-DROP
-  // migration policy) rather than deleting the column and any data in it.
+  // SUPERSEDED — the entire "Nearby Attractions" feature (auto-resolved
+  // from OpenStreetMap by coordinate) has been replaced by admin-authored
+  // "Other Attractions", a city-scoped table of its own (see
+  // other_attractions below / lib/otherAttractions.ts). Nothing in the app
+  // reads or writes nearby_image_overrides, nearby_places_json, or
+  // nearby_places_resolved_at any more — left as harmless no-op
+  // ADD COLUMNs (matches this file's never-DROP migration policy) rather
+  // than deleting the columns and whatever data an install already has in
+  // them. nearby_heading_override (on the CREATE TABLE above) is dead for
+  // the same reason.
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_image_overrides JSONB NOT NULL DEFAULT '{}'::jsonb`;
-  // The persisted, resolved Nearby Attractions list for this museum — see
-  // lib/museums.ts's resolveAndPersistNearbyPlaces and Museum.nearbyPlaces
-  // comment. Resolved once (on create, on a coordinate change, or an
-  // explicit admin re-check), never recomputed on a page load or API GET,
-  // so the admin and the public page always read the exact same list.
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_places_json JSONB NOT NULL DEFAULT '[]'::jsonb`;
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS nearby_places_resolved_at TIMESTAMPTZ`;
   // Small trust label shown next to the rating in the museum page's hero
@@ -164,9 +164,9 @@ async function createTables() {
   // fixed string, same as every other piece of hero copy on this table.
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS hero_trust_badge TEXT NOT NULL DEFAULT 'Authorized Ticket Partner'`;
 
-  // A real lat/lng on every row is what makes the Nearby Attractions
-  // feature possible at all — see lib/nearbyPlaces.ts. Indexing them isn't
-  // strictly required at this table size, but costs nothing.
+  // lat/lng feed this page's GeoCoordinates structured data (see
+  // app/[slug]/page.tsx). Indexing them isn't strictly required at this
+  // table size, but costs nothing.
   await sql`CREATE INDEX IF NOT EXISTS museums_lat_lng_idx ON museums (lat, lng)`;
 
   await sql`
@@ -194,11 +194,25 @@ async function createTables() {
       price_table_column1 TEXT NOT NULL DEFAULT '',
       price_table_feature TEXT NOT NULL DEFAULT '',
       category TEXT NOT NULL DEFAULT '',
+      city TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT '',
       sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS museum_tours_museum_id_idx ON museum_tours (museum_id)`;
+  // Idempotent migration for installs that already ran setup-db.mjs before
+  // city/country existed on tickets — CREATE TABLE IF NOT EXISTS above
+  // won't retroactively add columns to an existing museum_tours table, so
+  // this must run every time regardless (a no-op once the columns are
+  // already there). Lets each ticket be classified/filtered by city and
+  // country in the admin (see lib/museums.ts's TourRecord and
+  // components/admin/MuseumTourForm.tsx's City field), independent of —
+  // though normally matching — its own museum's city/country, since a
+  // combo ticket can legitimately span more than one city.
+  await sql`ALTER TABLE museum_tours ADD COLUMN IF NOT EXISTS city TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE museum_tours ADD COLUMN IF NOT EXISTS country TEXT NOT NULL DEFAULT ''`;
+  await sql`CREATE INDEX IF NOT EXISTS museum_tours_city_country_idx ON museum_tours (country, city)`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS museum_faqs (
@@ -212,6 +226,37 @@ async function createTables() {
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS museum_faqs_museum_id_idx ON museum_faqs (museum_id)`;
+
+  // Other Attractions — admin-authored, managed per museum (exactly like
+  // museum_tours above): each row belongs to exactly one museum, added and
+  // edited from that museum's own "Manage Other Attractions" screen (see
+  // lib/otherAttractions.ts and /admin/attractions/[museumId]). Replaces
+  // the old auto-resolved "Nearby Attractions" feature (see the
+  // now-superseded nearby_* columns on `museums` below).
+  await sql`
+    CREATE TABLE IF NOT EXISTS other_attractions (
+      id TEXT PRIMARY KEY,
+      museum_id TEXT NOT NULL REFERENCES museums(id) ON DELETE CASCADE,
+      badge TEXT,
+      ribbon TEXT,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      includes JSONB NOT NULL DEFAULT '[]',
+      duration TEXT,
+      rating NUMERIC(2, 1) NOT NULL DEFAULT 5.0,
+      reviews INTEGER NOT NULL DEFAULT 0,
+      price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+      original_price NUMERIC(10, 2),
+      image TEXT NOT NULL DEFAULT '',
+      image_alt TEXT NOT NULL DEFAULT '',
+      href_path TEXT NOT NULL DEFAULT '',
+      href_extra TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS other_attractions_museum_id_idx ON other_attractions (museum_id)`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS posts (

@@ -57,6 +57,19 @@ export function StarBadgeIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
+export function PinIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.7}>
+      <path
+        d="M12 21.5s7-6.3 7-12A7 7 0 1 0 5 9.5c0 5.7 7 12 7 12Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="9.5" r="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function TicketStackIcon({ className = "h-5 w-5" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.7}>

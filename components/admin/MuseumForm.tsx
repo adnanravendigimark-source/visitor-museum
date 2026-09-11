@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ImageUploadField from "./ImageUploadField";
-import NearbyPlacesPanel from "./NearbyPlacesPanel";
 import RichTextEditor from "./RichTextEditor";
 import RepeatableList from "./RepeatableList";
 import SeoPreview from "./SeoPreview";
@@ -20,9 +19,13 @@ const hintClass = "mt-1 text-xs text-stone-500";
 
 // One entry per section card, in the same order those sections actually
 // appear on the live museum page (hero → tickets → highlights → practical
-// info → price table → nearby attractions → FAQ → CTA), with the
+// info → price table → other attractions → FAQ → CTA), with the
 // non-visual identity/SEO/social sections bookending the flow. Powers both
-// the "Jump to section" quick nav and each card's default open/closed state.
+// the "Jump to section" quick nav and each card's default open/closed
+// state. Other Attractions here is just a summary card + link — the
+// attractions themselves are managed on their own screen (see
+// /admin/attractions/[museumId]), same relationship as Tickets Section
+// has with Tours & Tickets.
 const SECTIONS = [
   { id: "sec-basics", label: "Museum Basics" },
   { id: "sec-card", label: "Homepage Grid Card" },
@@ -31,7 +34,7 @@ const SECTIONS = [
   { id: "sec-highlights", label: "Highlights & About" },
   { id: "sec-practical", label: "Practical Info" },
   { id: "sec-price", label: "Price Comparison Table" },
-  { id: "sec-nearby", label: "Nearby Attractions" },
+  { id: "sec-attractions", label: "Other Attractions" },
   { id: "sec-faq", label: "FAQ Section" },
   { id: "sec-cta", label: "Bottom CTA Banner" },
   { id: "sec-seo", label: "SEO" },
@@ -103,10 +106,12 @@ export default function MuseumForm({
   initial,
   isNew,
   tours = [],
+  otherAttractionsCount = 0,
 }: {
   initial: Museum;
   isNew: boolean;
   tours?: TourRecord[];
+  otherAttractionsCount?: number;
 }) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -135,28 +140,6 @@ export default function MuseumForm({
 
   function update<K extends keyof Museum>(key: K, value: Museum[K]) {
     setMuseum((m) => ({ ...m, [key]: value }));
-    setDirty(true);
-  }
-
-  // "Re-check now" (NearbyPlacesPanel) already persists straight to the
-  // database itself — it isn't a form field the Save button needs to write.
-  // Updating local state without marking the form dirty keeps the displayed
-  // list in sync with what was just resolved, without implying there's now
-  // an unsaved change, or risking it being reverted by "Discard changes".
-  function handleNearbyPlacesRecheck(places: Museum["nearbyPlaces"], resolvedAt: string) {
-    setMuseum((m) => ({ ...m, nearbyPlaces: places, nearbyPlacesResolvedAt: resolvedAt }));
-  }
-
-  // Editing a single place's photo IS a normal form field edit, unlike the
-  // recheck above — it only takes effect once the admin clicks Save, same
-  // as every other field, and is written to nearby_places_json then (see
-  // updateMuseum). Only the matching place's imageUrl changes; its name,
-  // category, mode, and every other place are left exactly as they were.
-  function handleNearbyPlaceImageChange(placeId: string, url: string) {
-    setMuseum((m) => ({
-      ...m,
-      nearbyPlaces: m.nearbyPlaces.map((p) => (p.id === placeId ? { ...p, imageUrl: url || undefined } : p)),
-    }));
     setDirty(true);
   }
 
@@ -201,7 +184,7 @@ export default function MuseumForm({
     }
     if (!Number.isFinite(museum.lat) || !Number.isFinite(museum.lng) || (museum.lat === 0 && museum.lng === 0)) {
       setSaving(false);
-      setError("A real latitude/longitude is required for the Nearby Attractions feature to work — see the Practical Info section.");
+      setError("A real latitude/longitude is required for the page's map/geo structured data — see the Practical Info section.");
       return;
     }
 
@@ -326,7 +309,8 @@ export default function MuseumForm({
         </div>
         <label className="flex items-center gap-2 text-sm text-stone-700">
           <input type="checkbox" checked={!!museum.featured} onChange={(e) => update("featured", e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
-          Featured (shown first / highlighted on the museums grid)
+          Featured (eligible for the homepage's 3-museum spotlight, in sort order — every museum,
+          featured or not, is always browsable on the full /museums page)
         </label>
       </SectionCard>
 
@@ -467,7 +451,7 @@ export default function MuseumForm({
       <SectionCard
         id="sec-practical"
         title="Practical Info"
-        description="Hours, best time to visit, address, and the coordinates used for the Nearby Attractions feature."
+        description="Hours, best time to visit, address, and the coordinates used for the page's map/geo structured data."
         open={!!openSections["sec-practical"]}
         onToggle={() => toggleSection("sec-practical")}
       >
@@ -515,9 +499,8 @@ export default function MuseumForm({
 
         <div className="border-t border-stone-100 pt-5">
           <p className="mb-2 text-xs text-stone-500">
-            Real lat/lng is required so the Nearby Attractions feature can find genuinely nearby places by walking
-            (≤3km) and driving (≤10km) distance. Get exact coordinates from Google Maps: right-click the pin → click
-            the coordinates to copy them.
+            Used for this page's GeoCoordinates structured data (helps search engines place it on a map). Get exact
+            coordinates from Google Maps: right-click the pin → click the coordinates to copy them.
           </p>
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Latitude">
@@ -578,33 +561,32 @@ export default function MuseumForm({
         </Field>
       </SectionCard>
 
-      {/* ---------------- NEARBY ATTRACTIONS ---------------- */}
+      {/* ---------------- OTHER ATTRACTIONS ---------------- */}
       <SectionCard
-        id="sec-nearby"
-        title="Nearby Attractions"
-        description="Resolved from OpenStreetMap using the coordinates above and stored — name, category, and mode are fully automatic and can't be edited by hand, but you can set a custom photo per place below. Recalculated when this museum is created, when its coordinates change, or with 'Re-check now' — never on every page view — and a custom photo survives all of those as long as the place is still found."
-        open={!!openSections["sec-nearby"]}
-        onToggle={() => toggleSection("sec-nearby")}
+        id="sec-attractions"
+        title="Other Attractions"
+        description={`Extra attraction cards shown right below this museum's own Tours & Tickets — same card style, hand-picked and managed per museum, e.g. other things to do in ${museum.city || "this city"}.`}
+        open={!!openSections["sec-attractions"]}
+        onToggle={() => toggleSection("sec-attractions")}
       >
-        {isNew ? (
-          <p className="rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500">
-            Save this museum first — its Nearby Attractions list resolves automatically once it has real coordinates
-            on file.
-          </p>
-        ) : (
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
           <div>
-            <label className={labelClass}>Nearby Attractions</label>
-            <div className="mt-1">
-              <NearbyPlacesPanel
-                museumId={museum.id}
-                places={museum.nearbyPlaces || []}
-                resolvedAt={museum.nearbyPlacesResolvedAt || ""}
-                onImageChange={handleNearbyPlaceImageChange}
-                onRecheckComplete={handleNearbyPlacesRecheck}
-              />
-            </div>
+            <p className="text-sm font-semibold text-stone-900">
+              {otherAttractionsCount} {otherAttractionsCount === 1 ? "attraction" : "attractions"} for this museum
+            </p>
+            <p className="mt-0.5 text-xs text-stone-500">Edit title, description, image, price, and booking link per attraction.</p>
           </div>
-        )}
+          {isNew ? (
+            <span className="shrink-0 text-xs text-stone-400">Save this museum first</span>
+          ) : (
+            <Link
+              href={`/admin/attractions/${museum.id}`}
+              className="shrink-0 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50"
+            >
+              Manage Other Attractions →
+            </Link>
+          )}
+        </div>
       </SectionCard>
 
       {/* ---------------- FAQ SECTION ---------------- */}

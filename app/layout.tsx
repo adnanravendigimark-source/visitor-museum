@@ -1,24 +1,11 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Roboto, Roboto_Slab, Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Roboto, Roboto_Slab, Playfair_Display, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
 import { resolveRobots } from "@/lib/seo";
 import { getSiteChrome } from "@/lib/homepage";
 import { hexToRgbTriplet } from "@/lib/color";
 import "./globals.css";
-
-// No `dynamic = "force-dynamic"` here any more. That export forced every
-// single page on the site (this layout wraps all of them) to be rendered
-// fresh, from scratch, on every request — no static caching, no CDN
-// caching, a full DB round trip every time. It was the single biggest
-// cause of slow page loads. Content is now served statically/ISR and
-// invalidated on demand: every admin save route calls revalidatePath()
-// (see app/api/admin/*/route.ts) the moment something actually changes,
-// so visitors still see edits immediately — they just aren't paying for a
-// fresh render on every page view in between edits. The homepage route
-// specifically revalidates "/" with the "layout" type, which busts this
-// layout (and therefore every page under it) whenever header/footer/theme
-// changes, since those render on every page.
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -30,6 +17,12 @@ const robotoSlab = Roboto_Slab({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-roboto-slab",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-playfair",
 });
 
 // Loaded specifically for the Blog section (listing page + single posts),
@@ -135,7 +128,7 @@ export default async function RootLayout({
   const themeStyle = buildThemeStyle(theme);
 
   return (
-    <html lang="en" className={`${roboto.variable} ${robotoSlab.variable} ${outfit.variable} ${plusJakartaSans.variable}`}>
+    <html lang="en" className={`${roboto.variable} ${robotoSlab.variable} ${playfair.variable} ${outfit.variable} ${plusJakartaSans.variable}`}>
       {GA_MEASUREMENT_ID && (
         <head>
           <link rel="preconnect" href="https://www.googletagmanager.com" />

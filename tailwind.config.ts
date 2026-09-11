@@ -57,8 +57,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-roboto)", "Roboto", "system-ui", "sans-serif"],
-        serif: ["var(--font-roboto-slab)", "Roboto Slab", "serif"],
-        display: ["var(--font-roboto-slab)", "Roboto Slab", "Roboto", "sans-serif"],
+        serif: ["var(--font-playfair)", "var(--font-roboto-slab)", "Playfair Display", "Georgia", "serif"],
+        display: ["var(--font-playfair)", "var(--font-roboto-slab)", "Playfair Display", "serif"],
         body: ["var(--font-roboto)", "Roboto", "system-ui", "sans-serif"],
         // Scoped to the Blog section only (see app/layout.tsx) — matches the
         // amsterdam-boat-tours reference site's typography without changing

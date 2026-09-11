@@ -127,6 +127,84 @@ export function SearchIcon({ className = "h-6 w-6" }: IconProps) {
   );
 }
 
+export function ChevronDownIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={2}>
+      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function MapPinIcon({ className = "h-6 w-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.8}>
+      <path
+        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function GlobeIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.75}>
+      <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.6 9h16.8M3.6 15h16.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 3a13 13 0 0 0 0 18M12 3a13 13 0 0 1 0 18" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function CompassIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.8}>
+      <circle cx="12" cy="12" r="9.5" />
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function ClassicalMuseumIcon({ className = "h-6 w-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.7}>
+      <path d="M3 9.5L12 4.5L21 9.5H3Z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.5 9.5V18.5M8.5 9.5V18.5M12 9.5V18.5M15.5 9.5V18.5M19.5 9.5V18.5" strokeLinecap="round" />
+      <path d="M2.5 19H21.5" strokeLinecap="round" strokeWidth={2} />
+      <path d="M4 21.5H20" strokeLinecap="round" strokeWidth={2} />
+    </svg>
+  );
+}
+
+export function LocationCircleIcon({ className = "h-6 w-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.7}>
+      <path
+        d="M12 21c-4-4.5-6-7.5-6-10a6 6 0 1 1 12 0c0 2.5-2 5.5-6 10Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="11" r="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function TicketTagIcon({ className = "h-6 w-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.7}>
+      <path
+        d="M9 3.5H4.5A1.5 1.5 0 0 0 3 5v4.5a1.5 1.5 0 0 0 .44 1.06l9.5 9.5a1.5 1.5 0 0 0 2.12 0l4.5-4.5a1.5 1.5 0 0 0 0-2.12l-9.5-9.5A1.5 1.5 0 0 0 9 3.5Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="7" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M11 13.5l4-4M12 9.5h.01M15 13.5h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+    </svg>
+  );
+}
+
 export function GladiatorSwordIcon({ className = "h-6 w-6" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth={1.6}>
@@ -134,3 +212,4 @@ export function GladiatorSwordIcon({ className = "h-6 w-6" }: IconProps) {
     </svg>
   );
 }
+

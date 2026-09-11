@@ -7,7 +7,14 @@ const PAGE_ROUTES: { key: PageKey; test: (p: string) => boolean }[] = [
     key: "homepage",
     test: (p) => p.startsWith("/admin/homepage") || p.startsWith("/api/admin/homepage"),
   },
-  { key: "museums", test: (p) => p.startsWith("/admin/museums") || p.startsWith("/api/admin/museums") },
+  {
+    key: "museums",
+    test: (p) =>
+      p.startsWith("/admin/museums") ||
+      p.startsWith("/api/admin/museums") ||
+      p.startsWith("/admin/attractions") ||
+      p.startsWith("/api/admin/attractions"),
+  },
   { key: "posts", test: (p) => p.startsWith("/admin/posts") || p.startsWith("/api/admin/posts") },
   { key: "privacy", test: (p) => p.startsWith("/admin/privacy") || p.startsWith("/api/admin/privacy") },
   { key: "about", test: (p) => p.startsWith("/admin/about") || p.startsWith("/api/admin/about") },

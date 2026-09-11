@@ -2,8 +2,8 @@
 
 Independent museum & attraction ticket comparison portal — skip-the-line
 tickets, guided tours, and combo passes for museums and cultural landmarks
-worldwide, plus a real lat/lng-based "Nearby Attractions" feature on every
-museum page.
+worldwide, plus an admin-curated "Other Attractions" section (grouped by
+city) on every museum page.
 
 Built on the same architecture, CMS, and database patterns as this
 project's sibling single-attraction sites (e.g. `florence-cathedral-entry`),
@@ -43,34 +43,52 @@ admin.
 See `.env.example` for every environment variable the app uses and what
 each one enables or disables when left unset.
 
-## Nearby Attractions
+## Popular Countries (homepage)
 
-Each museum page shows "Nearby Attractions" — real points of interest
-pulled from OpenStreetMap around that museum's stored latitude/longitude,
-not hardcoded relationships and not this site's own museum list:
+A "Where to Go" destination grid on the homepage, below the museums grid,
+edited from **Homepage → Popular Countries**. Two modes: leave it empty and
+it auto-shows the top 6 countries by museum count (recomputed live from
+`lib/museums.ts`'s `getPopularCountries()`, nothing to maintain); or add
+countries by hand to hand-pick exactly which ones show and in what order,
+each with an optional photo/caption override (blank falls back to that
+country's own featured museum's photo and an auto "X museums · Y cities"
+caption). See `components/PopularCountries.tsx`.
 
-1. Candidates come from the Overpass API (OpenStreetMap), tried against a
-   fixed list of free public mirrors in a fixed order — never raced against
-   each other, so the result doesn't depend on which mirror happens to
-   answer first.
-2. Real routing distances come from OSRM (`lib/routing.ts`) — driving via
-   the free public OSRM demo server by default, or your own `OSRM_BASE_URL`
-   for both walking and driving. Attractions within **3km real walking
-   distance** are labeled "walk"; within **10km real driving distance**,
-   "drive"; anything farther is excluded.
-3. Each place gets a genuine photo when one's available (`lib/nearbyPlaces.ts`'s
-   `getPlaceImage`, checked in order: the OSM `image` tag, `wikimedia_commons`,
-   Wikipedia, then Wikidata) — never a fake or placeholder image.
+## Other Attractions
 
-**This is resolved once and stored, not recomputed on every page view.**
-`lib/museums.ts`'s `resolveAndPersistNearbyPlaces` runs — and writes the
-result to the `museums.nearby_places_json` column — only when: a museum is
-created, its coordinates change, or an admin clicks "Re-check now" on the
-museum's Nearby Attractions panel. The admin panel and the public page both
-read that same stored value, so they always match. A museum added before
-this existed (or whose coordinates have never changed) won't have a
-resolved list until one of those three things happens to it — use "Re-check
-now" (or "Re-check all", from the museums list) to backfill it.
+Each museum page can show an "Other Attractions in {city}" section — but
+unlike the site's old auto-resolved "Nearby Attractions" feature (which
+pulled real places from OpenStreetMap by coordinates), every card here is
+typed in by hand by an admin, managed per museum exactly like that
+museum's own Tours & Tickets: name, description, photo, price, rating, and
+booking link, all admin-authored. Start from **Museums & Attractions →
+Other Attractions** (`/admin/attractions`), pick a museum, then add/edit
+its cards — see `lib/otherAttractions.ts`.
+
+Rendered with the exact same `TourCard` component as the museum's own
+tickets, just fed from `other_attractions` instead of `museum_tours`, so
+the cards are visually identical.
+
+## Tours & Tickets: city/country classification
+
+Every ticket (`museum_tours`) carries its own `city`/`country`, independent
+of — though normally defaulted from — its own museum's location, since a
+combo ticket (e.g. "Paris + Versailles Day Trip") can genuinely span more
+than one city. Set from the admin ticket form's City field
+(`components/admin/MuseumTourForm.tsx`), which picks a city via
+`components/admin/CityAutocomplete.tsx` — the exact same world-city
+search behavior (and bundled reference dataset, `lib/data/worldCities.ts`)
+as the attraction-travel-news sibling repo, backed by
+`/api/admin/geo/cities` and `lib/geo.ts`'s `searchCities()`: a live global
+geocoding API (Open-Meteo) first, falling back to the bundled dataset if
+that's unreachable. Picking a result fills in Country automatically, so
+the two fields can never drift out of sync.
+
+This lets tickets be classified by location in the admin — each ticket's
+city/country is visible right on its museum's own ticket list
+(`/admin/museums/[id]/tours`). The public ticket card
+(`components/TourCard.tsx`) also shows a small location line when a
+ticket's city is set.
 
 ## Architecture notes
 

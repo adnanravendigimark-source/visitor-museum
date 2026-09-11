@@ -78,6 +78,35 @@ export interface FaqSection {
   items: FaqItem[];
 }
 
+export interface PopularCountryItem {
+  // Must match a real museum's `country` field (picked from a dropdown in
+  // the admin, not free text) so its "View" link and live museum/city
+  // counts always resolve to something real — see getPopularCountries() in
+  // lib/museums.ts, which computes those counts fresh from the museum
+  // catalog rather than storing them here.
+  country: string;
+  // Optional overrides — leave blank to fall back to the country's own
+  // "Featured" (or first) museum's card photo, and to an auto "X museums ·
+  // Y cities" caption.
+  image: string;
+  imageAlt: string;
+  tagline: string;
+}
+
+export interface PopularCountriesSection {
+  enabled: boolean;
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  viewAllText: string;
+  viewAllHref: string;
+  // Admin-curated country cards, in display order. When empty, the
+  // homepage section falls back to fully automatic mode (top 6 countries
+  // by museum count) — see components/PopularCountries.tsx — so a brand
+  // new install still shows something useful before anyone's touched this.
+  items: PopularCountryItem[];
+}
+
 export interface CtaBannerSection {
   heading: string;
   subtext: string;
@@ -97,6 +126,7 @@ export interface NotFoundSection {
 export interface HomepageSections {
   grid: GridSection;
   highlights: HighlightsSection;
+  popularCountries: PopularCountriesSection;
   blogTeaser: BlogTeaserSection;
   faq: FaqSection;
   ctaBanner: CtaBannerSection;
@@ -161,6 +191,7 @@ export const DEFAULT_HEADER: HeaderContent = {
   logoAlt: "Visit Museums",
   bookNowText: "Explore Museums",
   navLinks: [
+    { label: "All Museums", href: "/museums" },
     { label: "About Us", href: "/about" },
     { label: "Blog", href: "/blog" },
   ],
@@ -240,6 +271,15 @@ export const DEFAULT_SECTIONS: HomepageSections = {
     polaroidImage2: "/images/david-sculpture.jpg",
     polaroidImage2Alt: "Michelangelo David sculpture",
     polaroidCaption: "Art inspires",
+  },
+  popularCountries: {
+    enabled: true,
+    eyebrow: "WHERE TO GO",
+    heading: "Popular Countries",
+    subheading: "Browse museums and attractions by destination — pick a country to see every ticket and tour we cover there.",
+    viewAllText: "View All Museums",
+    viewAllHref: "/museums",
+    items: [],
   },
   blogTeaser: {
     eyebrow: "TRAVEL GUIDES",
@@ -361,6 +401,7 @@ function rowToHomepage(row: any): HomepageContent {
     sections: {
       grid: { ...DEFAULT_SECTIONS.grid, ...sectionsRaw.grid },
       highlights: { ...DEFAULT_SECTIONS.highlights, ...sectionsRaw.highlights },
+      popularCountries: { ...DEFAULT_SECTIONS.popularCountries, ...sectionsRaw.popularCountries },
       blogTeaser: { ...DEFAULT_SECTIONS.blogTeaser, ...sectionsRaw.blogTeaser },
       faq: { ...DEFAULT_SECTIONS.faq, ...sectionsRaw.faq },
       ctaBanner: { ...DEFAULT_SECTIONS.ctaBanner, ...sectionsRaw.ctaBanner },
@@ -487,9 +528,23 @@ export async function saveHomepageSections(sections: HomepageSections): Promise<
 }
 
 export async function saveSiteHeader(header: HeaderContent): Promise<void> {
+  // Explicitly rebuilt from only the real HeaderContent fields (rather than
+  // spreading `header` through as-is) so any stray legacy keys — e.g. an
+  // older header_json row seeded by scripts/sync-content.mjs's
+  // buttonText/buttonHref/brandName/searchPlaceholder shape, which
+  // parseJsonWithDefault doesn't strip on read — get scrubbed out the next
+  // time this saves, instead of being silently carried forward forever.
+  const clean: HeaderContent = {
+    logoImage: header.logoImage || "",
+    logoAlt: header.logoAlt || "",
+    bookNowText: header.bookNowText || "",
+    navLinks: header.navLinks || [],
+    ctaText: header.ctaText || "",
+    ctaHref: header.ctaHref || "",
+  };
   await sql`
     INSERT INTO homepage (id, header_json)
-    VALUES (1, ${JSON.stringify(header)}::jsonb)
+    VALUES (1, ${JSON.stringify(clean)}::jsonb)
     ON CONFLICT (id) DO UPDATE SET header_json = EXCLUDED.header_json
   `;
 }

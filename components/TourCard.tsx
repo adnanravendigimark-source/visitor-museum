@@ -73,6 +73,12 @@ export default function TourCard({
           {tour.title}
         </h3>
 
+        {tour.city && (
+          <p className="mt-0.5 text-xs font-medium text-[#7A7A7A]">
+            📍 {[tour.city, tour.country].filter(Boolean).join(", ")}
+          </p>
+        )}
+
         {hasDescription && (
           <div
             className="rich-content mt-1 line-clamp-2 min-h-[2.5rem] text-sm text-[#54595F] [&>p]:m-0 [&>p]:line-clamp-2"

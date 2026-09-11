@@ -28,6 +28,12 @@
 // untouched (ON CONFLICT (id) DO NOTHING everywhere, same as the real
 // seed functions).
 //
+// Also fixes city/country on museums that ARE already in the database but
+// have it wrong or blank (see backfillCityCountry() below), and defaults
+// blank ticket-level city/country to each ticket's own museum's location
+// (see backfillTourCityCountry() below) — every other admin-edited field
+// on those rows is left untouched.
+//
 // Safe to run any time, as many times as you like:
 //   node scripts/sync-missing-museums.mjs
 
@@ -124,6 +130,34 @@ async function syncMuseums() {
   console.log(`museums: inserted ${missing.length} missing row(s): ${missing.map((m) => m.name).join(", ")}`);
 }
 
+// Fixes city/country on museums that already exist in the database but
+// have it wrong (blank, or a stale value from before the row was last
+// edited by hand) — data/museums.json's city/country is treated as the
+// source of truth for these two columns specifically, since they're plain
+// geo facts (not editorial copy an admin would have a reason to diverge
+// from the source data on). Only touches city/country — every other
+// column on the row (which may well have been edited through the admin)
+// is left completely untouched. Safe to run any time, as many times as
+// you like.
+async function backfillCityCountry() {
+  const museums = readJsonFile("museums.json") || [];
+  const existing = await sql`SELECT id, city, country FROM museums`;
+  const existingById = new Map(existing.map((r) => [r.id, r]));
+
+  let fixed = 0;
+  for (const m of museums) {
+    const row = existingById.get(m.id);
+    if (!row) continue; // not in the DB yet — syncMuseums() above handles that
+    const wantCity = m.city || "";
+    const wantCountry = m.country || "";
+    if (row.city === wantCity && row.country === wantCountry) continue;
+    await sql`UPDATE museums SET city = ${wantCity}, country = ${wantCountry} WHERE id = ${m.id}`;
+    console.log(`museums: fixed city/country for "${m.name}" -> ${wantCity}, ${wantCountry}`);
+    fixed++;
+  }
+  console.log(fixed ? `museums: fixed city/country on ${fixed} row(s).` : "museums: city/country already correct on every row.");
+}
+
 async function syncMuseumTours() {
   const tours = readJsonFile("museum-tours.json") || [];
   const existing = await sql`SELECT id, museum_id FROM museum_tours`;
@@ -144,19 +178,52 @@ async function syncMuseumTours() {
       INSERT INTO museum_tours (
         id, museum_id, badge, ribbon, title, description, includes, highlights, excludes,
         duration, rating, reviews, price, original_price, image, image_alt, href_path,
-        href_extra, featured, best_for, price_table_column1, price_table_feature, category, sort_order
+        href_extra, featured, best_for, price_table_column1, price_table_feature, category, city, country, sort_order
       ) VALUES (
         ${t.id}, ${t.museumId}, ${t.badge || "self-guided"}, ${t.ribbon || null}, ${t.title}, ${t.description || ""},
         ${JSON.stringify(t.includes || [])}::jsonb, ${JSON.stringify(t.highlights || [])}::jsonb, ${JSON.stringify(t.excludes || [])}::jsonb,
         ${t.duration || null}, ${t.rating ?? 5}, ${t.reviews ?? 0}, ${t.price ?? 0}, ${t.originalPrice ?? null},
         ${t.image || ""}, ${t.imageAlt || ""}, ${t.hrefPath || t.href || ""}, ${t.hrefExtra || null},
         ${!!t.featured}, ${t.bestFor || ""}, ${t.priceTableColumn1 || ""}, ${t.priceTableFeature || ""},
-        ${t.category || ""}, ${i}
+        ${t.category || ""}, ${t.city || ""}, ${t.country || ""}, ${i}
       )
       ON CONFLICT (id) DO NOTHING
     `;
   }
   console.log(`museum_tours: inserted ${missing.length} missing row(s).`);
+}
+
+// Tickets created before city/country existed on museum_tours have both
+// blank — defaults each blank ticket to its own museum's city/country
+// (the overwhelmingly common case: a ticket is for a visit to that exact
+// museum). Only touches rows that are still blank, so a combo ticket an
+// admin has already deliberately tagged with a *different* city (e.g.
+// "Paris + Versailles Day Trip") is never overwritten. Safe to run any
+// time, as many times as you like.
+//
+// Also guarantees the city/country columns themselves exist first —
+// normally added by `node scripts/setup-db.mjs` (run without --seed after
+// any schema change, per this project's usual workflow), but this script
+// is meant to be runnable on its own too, so it doesn't hard-require that
+// step to have happened first.
+async function backfillTourCityCountry() {
+  await sql`ALTER TABLE museum_tours ADD COLUMN IF NOT EXISTS city TEXT NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE museum_tours ADD COLUMN IF NOT EXISTS country TEXT NOT NULL DEFAULT ''`;
+
+  const rows = await sql`
+    SELECT t.id, t.title, m.city, m.country
+    FROM museum_tours t
+    JOIN museums m ON m.id = t.museum_id
+    WHERE t.city = '' AND t.country = ''
+  `;
+  if (!rows.length) {
+    console.log("museum_tours: city/country already set on every ticket.");
+    return;
+  }
+  for (const r of rows) {
+    await sql`UPDATE museum_tours SET city = ${r.city}, country = ${r.country} WHERE id = ${r.id}`;
+  }
+  console.log(`museum_tours: backfilled city/country on ${rows.length} ticket(s) from their museum's own location.`);
 }
 
 async function syncMuseumFaqs() {
@@ -184,7 +251,9 @@ async function syncMuseumFaqs() {
 
 async function main() {
   await syncMuseums();
+  await backfillCityCountry();
   await syncMuseumTours();
+  await backfillTourCityCountry();
   await syncMuseumFaqs();
   console.log("\nDone. Refresh /admin/museums — every museum should now show up there.");
 }

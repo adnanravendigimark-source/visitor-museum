@@ -10,35 +10,59 @@ export default function MuseumsGrid({
   eyebrow = "POPULAR MUSEUMS",
   heading = "Explore the World's Best Museums",
   subheading = "",
+  showHeader = true,
+  viewAllHref,
+  viewAllText = "View All Museums",
 }: {
   initialMuseums: Museum[];
   eyebrow?: string;
   heading?: string;
   subheading?: string;
+  // The homepage's grid section has its own eyebrow/heading/subheading
+  // block above the cards (source: Homepage admin -> Museums Grid). The
+  // /museums page renders its own banner + filter bar above this component
+  // instead, so it passes showHeader={false} to avoid a second, duplicate
+  // heading.
+  showHeader?: boolean;
+  // Set on the homepage only, where the grid is capped to 3 museums (see
+  // app/page.tsx) — renders a link to the full /museums page next to the
+  // heading so the other museums are still reachable in one click.
+  viewAllHref?: string;
+  viewAllText?: string;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
 
   useEffect(() => {
     function handleSearchEvent(e: Event) {
-      const custom = e as CustomEvent<{ query: string; location: string }>;
+      const custom = e as CustomEvent<{ query?: string; country?: string; city?: string }>;
       if (custom.detail) {
         setSearchQuery(custom.detail.query || "");
-        setLocationFilter(custom.detail.location || "");
+        setCountryFilter(custom.detail.country || "");
+        setCityFilter(custom.detail.city || "");
       }
     }
 
-    // Check URL params on mount
+    // Check URL params on mount — lets a search submitted from the Hero
+    // search bar or the header's search (both of which navigate to
+    // /museums?q=&country=&city=) land here already filtered, and makes a
+    // shared/bookmarked filtered URL work the same way.
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const q = params.get("q") || "";
-      const loc = params.get("loc") || "";
-      if (q || loc) {
+      const country = params.get("country") || "";
+      const city = params.get("city") || "";
+      if (q || country || city) {
         setSearchQuery(q);
-        setLocationFilter(loc);
+        setCountryFilter(country);
+        setCityFilter(city);
       }
     }
 
+    // Live updates while already on the page (e.g. the /museums page's own
+    // filter bar) dispatch this instead of a full navigation, so the grid
+    // re-filters instantly without a page reload.
     window.addEventListener("museumSearch", handleSearchEvent);
     return () => window.removeEventListener("museumSearch", handleSearchEvent);
   }, []);
@@ -52,80 +76,132 @@ export default function MuseumsGrid({
         m.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.cardTagline.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchLocation =
-        !locationFilter.trim() ||
-        m.city.toLowerCase().includes(locationFilter.toLowerCase()) ||
-        m.country.toLowerCase().includes(locationFilter.toLowerCase());
+      const matchCountry = !countryFilter.trim() || m.country.toLowerCase() === countryFilter.toLowerCase();
+      const matchCity = !cityFilter.trim() || m.city.toLowerCase() === cityFilter.toLowerCase();
 
-      return matchQuery && matchLocation;
+      return matchQuery && matchCountry && matchCity;
     });
-  }, [initialMuseums, searchQuery, locationFilter]);
+  }, [initialMuseums, searchQuery, countryFilter, cityFilter]);
+
+  const locationFilter = [cityFilter, countryFilter].filter(Boolean).join(", ");
 
   return (
     <section id="museums" className="py-16 sm:py-20 bg-white">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="mb-10 sm:mb-12">
-          <div className="flex flex-col items-start">
-            <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#184E3A]">
-              {eyebrow}
-            </span>
-            <span className="mt-1.5 h-[3px] w-8 rounded-full bg-[#184E3A]" />
+        {showHeader && (
+          <div className="mb-10 sm:mb-12 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="flex flex-col items-start">
+                <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#184E3A]">
+                  {eyebrow}
+                </span>
+                <span className="mt-1.5 h-[3px] w-8 rounded-full bg-[#184E3A]" />
+              </div>
+
+              <h2 className="mt-3 font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1F2429] tracking-tight">
+                {heading}
+              </h2>
+              {subheading && (
+                <p className="mt-3 max-w-2xl text-xs sm:text-sm text-[#556476] leading-relaxed">{subheading}</p>
+              )}
+            </div>
+
+            {viewAllHref && (
+              <Link
+                href={viewAllHref}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#184E3A]/25 px-4 py-2 text-xs font-bold text-[#184E3A] transition hover:bg-[#184E3A] hover:text-white"
+              >
+                {viewAllText}
+                <span>→</span>
+              </Link>
+            )}
           </div>
+        )}
 
-          <h2 className="mt-3 font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1F2429] tracking-tight">
-            {heading}
-          </h2>
-          {subheading && (
-            <p className="mt-3 max-w-2xl text-xs sm:text-sm text-[#556476] leading-relaxed">{subheading}</p>
-          )}
-        </div>
-
-        {/* Active Filters Display */}
-        {(searchQuery || locationFilter) && (
-          <div className="mb-8 flex items-center gap-2 text-xs text-gray-500">
-            <span>Showing results for:</span>
-            {searchQuery && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF5ED] px-3 py-1 font-semibold text-[#2D903A]">
-                &ldquo;{searchQuery}&rdquo;
+        {/* Results count + active filters — only on the /museums page
+            itself (showHeader=false); the homepage's capped-to-3 grid has
+            no filter bar of its own, so this would just be noise there. */}
+        {!showHeader && (
+          <div className="mb-7 flex flex-wrap items-center gap-2.5">
+            <p className="text-xs font-medium text-[#7A7A7A]">
+              Showing <span className="font-bold text-[#1F2429]">{filtered.length}</span>{" "}
+              {filtered.length === 1 ? "museum" : "museums"}
+              {initialMuseums.length !== filtered.length && <> of {initialMuseums.length}</>}
+            </p>
+            {(searchQuery || locationFilter) && (
+              <>
+                <span className="h-3.5 w-px bg-gray-200" />
+                {searchQuery && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF5ED] px-3 py-1 text-xs font-semibold text-[#2D903A]">
+                    &ldquo;{searchQuery}&rdquo;
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      aria-label="Clear search term"
+                      className="hover:text-[#123b2c]"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                )}
+                {locationFilter && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EBF5ED] px-3 py-1 text-xs font-semibold text-[#2D903A]">
+                    📍 {locationFilter}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCityFilter("");
+                        setCountryFilter("");
+                      }}
+                      aria-label="Clear location filter"
+                      className="hover:text-[#123b2c]"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                )}
                 <button
                   type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="hover:text-black ml-1"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCountryFilter("");
+                    setCityFilter("");
+                  }}
+                  className="text-xs font-semibold text-gray-400 underline hover:text-gray-600"
                 >
-                  &times;
+                  Reset all
                 </button>
-              </span>
+              </>
             )}
-            {locationFilter && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#EBF5ED] px-3 py-1 font-semibold text-[#2D903A]">
-                📍 {locationFilter}
-                <button
-                  type="button"
-                  onClick={() => setLocationFilter("")}
-                  className="hover:text-black ml-1"
-                >
-                  &times;
-                </button>
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setLocationFilter("");
-              }}
-              className="ml-2 text-xs font-semibold text-gray-400 hover:text-gray-600 underline"
-            >
-              Reset
-            </button>
           </div>
         )}
 
         {/* Museums Cards Grid */}
         {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center text-sm text-gray-500">
-            No museums found matching your search. Try changing the location or search terms.
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-200 p-14 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F4F7F5] text-[#184E3A]">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="M19.5 19.5 15.2 15.2" strokeLinecap="round" />
+              </svg>
+            </span>
+            <p className="text-sm text-gray-500">
+              No museums found matching your search. Try changing the location or search terms.
+            </p>
+            {!showHeader && (searchQuery || locationFilter) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setCountryFilter("");
+                  setCityFilter("");
+                }}
+                className="rounded-full border border-[#184E3A]/25 px-4 py-2 text-xs font-bold text-[#184E3A] transition hover:bg-[#184E3A] hover:text-white"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 sm:gap-8">

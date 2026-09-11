@@ -33,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(homepage.noIndex || homepage.noFollow
       ? []
       : [{ url: `${SITE_URL}/`, lastModified: now, changeFrequency: "daily" as const, priority: 1.0 }]),
+    { url: `${SITE_URL}/museums`, lastModified: now, changeFrequency: "daily" as const, priority: 0.9 },
     ...(about.noIndex || about.noFollow
       ? []
       : [{ url: `${SITE_URL}/about`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.8 }]),

@@ -28,6 +28,12 @@ export default async function NewMuseumTourPage({ params }: { params: { id: stri
     hrefExtra: "",
     featured: false,
     bestFor: "",
+    // Defaults to this museum's own location — the overwhelmingly common
+    // case is a ticket for a visit to this exact museum. Still editable
+    // per ticket (see MuseumTourForm's City field) for a combo ticket that
+    // genuinely covers more than one city.
+    city: museum.city,
+    country: museum.country,
   };
 
   return (

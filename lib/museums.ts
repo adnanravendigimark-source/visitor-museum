@@ -3,7 +3,6 @@ import { sql } from "./db";
 import museumsSeed from "@/data/museums.json";
 import museumToursSeed from "@/data/museum-tours.json";
 import museumFaqsSeed from "@/data/museum-faqs.json";
-import { resolveNearbyPlaces, type NearbyPlace } from "./nearbyPlaces";
 
 export const PARTNER_ID = process.env.GYG_PARTNER_ID || "VISITMUSEUMS";
 
@@ -108,25 +107,6 @@ export interface Museum {
   ctaHeading: string;
   ctaSubtext: string;
   ctaButtonText: string;
-  nearbyHeadingOverride: string;
-  // Nearby Attractions is discovered from OpenStreetMap/Wikipedia/Wikidata
-  // — name, category, and mode are never editable by hand. The one
-  // exception is each place's `imageUrl`, which the admin form lets the
-  // admin overwrite directly on this array (see MuseumForm.tsx's
-  // NearbyPlacesPanel) and which is saved the normal way, with everything
-  // else on the record. What IS different from most fields here is that
-  // the array itself (which places exist at all) is resolved once — not
-  // read live on every request — and persisted; see
-  // resolveAndPersistNearbyPlaces/mergeNearbyPlaceImages below and their
-  // callers in the museums API routes. Both the admin and the public page
-  // just read this stored value, so they always show the exact same list,
-  // and a re-resolution preserves any photo already set on a place that's
-  // still found rather than discarding it.
-  nearbyPlaces: NearbyPlace[];
-  // ISO timestamp of the last successful resolution, "" if never resolved
-  // yet (e.g. the very first save failed to reach every OSM mirror). Shown
-  // in admin as a "last checked" hint next to the manual re-check action.
-  nearbyPlacesResolvedAt: string;
   rating?: number;
   reviewsCount?: string;
 
@@ -191,9 +171,6 @@ function seedToMuseum(seed: any): Museum {
     ctaHeading: seed.ctaHeading || `Ready to visit ${seed.name}?`,
     ctaSubtext: seed.ctaSubtext || "",
     ctaButtonText: seed.ctaButtonText || "Compare Tickets & Tours",
-    nearbyHeadingOverride: seed.nearbyHeadingOverride || "",
-    nearbyPlaces: Array.isArray(seed.nearbyPlaces) ? seed.nearbyPlaces : [],
-    nearbyPlacesResolvedAt: seed.nearbyPlacesResolvedAt || "",
     rating: seed.rating !== undefined ? Number(seed.rating) : 4.7,
     reviewsCount: seed.reviewsCount || "10.2k",
     metaTitle: seed.metaTitle || seed.name,
@@ -257,14 +234,6 @@ function rowToMuseum(row: any): Museum {
     ctaHeading: row.cta_heading || `Ready to visit ${row.name}?`,
     ctaSubtext: row.cta_subtext || "",
     ctaButtonText: row.cta_button_text || "Compare Tickets & Tours",
-    nearbyHeadingOverride: row.nearby_heading_override || "",
-    nearbyPlaces: parseJsonObject<NearbyPlace[]>(row.nearby_places_json, []),
-    nearbyPlacesResolvedAt:
-      row.nearby_places_resolved_at instanceof Date
-        ? row.nearby_places_resolved_at.toISOString()
-        : row.nearby_places_resolved_at
-        ? String(row.nearby_places_resolved_at)
-        : "",
     rating: row.rating !== null && row.rating !== undefined ? Number(row.rating) : 4.7,
     reviewsCount: row.reviews_count || "10.2k",
     metaTitle: row.meta_title || row.name,
@@ -342,8 +311,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       practical_best_time_heading, practical_best_time_body,
       price_eyebrow, price_heading, price_subheading, price_note,
       faq_eyebrow, faq_heading,
-      cta_heading, cta_subtext, cta_button_text, nearby_heading_override,
-      nearby_places_json, nearby_places_resolved_at,
+      cta_heading, cta_subtext, cta_button_text,
       rating, reviews_count,
       meta_title, meta_description, focus_keyword, canonical_url,
       no_index, no_follow, og_title, og_description, og_image
@@ -358,8 +326,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       ${m.practicalBestTimeHeading}, ${m.practicalBestTimeBody},
       ${m.priceEyebrow}, ${m.priceHeading}, ${m.priceSubheading}, ${m.priceNote},
       ${m.faqEyebrow}, ${m.faqHeading},
-      ${m.ctaHeading}, ${m.ctaSubtext}, ${m.ctaButtonText}, ${m.nearbyHeadingOverride},
-      ${JSON.stringify(m.nearbyPlaces || [])}::jsonb, ${m.nearbyPlacesResolvedAt || null},
+      ${m.ctaHeading}, ${m.ctaSubtext}, ${m.ctaButtonText},
       ${m.rating ?? 4.7}, ${m.reviewsCount || "10.2k"},
       ${m.metaTitle}, ${m.metaDescription}, ${m.focusKeyword}, ${m.canonicalUrl || ""},
       ${!!m.noIndex}, ${!!m.noFollow}, ${m.ogTitle || ""}, ${m.ogDescription || ""}, ${m.ogImage || ""}
@@ -389,9 +356,6 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
       price_note = ${m.priceNote},
       faq_eyebrow = ${m.faqEyebrow}, faq_heading = ${m.faqHeading},
       cta_heading = ${m.ctaHeading}, cta_subtext = ${m.ctaSubtext}, cta_button_text = ${m.ctaButtonText},
-      nearby_heading_override = ${m.nearbyHeadingOverride},
-      nearby_places_json = ${JSON.stringify(m.nearbyPlaces || [])}::jsonb,
-      nearby_places_resolved_at = ${m.nearbyPlacesResolvedAt || null},
       rating = ${m.rating ?? 4.7}, reviews_count = ${m.reviewsCount || "10.2k"},
       meta_title = ${m.metaTitle}, meta_description = ${m.metaDescription}, focus_keyword = ${m.focusKeyword},
       canonical_url = ${m.canonicalUrl || ""},
@@ -402,48 +366,74 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
   `;
 }
 
-// Carries forward each place's photo (auto-detected OR admin-picked) when
-// that same place — matched by its stable OSM id — is found again in a
-// fresh resolution. Only a genuinely new id gets the freshly auto-detected
-// photo. Used any time Nearby Attractions gets re-resolved (creation is the
-// one exception — there's no previous list yet, so this is a no-op then),
-// so a chosen photo survives a "Re-check now" or a coordinate tweak instead
-// of a full re-resolution silently discarding it.
-export function mergeNearbyPlaceImages(fresh: NearbyPlace[], previousPlaces: NearbyPlace[]): NearbyPlace[] {
-  if (!previousPlaces.length) return fresh;
-  const previousById = new Map(previousPlaces.map((p) => [p.id, p]));
-  return fresh.map((p) => {
-    const prev = previousById.get(p.id);
-    return prev?.imageUrl ? { ...p, imageUrl: prev.imageUrl } : p;
-  });
+// Groups the given museums into { country, cities[] }, sorted alphabetically
+// — used to populate the Country/City dropdowns on the Hero search bar, the
+// header's type-ahead search, and the /museums page filter bar. Pure and
+// synchronous (no DB call of its own) since callers already have a museums
+// list from getMuseums(); computed fresh from real data every time, so a
+// newly added museum's country/city shows up in the dropdowns automatically
+// with no separate list to maintain.
+export function getCountryCityMap(museums: Museum[]): { country: string; cities: string[] }[] {
+  const byCountry = new Map<string, Set<string>>();
+  for (const m of museums) {
+    if (!m.country) continue;
+    if (!byCountry.has(m.country)) byCountry.set(m.country, new Set());
+    if (m.city) byCountry.get(m.country)!.add(m.city);
+  }
+  return Array.from(byCountry.entries())
+    .map(([country, cities]) => ({ country, cities: Array.from(cities).sort() }))
+    .sort((a, b) => a.country.localeCompare(b.country));
 }
 
-// The one place Nearby Attractions actually gets (re)computed. Called from
-// the museums API routes at exactly three points: right before a new
-// museum's INSERT, right before an UPDATE when lat/lng changed, and from
-// the dedicated admin "Re-check now" route — never from a page render.
-// Resolves live from OpenStreetMap (see lib/nearbyPlaces.ts) and writes the
-// result straight to the row, so it's immediately the same value both the
-// admin and the public page will read from then on. See
-// mergeNearbyPlaceImages for how `previousPlaces` protects any photo the
-// admin has already picked.
-export async function resolveAndPersistNearbyPlaces(
-  id: string,
-  lat: number,
-  lng: number,
-  name: string,
-  previousPlaces: NearbyPlace[] = []
-): Promise<{ places: NearbyPlace[]; resolvedAt: string }> {
-  const fresh = await resolveNearbyPlaces({ lat, lng, name });
-  const places = mergeNearbyPlaceImages(fresh, previousPlaces);
-  const resolvedAt = new Date().toISOString();
-  await sql`
-    UPDATE museums SET
-      nearby_places_json = ${JSON.stringify(places)}::jsonb,
-      nearby_places_resolved_at = ${resolvedAt}
-    WHERE id = ${id}
-  `;
-  return { places, resolvedAt };
+export interface PopularCountry {
+  country: string;
+  museumCount: number;
+  cityCount: number;
+  image: string;
+  imageAlt: string;
+}
+
+function computeCountryStats(country: string, list: Museum[]): PopularCountry {
+  const rep = list.find((m) => m.featured) || list[0];
+  const cityCount = new Set(list.map((m) => m.city).filter(Boolean)).size;
+  return {
+    country,
+    museumCount: list.length,
+    cityCount,
+    image: rep.cardImage || rep.heroImage || "",
+    imageAlt: rep.cardImageAlt || `${country} museums and attractions`,
+  };
+}
+
+// Homepage "Popular Countries" section, fully-automatic mode — purely
+// derived from real museum data (grouped + counted), used whenever the
+// admin hasn't curated a specific list (see lib/homepage.ts's
+// PopularCountriesSection.items). Sorted by museum count desc (ties broken
+// alphabetically). Each card's photo is borrowed from that country's own
+// "Featured" museum (or its first museum, by sort order, if none are
+// marked Featured), so a real photo always ships with zero admin work.
+export function getPopularCountries(museums: Museum[], limit = 6): PopularCountry[] {
+  const byCountry = new Map<string, Museum[]>();
+  for (const m of museums) {
+    if (!m.country) continue;
+    if (!byCountry.has(m.country)) byCountry.set(m.country, []);
+    byCountry.get(m.country)!.push(m);
+  }
+  return Array.from(byCountry.entries())
+    .map(([country, list]) => computeCountryStats(country, list))
+    .sort((a, b) => b.museumCount - a.museumCount || a.country.localeCompare(b.country))
+    .slice(0, limit);
+}
+
+// Stats for one specific country — used when the admin has curated the
+// Popular Countries list by hand, so a country's museum/city counts and
+// fallback photo are still computed live even if it wasn't one of the
+// top-6 by count. Returns null if the country has no museums at all (e.g.
+// a stale pick left over after every museum in it was deleted or moved).
+export function getCountryStats(museums: Museum[], country: string): PopularCountry | null {
+  const list = museums.filter((m) => m.country === country);
+  if (!list.length) return null;
+  return computeCountryStats(country, list);
 }
 
 export async function deleteMuseum(id: string): Promise<void> {
@@ -496,6 +486,15 @@ export interface TourRecord {
   bestFor?: string;
   priceTableColumn1?: string;
   priceTableFeature?: string;
+  // Classifies this specific ticket by location, independent of — though
+  // normally matching — its own museum's city/country, since a combo
+  // ticket (e.g. "Paris + Versailles Day Trip") can legitimately span more
+  // than one city. Picked via CityAutocomplete (see MuseumTourForm.tsx),
+  // same world-city search used by the attraction-travel-news sibling
+  // repo, so the exact same canonical spelling is used everywhere. Powers
+  // admin filtering/classification (see the Tours & Tickets hub page).
+  city?: string;
+  country?: string;
 }
 
 export interface Tour extends TourRecord {
@@ -525,6 +524,8 @@ function rowToTour(row: any): TourRecord {
     bestFor: row.best_for || undefined,
     priceTableColumn1: row.price_table_column1 || undefined,
     priceTableFeature: row.price_table_feature || undefined,
+    city: row.city || undefined,
+    country: row.country || undefined,
   };
 }
 
@@ -556,6 +557,8 @@ function seedToTourRecord(seed: any): TourRecord {
     bestFor: seed.bestFor,
     priceTableColumn1: seed.priceTableColumn1,
     priceTableFeature: seed.priceTableFeature,
+    city: seed.city,
+    country: seed.country,
   };
 }
 
@@ -617,13 +620,14 @@ export async function insertTour(museumId: string, t: TourRecord): Promise<void>
     INSERT INTO museum_tours (
       id, museum_id, badge, ribbon, title, description, includes,
       duration, rating, reviews, price, original_price, image, image_alt, href_path,
-      href_extra, featured, best_for, price_table_column1, price_table_feature, sort_order
+      href_extra, featured, best_for, price_table_column1, price_table_feature, city, country, sort_order
     ) VALUES (
       ${t.id}, ${museumId}, ${t.badge || "self-guided"}, ${t.ribbon || null}, ${t.title}, ${t.description},
       ${JSON.stringify(t.includes || [])}::jsonb,
       ${t.duration || null}, ${t.rating}, ${t.reviews}, ${t.price}, ${t.originalPrice ?? null},
       ${t.image}, ${t.imageAlt}, ${t.hrefPath || t.href || ""}, ${t.hrefExtra || null},
       ${!!t.featured}, ${t.bestFor || ""}, ${t.priceTableColumn1 || ""}, ${t.priceTableFeature || ""},
+      ${t.city || ""}, ${t.country || ""},
       ${count as number}
     )
   `;
@@ -649,7 +653,9 @@ export async function updateTourRecord(id: string, t: TourRecord): Promise<void>
       featured = ${!!t.featured},
       best_for = ${t.bestFor || ""},
       price_table_column1 = ${t.priceTableColumn1 || ""},
-      price_table_feature = ${t.priceTableFeature || ""}
+      price_table_feature = ${t.priceTableFeature || ""},
+      city = ${t.city || ""},
+      country = ${t.country || ""}
     WHERE id = ${id}
   `;
 }

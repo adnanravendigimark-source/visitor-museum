@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import MuseumsGrid from "@/components/MuseumsGrid";
+import PopularCountries from "@/components/PopularCountries";
 import CulturalJourneyBanner from "@/components/CulturalJourneyBanner";
 import BlogSection from "@/components/BlogSection";
 import SiteFaqSection from "@/components/SiteFaqSection";
@@ -41,9 +42,13 @@ export default async function HomePage() {
   // entirely by each museum's own admin fields (Museums -> Details ->
   // "Featured" checkbox, and the Museums list's drag/reorder) — never a
   // fixed list of slugs baked into the page. getMuseums() already returns
-  // museums sorted by sort_order, so this only needs to filter.
+  // museums sorted by sort_order, so this only needs to filter, then cap to
+  // 3: the homepage is a curated preview, not the full catalog — everything
+  // (all museums, regardless of "Featured") is browsable on /museums,
+  // linked via the "View All Museums" button next to this section's
+  // heading below.
   const featuredMuseums = museums.filter((m) => m.featured);
-  const homepageMuseums = featuredMuseums.length ? featuredMuseums : museums.slice(0, 6);
+  const homepageMuseums = (featuredMuseums.length ? featuredMuseums : museums).slice(0, 3);
 
   const gridSection = homepage.sections.grid;
 
@@ -57,7 +62,10 @@ export default async function HomePage() {
           eyebrow={gridSection.eyebrow}
           heading={gridSection.heading}
           subheading={gridSection.subheading}
+          viewAllHref="/museums"
+          viewAllText="View All Museums"
         />
+        <PopularCountries />
         <CulturalJourneyBanner />
         <BlogSection />
         <SiteFaqSection />

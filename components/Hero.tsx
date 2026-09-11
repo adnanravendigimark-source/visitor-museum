@@ -1,26 +1,10 @@
 import Link from "next/link";
 import SafeImage from "./SafeImage";
+import MuseumSearchBar from "./MuseumSearchBar";
+import { ClassicalMuseumIcon, LocationCircleIcon, TicketTagIcon, ShieldCheckIcon, MapPinIcon } from "./icons";
 import { getHomepageContent } from "@/lib/homepage";
-import { getMuseums } from "@/lib/museums";
+import { getMuseums, getCountryCityMap } from "@/lib/museums";
 
-// Full-bleed panoramic hero — same structural pattern as the pena-palace /
-// amsterdam-boat-tours reference sites: one edge-to-edge photo with a
-// readability gradient baked in, sitting directly behind the transparent
-// StickyHeader (see Header.tsx). Every piece of copy here still comes from
-// the same admin fields as before (Homepage -> Hero): heroBadge, heroHeading,
-// heroSubheading, heroImage/heroImageAlt, heroCtaPrimaryText/Href, and the
-// heroFeatures trust strip — this only changes the visual layout, not what's
-// editable.
-//
-// Layout note: the text block and the floating museum badge are both
-// `absolute inset-0`-anchored layers, not flex children relying on a nested
-// `h-full` percentage height inside a `flex-1` sibling. That combination
-// (flex-grow on a parent + height:100% on a grandchild) is a classic
-// flexbox trap — the flex-grow consumes all the free space before
-// `justify-center` ever gets a chance to distribute it, so the text ends up
-// pinned to the top instead of vertically centered. Anchoring each layer
-// directly to the section's own edges with `inset-0` sidesteps that
-// entirely and centers reliably at every viewport size.
 export default async function Hero() {
   const [content, museums] = await Promise.all([getHomepageContent(), getMuseums()]);
 
@@ -30,18 +14,33 @@ export default async function Hero() {
   const heroSubheading =
     content.heroSubheading.replace(/<[^>]+>/g, "").trim() ||
     "From timeless masterpieces to fascinating cultural treasures, explore the world's best museums and plan your visit with ease.";
-  const ctaText = content.heroCtaPrimaryText || "Explore Museums";
-  const ctaHref = content.heroCtaPrimaryHref || "#museums";
   const features = content.heroFeatures?.length ? content.heroFeatures : [];
 
-  // Floating "featured museum" badge over the photo — whichever museum is
-  // marked "Featured" (first, by sort order) in the Museums admin, never a
-  // fixed museum name/link, so it stays correct as museums are added,
-  // reordered, or unfeatured.
-  const spotlightMuseum = museums.find((m) => m.featured) || museums[0];
+  // Prefer Louvre Museum if present, otherwise featured museum or first museum
+  const spotlightMuseum =
+    museums.find((m) => m.slug.includes("louvre") || m.name.toLowerCase().includes("louvre")) ||
+    museums.find((m) => m.featured) ||
+    museums[0];
+  const countries = getCountryCityMap(museums);
+  const searchSuggestions = museums.map((m) => ({
+    slug: m.slug,
+    name: m.name,
+    city: m.city,
+    country: m.country,
+    cardImage: m.cardImage,
+    cardImageAlt: m.cardImageAlt,
+  }));
+
+  // Trust badges matching the exact reference design
+  const trustBadges = [
+    { title: "Top Museums", subtitle: "Worldwide", icon: ClassicalMuseumIcon },
+    { title: "Real Visitor", subtitle: "Tips", icon: LocationCircleIcon },
+    { title: "Easy Ticket", subtitle: "Booking", icon: TicketTagIcon },
+    { title: "Trusted", subtitle: "& Secure", icon: ShieldCheckIcon },
+  ];
 
   return (
-    <section className="relative min-h-[600px] w-full overflow-hidden bg-[#FAFAFA] sm:min-h-[640px] lg:min-h-[720px]">
+    <section className="relative h-screen min-h-[660px] max-h-[1020px] w-full overflow-hidden flex flex-col justify-between">
       {/* Full-bleed panoramic background photo */}
       <div className="absolute inset-0 z-0">
         <SafeImage
@@ -49,109 +48,112 @@ export default async function Hero() {
           alt={content.heroImageAlt || "Louvre Museum in Paris at sunset with glass pyramid"}
           fill
           priority
-          quality={80}
+          quality={92}
           sizes="100vw"
           className="object-cover object-[65%_center] sm:object-[60%_center] lg:object-center"
         />
-        {/* Readability scrim: top-heavy fade on mobile (text sits at the top
-            of a single stacked column), left-heavy fade on desktop (text
-            sits in a left column, photo dominant on the right). Kept
-            noticeably more opaque than a typical hero gradient, and further
-            out (58-62% of the width/height) than the text column's own
-            max-width, so the headline/subheading/CTA/trust-strip always sit
-            on a solid enough backing to stay legible over a busy photo —
-            not just faintly tinted. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAFA] from-10% via-[#FAFAFA]/95 via-62% to-[#FAFAFA]/45 sm:bg-gradient-to-r sm:from-[#FAFAFA] sm:from-5% sm:via-[#FAFAFA]/95 sm:via-58% sm:to-[#FAFAFA]/10" />
+        {/* Soft left readability gradient on desktop, top-to-bottom fade on mobile */}
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-white/95 via-white/80 via-32% to-transparent to-70% sm:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 via-50% to-white/40 sm:hidden" />
+        {/* Subtle ground vignette at bottom */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/45 via-black/15 to-transparent" />
       </div>
 
-      {/* Text content — an absolutely-positioned layer anchored to all 4
-          edges of the section, so `justify-center` reliably centers it
-          vertically regardless of how tall the section ends up being. */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-center">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-8 sm:py-20">
-          <div className="max-w-lg lg:max-w-xl">
-            {/* Eyebrow */}
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E2B25] sm:text-xs">
+      {/* Main text & Search bar container (centered vertically) */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-20 pb-4 sm:px-6 sm:pt-24 lg:px-8 lg:pt-28 flex-1 flex flex-col justify-center">
+        <div className="max-w-xl lg:max-w-2xl">
+          {/* Eyebrow with accent line */}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#374151] sm:text-xs">
               {heroBadge}
             </p>
+            <div className="mt-1.5 h-[2px] w-12 rounded-full bg-[#9E2B25]" />
+          </div>
 
-            {/* H1 */}
-            <h1 className="mt-3.5 font-serif text-3xl font-bold leading-[1.14] tracking-tight text-[#184E3A] sm:text-4xl md:text-5xl lg:text-[3.15rem]">
-              {heroHeading}
-            </h1>
+          {/* Main H1 Heading */}
+          <h1 className="mt-2.5 sm:mt-3 font-serif text-3xl font-bold leading-[1.12] tracking-tight text-[#111827] sm:text-4xl md:text-5xl lg:text-[3.25rem]">
+            {heroHeading}
+          </h1>
 
-            {/* Accent line */}
-            <div className="mb-5 mt-3.5 h-[2.5px] w-12 rounded-full bg-[#9E2B25]" />
+          {/* Subheading */}
+          <p className="mt-2.5 sm:mt-3 max-w-xl text-xs sm:text-[14.5px] leading-relaxed text-[#4B5563]">
+            {heroSubheading}
+          </p>
 
-            {/* Subheading */}
-            <p className="max-w-md text-sm leading-relaxed text-[#55605E] sm:text-base">
-              {heroSubheading}
-            </p>
-
-            {/* CTA */}
-            <div className="mt-7 flex items-center">
-              <Link
-                href={ctaHref}
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#184E3A] px-7 py-3 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#123b2c] hover:shadow-lg"
-              >
-                <span>{ctaText}</span>
-                <span className="transition-transform group-hover:translate-x-1">→</span>
-              </Link>
-            </div>
-
-            {/* Trust points row — every item comes from the admin's Hero
-                "Feature strip" field (content.heroFeatures); nothing here is
-                a fixed set of claims baked into the page. */}
-            {features.length > 0 && (
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-semibold text-[#54595F] sm:gap-x-7">
-                {features.map((feature, i) => (
-                  <div key={`${feature.title}-${i}`} className="flex items-center gap-x-6 sm:gap-x-7">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#184E3A]">
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </span>
-                      <span title={feature.subtitle || undefined}>{feature.title}</span>
-                    </div>
-                    {i < features.length - 1 && (
-                      <span className="hidden h-3.5 w-px bg-gray-300 sm:inline-block" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* Embedded Filter / Search Bar */}
+          <div className="mt-5 sm:mt-6 w-full max-w-xl lg:max-w-2xl">
+            <MuseumSearchBar countries={countries} theme="light" museums={searchSuggestions} />
           </div>
         </div>
       </div>
 
-      {/* Floating "featured museum" card over the photo, bottom-right at
-          every breakpoint (its own absolute layer, independent of the text
-          content's centering above). */}
-      {spotlightMuseum && (
-        <Link
-          href={`/${spotlightMuseum.slug}`}
-          className="group absolute bottom-5 right-4 z-10 flex items-center gap-3 rounded-2xl border border-white bg-white/95 px-3.5 py-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:bg-white sm:bottom-8 sm:right-8 sm:gap-3.5 sm:px-4 lg:bottom-12 lg:right-12"
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E2EFE7] text-[#184E3A]">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </span>
-          <div>
-            <p className="text-xs font-bold leading-tight text-[#182220] transition-colors group-hover:text-[#184E3A]">
-              {spotlightMuseum.name}
-            </p>
-            <p className="text-[10px] font-medium text-gray-500">
-              {spotlightMuseum.city}, {spotlightMuseum.country}
-            </p>
+      {/* Bottom bar with Trust Badges (left) and Spotlight Museum (right) */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-4 sm:px-6 sm:pb-5 lg:px-8 lg:pb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Trust features row */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 rounded-xl bg-black/40 p-2.5 backdrop-blur-md border border-white/10 sm:rounded-none sm:bg-transparent sm:p-0 sm:border-0 sm:backdrop-blur-none">
+            {trustBadges.map((badge, idx) => {
+              const IconComponent = badge.icon;
+              return (
+                <div key={`${badge.title}-${idx}`} className="flex items-center gap-3 sm:gap-4 md:gap-6">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white shrink-0 drop-shadow-sm">
+                      <IconComponent className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                    </span>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-[11px] sm:text-xs font-bold text-white drop-shadow-sm">
+                        {badge.title}
+                      </span>
+                      {badge.subtitle && (
+                        <span className="text-[10px] sm:text-[11px] font-medium text-gray-200 drop-shadow-sm">
+                          {badge.subtitle}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {idx < trustBadges.length - 1 && (
+                    <span className="hidden h-5 w-px bg-white/30 sm:inline-block" />
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <span className="ml-1 text-xs font-bold text-gray-400 transition-colors group-hover:text-[#184E3A]">
-            ›
-          </span>
-        </Link>
-      )}
+
+          {/* Floating Featured Museum Pill */}
+          {spotlightMuseum && (
+            <div className="flex justify-end sm:shrink-0">
+              <Link
+                href={`/${spotlightMuseum.slug}`}
+                className="group inline-flex items-center gap-3 rounded-full bg-[#10241D]/90 px-3.5 py-1.5 shadow-2xl backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-[1.03] hover:bg-[#10241D] sm:px-4 sm:py-2"
+              >
+                <div className="relative h-8 w-8 sm:h-9 sm:w-9 shrink-0 overflow-hidden rounded-full border border-white/30">
+                  <SafeImage
+                    src={spotlightMuseum.cardImage || heroImage}
+                    alt={spotlightMuseum.cardImageAlt || spotlightMuseum.name}
+                    fill
+                    sizes="36px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs sm:text-[13px] font-bold leading-tight text-white transition-colors">
+                    {spotlightMuseum.name}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-gray-300">
+                    <MapPinIcon className="h-3 w-3 text-gray-400 shrink-0" />
+                    <span>
+                      {spotlightMuseum.city}, {spotlightMuseum.country}
+                    </span>
+                  </p>
+                </div>
+                <span className="ml-1 text-sm font-bold text-gray-300 transition-colors group-hover:text-white group-hover:translate-x-0.5">
+                  ›
+                </span>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
