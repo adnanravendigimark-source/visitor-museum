@@ -110,6 +110,12 @@ export interface Museum {
   rating?: number;
   reviewsCount?: string;
 
+  category?: string;
+  cardBadge?: string;
+  duration?: string;
+  featuresList?: string[];
+  startingPrice?: number;
+
   metaTitle: string;
   metaDescription: string;
   focusKeyword: string;
@@ -124,8 +130,170 @@ export interface Museum {
   updatedAt: string;
 }
 
-function seedToMuseum(seed: any): Museum {
+const MUSEUM_DEFAULTS: Record<
+  string,
+  {
+    category: string;
+    cardBadge: string;
+    duration: string;
+    featuresList: string[];
+    startingPrice: number;
+    cardImage?: string;
+  }
+> = {
+  "louvre-museum": {
+    category: "Art Museums",
+    cardBadge: "Most Popular",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Skip-the-line"],
+    startingPrice: 22,
+    cardImage: "/images/hero-louvre.jpg",
+  },
+  "vatican-museums": {
+    category: "Art Museums",
+    cardBadge: "Top Rated",
+    duration: "3–4 hours",
+    featuresList: ["Guided tour", "Skip-the-line"],
+    startingPrice: 29,
+    cardImage: "/images/vatican-card.jpg",
+  },
+  "uffizi-gallery": {
+    category: "Art Museums",
+    cardBadge: "Bestseller",
+    duration: "2–3 hours",
+    featuresList: ["Skip-the-line", "Audio guide"],
+    startingPrice: 26,
+    cardImage: "/images/uffizi-card.jpg",
+  },
+  "accademia-gallery": {
+    category: "Art Museums",
+    cardBadge: "Family Friendly",
+    duration: "1–2 hours",
+    featuresList: ["Guided tour", "Skip-the-line", "Family Friendly"],
+    startingPrice: 20,
+    cardImage: "/images/accademia-card.jpg",
+  },
+  "van-gogh-museum": {
+    category: "Art Museums",
+    cardBadge: "Trending",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Skip-the-line"],
+    startingPrice: 24,
+    cardImage: "/images/van-gogh-card.jpg",
+  },
+  "british-museum": {
+    category: "History Museums",
+    cardBadge: "Iconic",
+    duration: "2–3 hours",
+    featuresList: ["Guided tour", "Audio guide"],
+    startingPrice: 18,
+    cardImage: "/images/british-card.jpg",
+  },
+  "musee-d-orsay": {
+    category: "Art Museums",
+    cardBadge: "Top Rated",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Skip-the-line"],
+    startingPrice: 19,
+    cardImage: "/images/musee-orsay-card.jpg",
+  },
+  "centre-pompidou": {
+    category: "Modern Art",
+    cardBadge: "Trending",
+    duration: "2–3 hours",
+    featuresList: ["Skip-the-line", "Guided tour"],
+    startingPrice: 17,
+    cardImage: "/images/pompidou-card.jpg",
+  },
+  "rijksmuseum": {
+    category: "Art Museums",
+    cardBadge: "Bestseller",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Guided tour"],
+    startingPrice: 23,
+    cardImage: "/images/rijksmuseum-card.jpg",
+  },
+  "lindt-home-of-chocolate": {
+    category: "Special Collections",
+    cardBadge: "Family Friendly",
+    duration: "1–2 hours",
+    featuresList: ["Audio guide", "Family Friendly"],
+    startingPrice: 16,
+    cardImage: "/images/lindt-card.jpg",
+  },
+  "duomo-florence": {
+    category: "History Museums",
+    cardBadge: "Iconic",
+    duration: "2–3 hours",
+    featuresList: ["Guided tour", "Skip-the-line"],
+    startingPrice: 25,
+    cardImage: "/images/hero-duomo.jpg",
+  },
+  "vasa-museum": {
+    category: "History Museums",
+    cardBadge: "Top Rated",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Family Friendly"],
+    startingPrice: 19,
+    cardImage: "/images/vasa-card.jpg",
+  },
+  "brussels-atomium": {
+    category: "Science & Technology",
+    cardBadge: "Family Friendly",
+    duration: "1–2 hours",
+    featuresList: ["Skip-the-line", "Family Friendly"],
+    startingPrice: 16,
+    cardImage: "/images/atomium-card.jpg",
+  },
+  "eiffel-tower": {
+    category: "Special Collections",
+    cardBadge: "Most Popular",
+    duration: "2–3 hours",
+    featuresList: ["Skip-the-line", "Guided tour"],
+    startingPrice: 32,
+    cardImage: "/images/eiffel-tower-card.jpg",
+  },
+  "fifa-museum-zurich": {
+    category: "Special Collections",
+    cardBadge: "Family Friendly",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Family Friendly"],
+    startingPrice: 24,
+    cardImage: "/images/fifa-card.jpg",
+  },
+  "kunsthaus-zurich": {
+    category: "Modern Art",
+    cardBadge: "Trending",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Guided tour"],
+    startingPrice: 26,
+    cardImage: "/images/kunsthaus-card.jpg",
+  },
+};
+
+export function enrichMuseum(m: Museum): Museum {
+  const meta = MUSEUM_DEFAULTS[m.id] || MUSEUM_DEFAULTS[m.slug] || {
+    category: "Art Museums",
+    cardBadge: "Iconic",
+    duration: "2–3 hours",
+    featuresList: ["Audio guide", "Skip-the-line"],
+    startingPrice: 20,
+    cardImage: "/images/hero-louvre.jpg",
+  };
+
   return {
+    ...m,
+    category: (m as any).category || meta.category,
+    cardBadge: (m as any).cardBadge || meta.cardBadge,
+    duration: (m as any).duration || meta.duration,
+    featuresList: (m as any).featuresList || meta.featuresList,
+    startingPrice: (m as any).startingPrice || meta.startingPrice,
+    cardImage: m.cardImage || meta.cardImage || "/images/hero-louvre.jpg",
+  };
+}
+
+function seedToMuseum(seed: any): Museum {
+  const raw: Museum = {
     id: seed.id,
     slug: seed.slug,
     name: seed.name,
@@ -173,6 +341,11 @@ function seedToMuseum(seed: any): Museum {
     ctaButtonText: seed.ctaButtonText || "Compare Tickets & Tours",
     rating: seed.rating !== undefined ? Number(seed.rating) : 4.7,
     reviewsCount: seed.reviewsCount || "10.2k",
+    category: seed.category,
+    cardBadge: seed.cardBadge,
+    duration: seed.duration,
+    featuresList: seed.featuresList,
+    startingPrice: seed.startingPrice,
     metaTitle: seed.metaTitle || seed.name,
     metaDescription: seed.metaDescription || "",
     focusKeyword: seed.focusKeyword || "visit museums",
@@ -185,10 +358,11 @@ function seedToMuseum(seed: any): Museum {
     createdAt: seed.createdAt || new Date().toISOString(),
     updatedAt: seed.updatedAt || seed.createdAt || new Date().toISOString(),
   };
+  return enrichMuseum(raw);
 }
 
 function rowToMuseum(row: any): Museum {
-  return {
+  const raw: Museum = {
     id: row.id,
     slug: row.slug,
     name: row.name,
@@ -236,6 +410,11 @@ function rowToMuseum(row: any): Museum {
     ctaButtonText: row.cta_button_text || "Compare Tickets & Tours",
     rating: row.rating !== null && row.rating !== undefined ? Number(row.rating) : 4.7,
     reviewsCount: row.reviews_count || "10.2k",
+    category: row.category,
+    cardBadge: row.card_badge,
+    duration: row.duration,
+    featuresList: parseJsonArray(row.features_list),
+    startingPrice: row.starting_price !== null && row.starting_price !== undefined ? Number(row.starting_price) : undefined,
     metaTitle: row.meta_title || row.name,
     metaDescription: row.meta_description || "",
     focusKeyword: row.focus_keyword || "visit museums",
@@ -248,6 +427,7 @@ function rowToMuseum(row: any): Museum {
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at || ""),
     updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : String(row.updated_at || row.created_at || ""),
   };
+  return enrichMuseum(raw);
 }
 
 // Wrapped in React's cache() so that within a single server-render pass,
@@ -313,6 +493,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       faq_eyebrow, faq_heading,
       cta_heading, cta_subtext, cta_button_text,
       rating, reviews_count,
+      category, card_badge, duration, features_list, starting_price,
       meta_title, meta_description, focus_keyword, canonical_url,
       no_index, no_follow, og_title, og_description, og_image
     ) VALUES (
@@ -328,6 +509,7 @@ export async function insertMuseum(m: Museum): Promise<void> {
       ${m.faqEyebrow}, ${m.faqHeading},
       ${m.ctaHeading}, ${m.ctaSubtext}, ${m.ctaButtonText},
       ${m.rating ?? 4.7}, ${m.reviewsCount || "10.2k"},
+      ${m.category || "Art Museums"}, ${m.cardBadge || "Most Popular"}, ${m.duration || "2–3 hours"}, ${JSON.stringify(m.featuresList || [])}::jsonb, ${m.startingPrice ?? 20},
       ${m.metaTitle}, ${m.metaDescription}, ${m.focusKeyword}, ${m.canonicalUrl || ""},
       ${!!m.noIndex}, ${!!m.noFollow}, ${m.ogTitle || ""}, ${m.ogDescription || ""}, ${m.ogImage || ""}
     )
@@ -357,6 +539,9 @@ export async function updateMuseum(id: string, m: Museum): Promise<void> {
       faq_eyebrow = ${m.faqEyebrow}, faq_heading = ${m.faqHeading},
       cta_heading = ${m.ctaHeading}, cta_subtext = ${m.ctaSubtext}, cta_button_text = ${m.ctaButtonText},
       rating = ${m.rating ?? 4.7}, reviews_count = ${m.reviewsCount || "10.2k"},
+      category = ${m.category || "Art Museums"}, card_badge = ${m.cardBadge || "Most Popular"},
+      duration = ${m.duration || "2–3 hours"}, features_list = ${JSON.stringify(m.featuresList || [])}::jsonb,
+      starting_price = ${m.startingPrice ?? 20},
       meta_title = ${m.metaTitle}, meta_description = ${m.metaDescription}, focus_keyword = ${m.focusKeyword},
       canonical_url = ${m.canonicalUrl || ""},
       no_index = ${!!m.noIndex}, no_follow = ${!!m.noFollow},

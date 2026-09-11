@@ -126,6 +126,11 @@ async function createTables() {
       nearby_places_resolved_at TIMESTAMPTZ,
       rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7,
       reviews_count TEXT NOT NULL DEFAULT '10.2k',
+      category TEXT NOT NULL DEFAULT 'Art Museums',
+      card_badge TEXT NOT NULL DEFAULT 'Most Popular',
+      duration TEXT NOT NULL DEFAULT '2–3 hours',
+      features_list JSONB NOT NULL DEFAULT '[]'::jsonb,
+      starting_price NUMERIC(10, 2) NOT NULL DEFAULT 20,
       meta_title TEXT NOT NULL DEFAULT '',
       meta_description TEXT NOT NULL DEFAULT '',
       focus_keyword TEXT NOT NULL DEFAULT '',
@@ -146,6 +151,21 @@ async function createTables() {
   // run every time regardless (a no-op once the columns are already there).
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS rating NUMERIC(2, 1) NOT NULL DEFAULT 4.7`;
   await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS reviews_count TEXT NOT NULL DEFAULT '10.2k'`;
+  // Homepage/catalog listing metadata (Museums admin -> "Homepage Grid
+  // Card" section): each museum's catalog category, promotional ribbon
+  // badge, estimated visit duration, feature tags, and starting price —
+  // consumed by the /museums catalog page's filter/sort/badge UI (see
+  // components/MuseumsCatalogExplorer.tsx). insertMuseum/updateMuseum
+  // already write these columns; without this migration every museum save
+  // (new or edit) fails outright with a Postgres "column does not exist"
+  // error, since they didn't exist on the table at all until now.
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'Art Museums'`;
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS card_badge TEXT NOT NULL DEFAULT 'Most Popular'`;
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS duration TEXT NOT NULL DEFAULT '2–3 hours'`;
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS features_list JSONB NOT NULL DEFAULT '[]'::jsonb`;
+  await sql`ALTER TABLE museums ADD COLUMN IF NOT EXISTS starting_price NUMERIC(10, 2) NOT NULL DEFAULT 20`;
+  // Powers the catalog page's Category filter checkboxes/counts.
+  await sql`CREATE INDEX IF NOT EXISTS museums_category_idx ON museums (category)`;
   // SUPERSEDED — the entire "Nearby Attractions" feature (auto-resolved
   // from OpenStreetMap by coordinate) has been replaced by admin-authored
   // "Other Attractions", a city-scoped table of its own (see

@@ -329,6 +329,54 @@ export default function MuseumForm({
         <Field label="Card tagline" hint="Short line shown under the museum name on the grid card.">
           <input value={museum.cardTagline} onChange={(e) => update("cardTagline", e.target.value)} className={inputClass} />
         </Field>
+        <div className="grid gap-5 sm:grid-cols-2 pt-2">
+          <Field label="Category" hint="Primary category for museum catalog filter.">
+            <select
+              value={museum.category || "Art Museums"}
+              onChange={(e) => update("category", e.target.value)}
+              className={inputClass}
+            >
+              <option value="Art Museums">Art Museums</option>
+              <option value="History Museums">History Museums</option>
+              <option value="Science & Technology">Science & Technology</option>
+              <option value="Special Collections">Special Collections</option>
+              <option value="Modern Art">Modern Art</option>
+            </select>
+          </Field>
+          <Field label="Promotional Badge" hint="Badge shown on the card image (e.g. Most Popular, Top Rated, Bestseller).">
+            <select
+              value={museum.cardBadge || "Most Popular"}
+              onChange={(e) => update("cardBadge", e.target.value)}
+              className={inputClass}
+            >
+              <option value="Most Popular">⭐ Most Popular</option>
+              <option value="Top Rated">🛡️ Top Rated</option>
+              <option value="Bestseller">🏷️ Bestseller</option>
+              <option value="Family Friendly">👨‍👩‍👧 Family Friendly</option>
+              <option value="Trending">🔥 Trending</option>
+              <option value="Iconic">🏛️ Iconic</option>
+            </select>
+          </Field>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 pt-2">
+          <Field label="Estimated Visit Duration" hint='e.g. "2–3 hours"'>
+            <input
+              value={museum.duration || "2–3 hours"}
+              onChange={(e) => update("duration", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 2–3 hours"
+            />
+          </Field>
+          <Field label="Starting Price (€)" hint="Starting ticket price in euros for catalog price filter.">
+            <input
+              type="number"
+              min="0"
+              value={museum.startingPrice ?? 20}
+              onChange={(e) => update("startingPrice", e.target.value === "" ? undefined : Number(e.target.value))}
+              className={inputClass}
+            />
+          </Field>
+        </div>
       </SectionCard>
 
       {/* ---------------- HERO ---------------- */}

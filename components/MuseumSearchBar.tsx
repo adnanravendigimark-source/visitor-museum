@@ -1,9 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import SafeImage from "./SafeImage";
 import { GlobeIcon, MapPinIcon, SearchIcon, ChevronDownIcon } from "./icons";
+
+// A small two-tone rotating ring, built from scratch for this search bar
+// rather than dropped in from a component library — one dim full circle
+// plus one solid quarter-arc on top, spun with Tailwind's animate-spin.
+// Uses currentColor so it can sit inside the green button (white) or next
+// to the input text (dark) without a separate color prop.
+function SearchSpinner({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={`${className} animate-spin`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export interface MuseumSuggestion {
   slug: string;
@@ -26,6 +40,13 @@ export default function MuseumSearchBar({
   museums?: MuseumSuggestion[];
 }) {
   const router = useRouter();
+  // Tracks the gap between clicking Search (or a suggestion) and the
+  // destination page actually finishing its navigation — router.push()
+  // itself returns instantly, but the real page (a live DB-backed museum
+  // page, or /museums) can take a moment to fetch and render, and until
+  // now nothing showed that anything was happening at all. Wrapping every
+  // navigation in a transition gives us that gap as `isPending`.
+  const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
@@ -51,27 +72,50 @@ export default function MuseumSearchBar({
     return () => clearTimeout(handle);
   }, [query, country, city]);
 
+  function matchesQuery(m: MuseumSuggestion, q: string) {
+    return (
+      m.name.toLowerCase().includes(q) ||
+      m.city.toLowerCase().includes(q) ||
+      m.country.toLowerCase().includes(q)
+    );
+  }
+
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q || museums.length === 0) return [];
-    return museums
-      .filter(
-        (m) =>
-          m.name.toLowerCase().includes(q) ||
-          m.city.toLowerCase().includes(q) ||
-          m.country.toLowerCase().includes(q)
-      )
-      .slice(0, 6);
+    return museums.filter((m) => matchesQuery(m, q)).slice(0, 6);
   }, [museums, query]);
 
   useEffect(() => {
     setActiveIndex(-1);
   }, [suggestions]);
 
+  // Warms the Router Cache for every museum currently showing as a
+  // suggestion, as soon as it appears — by the time someone actually
+  // clicks one (or it's the sole match and they hit Search), Next.js may
+  // already have that page's payload ready instead of starting the fetch
+  // from a standing start. Cheap: at most 6 pages, and prefetch is a
+  // no-op if one's already cached.
+  useEffect(() => {
+    for (const m of suggestions) {
+      router.prefetch(`/${m.slug}`);
+    }
+  }, [suggestions, router]);
+
+  // /museums is the fallback destination for every "not exactly one match"
+  // case below — worth having ready before the visitor ever presses
+  // Search.
+  useEffect(() => {
+    router.prefetch("/museums");
+  }, [router]);
+
   function selectSuggestion(m: MuseumSuggestion) {
+    if (isPending) return;
     setSuggestOpen(false);
     setQuery("");
-    router.push(`/${m.slug}`);
+    startTransition(() => {
+      router.push(`/${m.slug}`);
+    });
   }
 
   function handleQueryKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -89,29 +133,61 @@ export default function MuseumSearchBar({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isPending) return;
     if (activeIndex >= 0 && suggestions[activeIndex]) {
       selectSuggestion(suggestions[activeIndex]);
       return;
     }
     setSuggestOpen(false);
     if (onSearch) {
+      // /museums page's own filter bar — already live-filtering in place as
+      // you type/select (see the debounced effect above), so Search here
+      // just re-confirms the current values rather than navigating.
       onSearch({ query, country, city });
       return;
     }
+
+    const q = query.trim();
+
+    // Free-text search with no country/city narrowing it down: if it
+    // pins down exactly one museum, jump straight there — no /museums stop
+    // in between. Anything else (zero matches, or several) goes to
+    // /museums?q=..., where the grid either lists the matches or, for zero,
+    // shows a "not found" message plus the full catalog as a fallback (see
+    // MuseumsGrid.tsx) — a single page load either way, rather than the
+    // extra round trip a fake-slug 404 lookup used to cost.
+    if (q && museums.length > 0 && !country && !city) {
+      const matches = museums.filter((m) => matchesQuery(m, q.toLowerCase()));
+      if (matches.length === 1) {
+        startTransition(() => router.push(`/${matches[0].slug}`));
+        return;
+      }
+    }
+
     const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
+    if (q) params.set("q", q);
     if (country) params.set("country", country);
     if (city) params.set("city", city);
-    router.push(`/museums${params.toString() ? `?${params.toString()}` : ""}`);
+    startTransition(() => {
+      router.push(`/museums${params.toString() ? `?${params.toString()}` : ""}`);
+    });
   }
 
   const containerClass =
-    theme === "light"
+    (theme === "light"
       ? "flex flex-col gap-2 rounded-2xl bg-white p-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-gray-100/90 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-1.5 sm:pl-4 sm:pr-1.5"
-      : "flex flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-2.5 shadow-sm sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-1.5 sm:pl-4 sm:pr-1.5";
+      : "flex flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-2.5 shadow-sm sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-1.5 sm:pl-4 sm:pr-1.5") +
+    " transition-opacity duration-200" +
+    (isPending ? " opacity-70" : "");
 
   return (
-    <form onSubmit={handleSubmit} className={containerClass}>
+    <form onSubmit={handleSubmit} className={containerClass} aria-busy={isPending}>
+      {/* Screen-reader-only status announcement — the visual cues below
+          (spinner icon, "Searching…" button label) are the primary signal,
+          this just mirrors it for assistive tech. */}
+      <span role="status" className="sr-only">
+        {isPending ? "Searching…" : ""}
+      </span>
       <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-0 sm:shrink-0">
         {/* Country Selector */}
         <div className="relative flex items-center gap-2.5 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:py-1 sm:pl-1 sm:pr-3">
@@ -124,7 +200,8 @@ export default function MuseumSearchBar({
               <select
                 value={country}
                 onChange={(e) => handleCountryChange(e.target.value)}
-                className="w-full cursor-pointer appearance-none bg-transparent pr-4 text-[12px] font-normal text-gray-500 focus:outline-none"
+                disabled={isPending}
+                className="w-full cursor-pointer appearance-none bg-transparent pr-4 text-[12px] font-normal text-gray-500 focus:outline-none disabled:cursor-wait disabled:opacity-60"
                 aria-label="Country"
               >
                 <option value="">Select country</option>
@@ -152,8 +229,8 @@ export default function MuseumSearchBar({
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                disabled={!country}
-                className="w-full cursor-pointer appearance-none bg-transparent pr-4 text-[12px] font-normal text-gray-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400"
+                disabled={!country || isPending}
+                className="w-full cursor-pointer appearance-none bg-transparent pr-4 text-[12px] font-normal text-gray-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400 disabled:opacity-60"
                 aria-label="City"
               >
                 <option value="">{country ? "Select city" : "Select city"}</option>
@@ -173,7 +250,14 @@ export default function MuseumSearchBar({
 
       {/* Query input & type-ahead search */}
       <div className="relative flex flex-1 items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:py-1 sm:pl-3 sm:pr-2">
-        <SearchIcon className="h-4 w-4 shrink-0 text-gray-700" />
+        {/* Swaps to the spinner the instant a navigation kicks off, right
+            next to the text that was typed — the most direct "yes, this is
+            doing something" signal, since that's where the eye already is. */}
+        {isPending ? (
+          <SearchSpinner className="h-4 w-4 shrink-0 text-[#184E3A]" />
+        ) : (
+          <SearchIcon className="h-4 w-4 shrink-0 text-gray-700" />
+        )}
         <input
           type="text"
           value={query}
@@ -188,7 +272,8 @@ export default function MuseumSearchBar({
           onKeyDown={handleQueryKeyDown}
           placeholder="Search museums, e.g. Louvre, modern art, history..."
           autoComplete="off"
-          className="w-full bg-transparent text-[12.5px] font-normal text-[#1F2429] placeholder:text-gray-400 focus:outline-none"
+          disabled={isPending}
+          className="w-full bg-transparent text-[12.5px] font-normal text-[#1F2429] placeholder:text-gray-400 focus:outline-none disabled:cursor-wait"
           aria-label="Search museums"
         />
         {query && (
@@ -247,10 +332,22 @@ export default function MuseumSearchBar({
       {/* Submit Button */}
       <button
         type="submit"
-        className="group inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#184E3A] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#123b2c] hover:shadow-md"
+        disabled={isPending}
+        className={`group inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-all ${
+          isPending ? "cursor-wait bg-[#123b2c]" : "bg-[#184E3A] hover:bg-[#123b2c] hover:shadow-md"
+        }`}
       >
-        <span>Search</span>
-        <span className="transition-transform group-hover:translate-x-0.5">→</span>
+        {isPending ? (
+          <>
+            <SearchSpinner className="h-3.5 w-3.5" />
+            <span>Searching…</span>
+          </>
+        ) : (
+          <>
+            <span>Search</span>
+            <span className="transition-transform group-hover:translate-x-0.5">→</span>
+          </>
+        )}
       </button>
     </form>
   );
