@@ -1,4 +1,17 @@
-import { cache } from "react";
+// NOTE: these data-fetching functions used to be wrapped in React's cache().
+// cache() only guarantees fresh, request-scoped memoization inside a React
+// Server Component render pass. These functions are also called directly
+// from Route Handlers (app/api/admin/.../route.ts) for existence-checks
+// before UPDATE/DELETE and for single-record GETs — Route Handlers are not
+// part of a render tree, so cache() does not reliably reset per request
+// there. In practice this caused admin edits/deletes on museums, tours and
+// FAQs to intermittently read stale data across separate HTTP requests: an
+// edit would appear to "not save", and a delete performed against a
+// stale-but-matching cached list could delete the right DB row while the
+// UI (reading the same frozen cache) still showed it as present. Removed
+// cache() entirely so every read is always a fresh DB query — correctness
+// for an admin CMS matters far more than the minor intra-render dedup this
+// bought. (Same fix applied in the discover-florence repo.)
 import { sql } from "./db";
 import museumsSeed from "@/data/museums.json";
 import museumToursSeed from "@/data/museum-tours.json";
@@ -447,7 +460,7 @@ async function getMuseumsImpl(): Promise<Museum[]> {
     return (museumsSeed as any[]).map(seedToMuseum);
   }
 }
-export const getMuseums = cache(getMuseumsImpl);
+export const getMuseums = getMuseumsImpl;
 
 async function getMuseumBySlugImpl(slug: string): Promise<Museum | null> {
   try {
@@ -459,7 +472,7 @@ async function getMuseumBySlugImpl(slug: string): Promise<Museum | null> {
   const seed = (museumsSeed as any[]).find((m) => m.slug === slug);
   return seed ? seedToMuseum(seed) : null;
 }
-export const getMuseumBySlug = cache(getMuseumBySlugImpl);
+export const getMuseumBySlug = getMuseumBySlugImpl;
 
 async function getMuseumByIdImpl(id: string): Promise<Museum | null> {
   try {
@@ -471,7 +484,7 @@ async function getMuseumByIdImpl(id: string): Promise<Museum | null> {
   const seed = (museumsSeed as any[]).find((m) => m.id === id);
   return seed ? seedToMuseum(seed) : null;
 }
-export const getMuseumById = cache(getMuseumByIdImpl);
+export const getMuseumById = getMuseumByIdImpl;
 
 // Single-row insert — appended at the end of the current sort order. This
 // mirrors the reference repos' lesson (see lib/data.ts's insertTour comment):
@@ -761,13 +774,13 @@ async function getToursRawByMuseumImpl(museumId: string): Promise<TourRecord[]> 
   }
   return (museumToursSeed as any[]).filter((t) => t.museumId === museumId).map(seedToTourRecord);
 }
-export const getToursRawByMuseum = cache(getToursRawByMuseumImpl);
+export const getToursRawByMuseum = getToursRawByMuseumImpl;
 
 async function getToursByMuseumImpl(museumId: string): Promise<Tour[]> {
   const records = await getToursRawByMuseum(museumId);
   return records.map(transformTour);
 }
-export const getToursByMuseum = cache(getToursByMuseumImpl);
+export const getToursByMuseum = getToursByMuseumImpl;
 
 // Flattened list of every tour across every museum, each labeled with its
 // museum's name — used by the admin Blog Post editor's "recommended tour"
@@ -881,7 +894,7 @@ async function getFaqsByMuseumImpl(museumId: string): Promise<FAQ[]> {
     category: f.category,
   }));
 }
-export const getFaqsByMuseum = cache(getFaqsByMuseumImpl);
+export const getFaqsByMuseum = getFaqsByMuseumImpl;
 
 export async function saveFaqsForMuseum(museumId: string, faqs: FAQ[]): Promise<void> {
   for (let i = 0; i < faqs.length; i++) {

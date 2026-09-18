@@ -1,4 +1,7 @@
-import { cache } from "react";
+// cache() was removed from the exports below — see the note in
+// lib/museums.ts for why: these functions are also called from Route
+// Handlers, where cache()'s per-request memoization is not reliable and
+// caused stale reads after admin writes.
 import { sql } from "./db";
 
 /* ------------------------------------------------------------------ */
@@ -435,7 +438,7 @@ async function getHomepageContentImpl(): Promise<HomepageContent> {
     return DEFAULT_HOMEPAGE_CONTENT;
   }
 }
-export const getHomepageContent = cache(getHomepageContentImpl);
+export const getHomepageContent = getHomepageContentImpl;
 
 async function getSiteChromeImpl(): Promise<{ header: HeaderContent; footer: FooterContent; theme: ThemeColors }> {
   try {
@@ -451,7 +454,7 @@ async function getSiteChromeImpl(): Promise<{ header: HeaderContent; footer: Foo
     return { header: DEFAULT_HEADER, footer: DEFAULT_FOOTER, theme: DEFAULT_THEME };
   }
 }
-export const getSiteChrome = cache(getSiteChromeImpl);
+export const getSiteChrome = getSiteChromeImpl;
 
 export async function saveHomepageCopy(data: {
   heroBadge: string;

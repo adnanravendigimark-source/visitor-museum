@@ -13,6 +13,7 @@ import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
 import { Node, mergeAttributes } from "@tiptap/core";
+import { DOMParser as PMDOMParser, Slice } from "@tiptap/pm/model";
 import RichImageModal, { ImageModalData } from "./RichImageModal";
 import RichLinkModal from "./RichLinkModal";
 
@@ -24,6 +25,125 @@ import RichLinkModal from "./RichLinkModal";
 // paste handling — headings, tables, and lists from an external site,
 // Word, or Google Docs come through correctly without the custom
 // paste-cleaning heuristics the old editor needed.
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Minimal inline markdown -> HTML for text pasted as plain text (no
+// clipboard HTML at all — e.g. copied from a chat message, a .md file, or
+// a plain text editor): `code`, **bold**/__bold__, *italic*/_italic_.
+function inlineMarkdownToHtml(raw: string): string {
+  let s = escapeHtml(raw);
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+  s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  s = s.replace(/(^|[^\w])_([^_]+)_(?!\w)/g, "$1<em>$2</em>");
+  return s;
+}
+
+function parseMarkdownTableRow(line: string): string[] {
+  let s = line.trim();
+  if (s.startsWith("|")) s = s.slice(1);
+  if (s.endsWith("|")) s = s.slice(0, -1);
+  return s.split("|").map((c) => c.trim());
+}
+
+function isMarkdownTableSeparatorRow(line: string): boolean {
+  const cells = parseMarkdownTableRow(line);
+  return cells.length > 0 && cells.every((c) => /^:?-{1,}:?$/.test(c));
+}
+
+// Converts plain-text markdown (tables, headings, bullet/numbered lists,
+// paragraphs) into real HTML block markup. Used only when the clipboard
+// has no real HTML table/heading/list for ProseMirror to parse directly —
+// e.g. a markdown table like "| Season | Item |" pasted as plain text
+// would otherwise land as one literal line of "|" characters instead of
+// becoming a real table. Returns null if nothing markdown-like was found,
+// so ordinary plain-text paste (a sentence, a URL, etc.) is left alone.
+function markdownToHtml(text: string): string | null {
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
+  let html = "";
+  let matchedAnything = false;
+  let paraBuf: string[] = [];
+
+  const flushParagraph = () => {
+    const t = paraBuf.join(" ").trim();
+    if (t) html += `<p>${inlineMarkdownToHtml(t)}</p>`;
+    paraBuf = [];
+  };
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && isMarkdownTableSeparatorRow(lines[i + 1])) {
+      flushParagraph();
+      matchedAnything = true;
+      const header = parseMarkdownTableRow(line);
+      i += 2;
+      const rows: string[][] = [];
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) {
+        rows.push(parseMarkdownTableRow(lines[i]));
+        i++;
+      }
+      html +=
+        "<table><tbody><tr>" +
+        header.map((c) => `<th>${inlineMarkdownToHtml(c)}</th>`).join("") +
+        "</tr>" +
+        rows.map((r) => "<tr>" + r.map((c) => `<td>${inlineMarkdownToHtml(c)}</td>`).join("") + "</tr>").join("") +
+        "</tbody></table>";
+      continue;
+    }
+
+    const headingMatch = /^(#{1,6})\s+(.*)$/.exec(line);
+    if (headingMatch) {
+      flushParagraph();
+      matchedAnything = true;
+      const level = Math.min(3, headingMatch[1].length);
+      html += `<h${level}>${inlineMarkdownToHtml(headingMatch[2].trim())}</h${level}>`;
+      i++;
+      continue;
+    }
+
+    if (/^\s*[-*+]\s+/.test(line)) {
+      flushParagraph();
+      matchedAnything = true;
+      html += "<ul>";
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) {
+        html += `<li>${inlineMarkdownToHtml(lines[i].replace(/^\s*[-*+]\s+/, "").trim())}</li>`;
+        i++;
+      }
+      html += "</ul>";
+      continue;
+    }
+
+    if (/^\s*\d+[.)]\s+/.test(line)) {
+      flushParagraph();
+      matchedAnything = true;
+      html += "<ol>";
+      while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) {
+        html += `<li>${inlineMarkdownToHtml(lines[i].replace(/^\s*\d+[.)]\s+/, "").trim())}</li>`;
+        i++;
+      }
+      html += "</ol>";
+      continue;
+    }
+
+    if (!line.trim()) {
+      flushParagraph();
+      i++;
+      continue;
+    }
+
+    paraBuf.push(line.trim());
+    i++;
+  }
+  flushParagraph();
+
+  return matchedAnything ? html : null;
+}
 
 function normalizeUrl(raw: string): string {
   const url = raw.trim();
@@ -180,15 +300,22 @@ export default function TiptapArticleEditor({
         class:
           "tiptap rich-content max-w-none px-3 py-2.5 text-sm text-stone-900 outline-none [&_img]:cursor-pointer [&_figure]:cursor-pointer",
       },
-      handleClickOn: (_view: any, pos: number, node: any) => {
+      // ProseMirror passes two positions here: `pos` (nearest position to
+      // the click) and `nodePos` (the node's actual start position). For
+      // atomic nodes like image/figure these can differ — using `pos`
+      // instead of `nodePos` meant tr.doc.nodeAt(pos) in replaceNodeAt/
+      // handleImageDelete below would often resolve to null, silently
+      // no-oping "Save changes" and "Remove from Article" alike instead of
+      // throwing, so it looked like the buttons just didn't work.
+      handleClickOn: (_view: any, _pos: number, node: any, nodePos: number) => {
         if (node.type.name === "image") {
-          editingImageRef.current = { pos };
+          editingImageRef.current = { pos: nodePos };
           setEditingImageData({ url: node.attrs.src || "", alt: node.attrs.alt || "", caption: "" });
           setImageModalOpen(true);
           return true;
         }
         if (node.type.name === "figure") {
-          editingImageRef.current = { pos };
+          editingImageRef.current = { pos: nodePos };
           setEditingImageData({
             url: node.attrs.src || "",
             alt: node.attrs.alt || "",
@@ -198,6 +325,126 @@ export default function TiptapArticleEditor({
           return true;
         }
         return false;
+      },
+      // Word (and some Google Docs exports) don't paste real <h1>-<h6> or
+      // <ul>/<ol><li> markup: headings come through as <p style="mso-style-
+      // name:Heading2">, and list items come through as flat
+      // <p style="mso-list:l0 level1 ..."> paragraphs with a literal "1."
+      // or "•" character typed into the text, not a real ordered/unordered
+      // list. ProseMirror's default paste parsing only recognizes real
+      // <h*>/<ul>/<ol>/<li> tags, so pasted Word content silently lost all
+      // heading/list structure and came in as a wall of plain paragraphs.
+      // This normalizes that Word markup into real semantic HTML before
+      // ProseMirror parses the paste, so it maps onto this editor's
+      // Heading/BulletList/OrderedList nodes correctly. Tables already
+      // paste correctly as-is — Word's table markup is standard <table>/
+      // <tr>/<td>.
+      transformPastedHTML(html: string) {
+        if (!/mso-list\s*:|mso-style-name\s*:/i.test(html)) return html;
+        try {
+          const doc = new DOMParser().parseFromString(html, "text/html");
+
+          // Headings shipped as styled paragraphs -> real <h1>-<h6>.
+          doc.body.querySelectorAll("p").forEach((p) => {
+            const style = p.getAttribute("style") || "";
+            const m = /mso-style-name\s*:\s*["']?Heading\s*([1-6])["']?/i.exec(style);
+            if (!m) return;
+            const h = doc.createElement(`h${m[1]}`);
+            h.innerHTML = p.innerHTML;
+            p.replaceWith(h);
+          });
+
+          // Runs of Word's fake-list paragraphs -> real <ul>/<ol><li>.
+          const isListPara = (p: Element) => /mso-list\s*:/i.test(p.getAttribute("style") || "");
+          const listParas = Array.from(doc.body.querySelectorAll("p")).filter(isListPara);
+          const markerRe = /^(\s|&nbsp;| )*([0-9]+[.)]|[a-zA-Z][.)]|[••●▪·o\-])(\s|&nbsp;| )*/;
+
+          let i = 0;
+          while (i < listParas.length) {
+            const run = [listParas[i]];
+            let j = i + 1;
+            while (j < listParas.length && listParas[j].previousElementSibling === listParas[j - 1]) {
+              run.push(listParas[j]);
+              j++;
+            }
+            const firstText = run[0].textContent || "";
+            const marker = markerRe.exec(firstText);
+            const ordered = !!marker && /^[0-9]+[.)]$/.test(marker[2]);
+            const list = doc.createElement(ordered ? "ol" : "ul");
+            for (const p of run) {
+              const li = doc.createElement("li");
+              const clone = p.cloneNode(true) as HTMLElement;
+              clone.querySelectorAll('span[style*="mso-list"]').forEach((s) => s.remove());
+              li.innerHTML = clone.innerHTML.replace(markerRe, "");
+              list.appendChild(li);
+            }
+            run[0].replaceWith(list);
+            for (let k = 1; k < run.length; k++) run[k].remove();
+            i = j;
+          }
+
+          return doc.body.innerHTML;
+        } catch {
+          return html;
+        }
+      },
+      // transformPastedHTML above returns an HTML *string* — ProseMirror
+      // still does its own default parsing of that string into a Slice,
+      // inferring open start/end boundaries the normal way. For a lone
+      // block like a single converted <h2> (no sibling paragraph in the
+      // pasted fragment), that inference can leave the slice "open",
+      // which merges the heading straight into whatever paragraph text
+      // follows the cursor instead of inserting it as its own block — the
+      // same class of bug handlePaste's Slice(..., 0, 0) fixes below, but
+      // for HTML paste rather than plain-text markdown paste. This forces
+      // closed boundaries specifically when the pasted content's outer
+      // nodes are block types that should never silently absorb
+      // surrounding text (heading/list/table); ordinary paragraph or
+      // inline pastes are left alone since merging into the surrounding
+      // paragraph is the correct, expected behavior there.
+      transformPasted(slice: any) {
+        const neverMerge = new Set(["heading", "bulletList", "orderedList", "table"]);
+        const first = slice.content.firstChild;
+        const last = slice.content.lastChild;
+        if (first && last && neverMerge.has(first.type.name) && neverMerge.has(last.type.name)) {
+          return new Slice(slice.content, 0, 0);
+        }
+        return slice;
+      },
+      // Plain-text markdown paste (no HTML on the clipboard at all — e.g.
+      // copied from a chat message, a .md file, or a plain text editor):
+      // a markdown table like "| Season | Item |" / "|---|---|" has no
+      // <table> for ProseMirror to parse, so by default it lands as
+      // literal "|" characters in a paragraph instead of becoming a real
+      // table (same for "# Heading" and "- list" lines). Only intervenes
+      // when there's no real HTML table already on the clipboard and the
+      // plain text actually parses as markdown — ordinary text paste
+      // (a sentence, a URL, prose with a stray "-") is left untouched.
+      handlePaste(view: any, event: ClipboardEvent) {
+        const cd = event.clipboardData;
+        if (!cd) return false;
+        const html = cd.getData("text/html");
+        if (html && /<table[\s>]/i.test(html)) return false;
+        const text = cd.getData("text/plain");
+        if (!text || !text.trim()) return false;
+        const generated = markdownToHtml(text);
+        if (!generated) return false;
+
+        const el = document.createElement("div");
+        el.innerHTML = generated;
+        // parseSlice() infers open start/end boundaries from the parsed
+        // content, which for block content (a table, a heading) can merge
+        // it into whatever paragraph happens to follow the cursor instead
+        // of inserting it as its own clean block — e.g. pasting a table in
+        // the middle of an article could silently absorb the next
+        // paragraph's text into the table's last cell. Building a fully
+        // closed Slice (openStart/openEnd = 0) from parse() instead
+        // guarantees the generated blocks are inserted intact, with no
+        // merging into surrounding content.
+        const parsedNode = PMDOMParser.fromSchema(view.state.schema).parse(el);
+        const slice = new Slice(parsedNode.content, 0, 0);
+        view.dispatch(view.state.tr.replaceSelection(slice).scrollIntoView());
+        return true;
       },
     },
     extensions: [

@@ -1,4 +1,7 @@
-import { cache } from "react";
+// cache() was removed from the exports below — see the note in
+// lib/museums.ts for why: these functions are also called from Route
+// Handlers, where cache()'s per-request memoization is not reliable and
+// caused stale reads after admin writes.
 import { sql } from "./db";
 import postsSeed from "@/data/posts.json";
 
@@ -171,7 +174,7 @@ async function getPostsImpl(): Promise<Post[]> {
     return (postsSeed as any[]).map(seedToPost);
   }
 }
-export const getPosts = cache(getPostsImpl);
+export const getPosts = getPostsImpl;
 
 async function getPostImpl(slug: string): Promise<Post | null> {
   // Matches lib/museums.ts's getMuseumBySlug(): falls through to the seed
@@ -189,7 +192,7 @@ async function getPostImpl(slug: string): Promise<Post | null> {
   const seed = (postsSeed as any[]).find((p) => p.slug === slug);
   return seed ? seedToPost(seed) : null;
 }
-export const getPost = cache(getPostImpl);
+export const getPost = getPostImpl;
 
 export async function savePost(post: Post): Promise<void> {
   // `content` is a JSONB column (holds either the old ContentBlock[] shape
